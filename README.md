@@ -1,9 +1,10 @@
 🌸 YuiBot-MD
 
-<p align="center">
-  <img src="https://i.postimg.cc/Dzks0qR5/Yui-Bot-MD-ezgif-com-video-to-gif-converter.gif" alt="YuiBot-MD" width="600">
-</p>
+<div align="center">
 
+  <img src="https://i.postimg.cc/Dzks0qR5/Yui-Bot-MD-ezgif-com-video-to-gif-converter.gif" alt="YuiBot-MD Preview" width="350"/>
+
+</div>
 
 <p align="center">
   <img src="https://i.postimg.cc/Dzks0qR5/Yui-Bot-MD-ezgif-com-video-to-gif-converter.gif" alt="YuiBot-MD Demo" width="500">
