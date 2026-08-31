@@ -7,9 +7,9 @@ module.exports = {
   ownerOnly: true,
 
   async execute(sock, msg, args, { config, commands, categories }) {
-    const jid = msg.key.remoteJid;
-    const { loadCommands } = require('../../lib/cargador');
-    loadCommands(commands, categories);
-    await sock.sendMessage(jid, { text: `♻️ Módulos de ${config.BOT_NAME} recargados.` });
+    const jid = msg.key.remoteJid
+    const { loadCommands } = require('../../lib/cargador')
+    loadCommands(commands, categories)
+    await sock.sendMessage(jid, { text: `♻️ Módulos de ${config.BOT_NAME} recargados.` })
   },
-};
+}
