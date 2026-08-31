@@ -1,12 +1,7 @@
 🌸 YuiBot-MD
 
-
 <p align="center">
-  <img
-    src="https://i.postimg.cc/Dzks0qR5/Yui-Bot-MD-ezgif-com-video-to-gif-converter.gif"
-    alt="YuiBot-MD"
-    width="600"
-  >
+  <img src="https://i.postimg.cc/Dzks0qR5/Yui-Bot-MD-ezgif-com-video-to-gif-converter.gif" alt="YuiBot-MD" width="600">
 </p>
 
 
