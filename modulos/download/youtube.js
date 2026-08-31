@@ -4,16 +4,11 @@ const API_URL = 'https://api.lempi.lat/dl/ytv'
 module.exports = {
   name: 'ytv',
   aliases: ['ytvideo'],
-
   description: 'Descarga un video de YouTube',
 
   async execute(sock, msg, args) {
     const jid = msg.key.remoteJid
     const youtubeUrl = args.join(' ').trim()
-
-    // ─────────────────────────────
-    // VALIDAR URL
-    // ─────────────────────────────
 
     if (!youtubeUrl) {
       return sock.sendMessage(
@@ -42,10 +37,6 @@ module.exports = {
     }
 
     try {
-      // ─────────────────────────────
-      // MENSAJE DE ESPERA
-      // ─────────────────────────────
-
       await sock.sendMessage(
         jid,
         {
@@ -55,10 +46,6 @@ module.exports = {
         },
         { quoted: msg }
       )
-
-      // ─────────────────────────────
-      // LLAMAR A LA API
-      // ─────────────────────────────
 
       const apiUrl =
         `${API_URL}?url=${encodeURIComponent(youtubeUrl)}` +
@@ -71,12 +58,6 @@ module.exports = {
       }
 
       const data = await response.json()
-
-      console.log('[YTV] Respuesta API:', data)
-
-      // ─────────────────────────────
-      // VALIDAR RESPUESTA
-      // ─────────────────────────────
 
       if (
         !data ||
@@ -97,10 +78,6 @@ module.exports = {
         data.datos.archivo ||
         `${data.titulo || 'youtube'}.mp4`
 
-      // ─────────────────────────────
-      // INFORMACIÓN DEL VIDEO
-      // ─────────────────────────────
-
       const caption =
         `╭━━━〔 🎬 YOUTUBE VIDEO 〕━━━╮\n` +
         `┃ 🎵 ${data.titulo || 'Sin título'}\n` +
@@ -109,10 +86,6 @@ module.exports = {
         `┃ 🎞️ Calidad: ${data.datos.calidad || 'Desconocida'}\n` +
         `┃ 💾 Tamaño: ${data.datos.tamaño || 'Desconocido'}\n` +
         `╰━━━━━━━━━━━━━━━━━━━━━━╯`
-
-      // ─────────────────────────────
-      // ENVIAR VIDEO
-      // ─────────────────────────────
 
       await sock.sendMessage(
         jid,
