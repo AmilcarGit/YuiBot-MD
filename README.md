@@ -1,11 +1,11 @@
 🌸 YuiBot-MD
 
 <p align="center">
-  <img src="https://files.catbox.moe/t48q5g.gif" alt="YuiBot-MD Demo" width="500">
+  <img src="https://i.postimg.cc/Dzks0qR5/Yui-Bot-MD-ezgif-com-video-to-gif-converter.gif" alt="YuiBot-MD Demo" width="500">
 </p><p align="center">
   <strong>Bot de WhatsApp Multi-Device desarrollado con Node.js y Baileys.</strong>
 </p><p align="center">
-  <a href="https://github.com/AmilcarGit/YuiBot-MD">
+  <a href="https://github.com/AmilcarGit/YuiBot-MD/stargazers">
     <img src="https://img.shields.io/github/stars/AmilcarGit/YuiBot-MD?style=for-the-badge" alt="Stars">
   </a>
   <a href="https://github.com/AmilcarGit/YuiBot-MD/network/members">
@@ -21,27 +21,29 @@
 
 🌱 Estado del proyecto
 
-«YuiBot-MD está en sus primeras etapas de desarrollo.»
+«🚧 YuiBot-MD está en sus primeras etapas de desarrollo.»
 
-Este proyecto recién comienza y actualmente se está construyendo una base modular sobre la cual se irán incorporando nuevas funciones, comandos y mejoras.
+El proyecto recién comienza y actualmente se está construyendo una base sólida, modular y fácil de ampliar.
 
-La idea es mantener el proyecto simple, organizado y fácil de ampliar.
+Nuevas funciones, comandos y mejoras se irán incorporando progresivamente.
 
-🚧 En desarrollo
+Versión actual: "1.0.0"
+
+Estado: 🚧 En desarrollo
 
 ---
 
 📖 Sobre el proyecto
 
-YuiBot-MD es un bot de WhatsApp Multi-Device creado con Node.js y Baileys.
+YuiBot-MD es un bot de WhatsApp Multi-Device desarrollado con Node.js y Baileys.
 
-El proyecto utiliza un sistema modular que permite agregar comandos dentro de la carpeta "modulos/" sin tener que modificar constantemente el archivo principal.
+Su arquitectura está pensada para que los comandos puedan organizarse fácilmente dentro de "modulos/" y cargarse automáticamente.
 
-Los módulos también pueden organizarse utilizando subcarpetas.
+También es posible organizar los comandos mediante subcarpetas, permitiendo mantener el proyecto ordenado a medida que crece.
 
 🎯 Objetivos
 
-El proyecto busca convertirse progresivamente en un bot:
+YuiBot-MD busca convertirse progresivamente en un bot:
 
 - 🧩 Modular
 - ⚡ Rápido
@@ -54,9 +56,9 @@ El proyecto busca convertirse progresivamente en un bot:
 
 ✨ Características actuales
 
-Actualmente YuiBot-MD cuenta con una base funcional que incluye:
+Actualmente el proyecto cuenta con una base funcional que incluye:
 
-- 📱 Conexión con WhatsApp Multi-Device.
+- 📱 WhatsApp Multi-Device.
 - 🔗 Vinculación mediante código QR.
 - 💾 Persistencia de sesión.
 - 🔄 Reconexión automática.
@@ -65,35 +67,33 @@ Actualmente YuiBot-MD cuenta con una base funcional que incluye:
 - 📁 Soporte para subcarpetas.
 - 🏷️ Alias para comandos.
 - ⚙️ Prefijo configurable.
-- 🟢 Manejo básico de errores.
+- 🛡️ Manejo básico de errores.
 
-«Estas funciones corresponden a la base actual del proyecto. Se irán añadiendo nuevas características progresivamente.»
+«Estas son las funciones de la base actual. El proyecto continuará creciendo con nuevas características.»
 
 ---
 
 🛠️ Tecnologías
 
-YuiBot-MD utiliza:
-
-Tecnología| Función
-Node.js| Entorno de ejecución
-Baileys| Comunicación con WhatsApp
-JavaScript| Lenguaje principal
-Pino| Sistema de logs
-QRCode Terminal| Generación del QR
-Hapi Boom| Manejo de errores
-Nodemon| Desarrollo
+Tecnología| Uso
+🟢 Node.js| Entorno de ejecución
+📱 Baileys| Conexión con WhatsApp
+🟨 JavaScript| Lenguaje principal
+📋 Pino| Sistema de logs
+📷 QRCode Terminal| Generación del QR
+🛡️ Hapi Boom| Manejo de errores
+🔄 Nodemon| Desarrollo
 
 ---
 
 📋 Requisitos
 
-Antes de instalar el proyecto necesitas:
+Antes de instalar YuiBot-MD necesitas:
 
 - Node.js 18 o superior
 - npm
 - Una cuenta de WhatsApp
-- Git, opcionalmente para clonar el proyecto
+- Git, opcionalmente
 
 Comprueba Node.js:
 
@@ -111,7 +111,7 @@ npm -v
 
 git clone https://github.com/AmilcarGit/YuiBot-MD.git
 
-2. Entrar en la carpeta
+2. Entrar al proyecto
 
 cd YuiBot-MD
 
@@ -127,68 +127,73 @@ npm start
 
 📱 Vincular WhatsApp
 
-Al iniciar el bot por primera vez, aparecerá un código QR en la terminal.
+Al ejecutar el bot por primera vez aparecerá un código QR en la terminal.
 
-Desde WhatsApp:
+Pasos
 
 1. Abre WhatsApp.
 2. Ve a Dispositivos vinculados.
-3. Pulsa Vincular un dispositivo.
-4. Escanea el QR mostrado por el bot.
-5. Espera a que se establezca la conexión.
+3. Selecciona Vincular un dispositivo.
+4. Escanea el código QR.
+5. Espera a que el bot establezca la conexión.
 
-Cuando se conecte correctamente aparecerá:
+Cuando la conexión sea exitosa aparecerá:
 
 ✅ Bot conectado a WhatsApp.
 
-La sesión se guarda en:
+La sesión se guardará automáticamente en:
 
 session/
 
 Esto permite mantener la sesión para futuras ejecuciones.
 
-«⚠️ No compartas nunca la carpeta "session/".»
+«⚠️ Nunca compartas la carpeta "session/".»
 
 ---
 
-⚙️ Prefijo
+⚙️ Configurar el prefijo
 
-El prefijo actual del bot es:
+El prefijo predeterminado es:
 
 !
 
-Por ejemplo:
+Ejemplo:
 
 !ping
+!menu
+!help
 
-El prefijo puede modificarse desde "main.js":
+Puedes cambiarlo desde "main.js":
 
 const PREFIX = '!';
 
-Puedes cambiarlo, por ejemplo, a:
+Por ejemplo:
 
 const PREFIX = '.';
 
-Y entonces utilizar:
+Ahora los comandos serían:
 
 .ping
+.menu
+.help
 
 ---
 
 🧩 Sistema de comandos
 
-Los comandos se encuentran dentro de:
+Todos los comandos se encuentran dentro de:
 
 modulos/
 
-El cargador busca automáticamente archivos ".js", incluso dentro de subcarpetas.
+El sistema detecta automáticamente los archivos ".js", incluso si están dentro de subcarpetas.
 
 Ejemplo:
 
 modulos/
 ├── main/
 │   ├── menu.js
-│   └── ping.js
+│   ├── ping.js
+│   └── help.js
 │
 ├── herramientas/
 │   └── info.js
@@ -196,17 +201,19 @@ modulos/
 └── grupo/
     └── admin.js
 
-Esto permite mantener los comandos organizados por categorías.
+Esto permite organizar los comandos por categorías.
 
 ---
 
-📝 Crear tu primer comando
+📝 Crear un comando
 
-Crea:
+Crea un archivo dentro de "modulos/".
+
+Ejemplo:
 
 modulos/main/ping.js
 
-Y coloca:
+Contenido:
 
 module.exports = {
   name: 'ping',
@@ -222,29 +229,25 @@ module.exports = {
   }
 };
 
-Después ejecuta:
+Después puedes utilizar:
 
 !ping
 
-También podrás utilizar:
+O su alias:
 
 !p
-
-porque "p" está definido como alias.
 
 ---
 
 🏷️ Propiedades de los comandos
 
-Cada comando puede utilizar:
-
 Propiedad| Tipo| Obligatoria| Descripción
-"name"| "string"| ✅| Nombre del comando
-"aliases"| "array"| ❌| Alias del comando
+"name"| "string"| ✅| Nombre principal
+"aliases"| "array"| ❌| Alias alternativos
 "description"| "string"| ❌| Descripción
-"execute"| "function"| ✅| Código que ejecuta el comando
+"execute"| "function"| ✅| Función que ejecuta el comando
 
-Ejemplo mínimo:
+Ejemplo mínimo
 
 module.exports = {
   name: 'ping',
@@ -258,9 +261,7 @@ module.exports = {
 
 ---
 
-📂 Estructura
-
-La estructura actual del proyecto es:
+📂 Estructura del proyecto
 
 YuiBot-MD/
 │
@@ -279,35 +280,35 @@ YuiBot-MD/
 ├── LICENSE
 └── README.md
 
-"main.js"
+📌 "main.js"
 
-Archivo principal encargado de iniciar el bot y gestionar la conexión con WhatsApp.
+Archivo principal del bot.
 
-"lib/cargador.js"
+Se encarga de iniciar Baileys, gestionar la conexión, recibir mensajes y ejecutar comandos.
 
-Sistema encargado de encontrar y cargar automáticamente los comandos.
+📌 "lib/cargador.js"
 
-"modulos/"
+Carga automáticamente los comandos encontrados dentro de "modulos/".
 
-Aquí se encuentran los comandos del bot.
+📌 "modulos/"
 
-"session/"
+Contiene los comandos del bot.
 
-Contiene la sesión de WhatsApp generada durante la vinculación.
+📌 "session/"
 
-"package.json"
+Contiene las credenciales de la sesión de WhatsApp.
 
-Contiene la información del proyecto, scripts y dependencias.
+📌 "package.json"
+
+Contiene las dependencias, información y scripts del proyecto.
 
 ---
 
 🧪 Modo desarrollo
 
-Para ejecutar el bot utilizando Nodemon:
+Para utilizar Nodemon:
 
 npm run dev
-
-Esto permite reiniciar automáticamente el proceso cuando se realizan cambios durante el desarrollo.
 
 Para ejecutar normalmente:
 
@@ -323,43 +324,43 @@ Nunca publiques información privada.
 
 session/
 
-Ni publiques:
+Tampoco publiques:
 
-- Credenciales de WhatsApp.
-- Tokens.
 - API Keys.
+- Tokens.
 - Contraseñas.
+- Credenciales de WhatsApp.
 - Información privada.
 
-Se recomienda utilizar ".gitignore":
+Se recomienda utilizar:
 
 node_modules/
 session/
 .env
 
+en tu ".gitignore".
+
 ---
 
-🐛 Reportar errores
+🐛 Reportar problemas
 
-Si encuentras un problema, puedes abrir un Issue en GitHub.
+Si encuentras un error, puedes abrir un Issue en GitHub.
 
-Procura incluir:
+Incluye, si es posible:
 
-1. Qué estabas haciendo.
-2. Qué comando produjo el error.
-3. El mensaje mostrado en la terminal.
-4. Tu versión de Node.js.
-5. Los pasos para reproducir el problema.
-
-Esto ayudará a solucionar los problemas más rápidamente.
+1. Descripción del problema.
+2. Comando que causa el error.
+3. Error mostrado en la terminal.
+4. Versión de Node.js.
+5. Pasos para reproducirlo.
 
 ---
 
 🤝 Contribuciones
 
-YuiBot-MD recién está comenzando, por lo que las contribuciones pueden ayudar mucho al crecimiento del proyecto.
+YuiBot-MD recién está comenzando, por lo que las contribuciones son bienvenidas.
 
-Puedes contribuir mediante:
+Puedes ayudar mediante:
 
 - 🐛 Correcciones de errores.
 - 🧩 Nuevos comandos.
@@ -373,7 +374,7 @@ Proceso
 1. Haz un Fork.
 2. Crea una rama.
 3. Realiza tus cambios.
-4. Prueba el código.
+4. Prueba el proyecto.
 5. Envía un Pull Request.
 
 Ejemplo:
@@ -390,13 +391,12 @@ git push origin feature/nuevo-comando
 
 🗺️ Roadmap
 
-El proyecto se encuentra en una etapa inicial.
-
-Algunas mejoras que podrían incorporarse progresivamente:
+Como el proyecto recién comienza, el roadmap irá creciendo junto con YuiBot-MD.
 
 🔹 Base
 
 - [x] Conexión con WhatsApp
+- [x] Vinculación mediante QR
 - [x] Sistema de comandos
 - [x] Cargador automático
 - [x] Alias
@@ -405,9 +405,9 @@ Algunas mejoras que podrían incorporarse progresivamente:
 
 🔸 Próximamente
 
-- [ ] Sistema de ayuda
 - [ ] Menú dinámico
-- [ ] Sistema de categorías
+- [ ] Sistema de ayuda
+- [ ] Categorías de comandos
 - [ ] Más comandos
 - [ ] Sistema de configuración
 - [ ] Mejor manejo de errores
@@ -415,29 +415,25 @@ Algunas mejoras que podrían incorporarse progresivamente:
 
 🔮 Futuro
 
-- [ ] Más herramientas
-- [ ] Sistemas adicionales
 - [ ] Integración con APIs
-- [ ] Nuevas funciones para grupos
+- [ ] Más herramientas
+- [ ] Funciones para grupos
 - [ ] Sistema de plugins
-- [ ] Mejoras de administración
+- [ ] Nuevas opciones de administración
+- [ ] Mejoras generales de arquitectura
 
-«El roadmap puede cambiar conforme evolucione el proyecto.»
+«El roadmap puede cambiar a medida que avance el desarrollo.»
 
 ---
 
-📊 Estado
+📊 Estado del desarrollo
 
 YuiBot-MD
-│
-├── 🟢 Base del bot       ██████████░░
-├── 🟡 Comandos           ███░░░░░░░░
-├── 🟡 Funciones          ██░░░░░░░░░
-└── 🔵 Desarrollo         ██████████░░
 
-Versión actual: "1.0.0"
-
-Estado: 🚧 En desarrollo
+Base del bot       ██████████░░  En desarrollo
+Sistema comandos   ████████░░░░  En desarrollo
+Funciones          ███░░░░░░░░░  Inicial
+Documentación      ███████░░░░░  En desarrollo
 
 ---
 
@@ -445,7 +441,7 @@ Estado: 🚧 En desarrollo
 
 Este proyecto utiliza la Licencia MIT.
 
-Consulta el archivo ""LICENSE"" (./LICENSE) para conocer los términos completos.
+Consulta ""LICENSE"" (./LICENSE) para conocer los términos completos.
 
 ---
 
@@ -467,16 +463,24 @@ https://github.com/AmilcarGit/YuiBot-MD
 
 YuiBot-MD apenas está comenzando.
 
-Si te gusta el proyecto, puedes ayudar dejando una ⭐ en GitHub y compartiéndolo con otros desarrolladores.
+Si te gusta el proyecto, puedes:
 
-Cada contribución ayuda a que el proyecto pueda seguir creciendo.
+⭐ Dar una estrella al repositorio.
+
+🐛 Reportar errores.
+
+💡 Proponer nuevas funciones.
+
+🧩 Crear nuevos comandos.
+
+🤝 Contribuir mediante Pull Requests.
 
 ---
 
 <p align="center">🌸 YuiBot-MD
 
-Simple • Modular • En desarrollo
+Simple • Modular • Extensible
 
 </p><p align="center">
-  Construyendo el proyecto paso a paso. 🚀
+  🚧 Proyecto en desarrollo — construido paso a paso.
 </p>
