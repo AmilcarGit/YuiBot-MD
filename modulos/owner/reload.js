@@ -3,7 +3,7 @@ module.exports = {
   name: 'reload',
   aliases: [],
   description: 'Recarga todos los módulos sin reiniciar el bot',
-  category: 'main',
+  category: 'owner',
   ownerOnly: true,
 
   async execute(sock, msg, args, { config, commands, categories }) {
