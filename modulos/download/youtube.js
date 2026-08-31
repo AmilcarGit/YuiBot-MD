@@ -2,6 +2,7 @@
 const { APIS } = require('../../defaults')
 const API_KEY = APIS.LEMPI_KEY
 const API_URL = 'https://api.lempi.lat/dl/ytv'
+const LIMITE_MB = 16
 
 module.exports = {
   name: 'ytv',
@@ -80,21 +81,46 @@ module.exports = {
         data.datos.archivo ||
         `${data.titulo || 'youtube'}.mp4`
 
+      console.log(`[YTV] Descargando archivo real desde: ${videoUrl}`)
+
+      const fileResponse = await fetch(videoUrl)
+
+      if (!fileResponse.ok) {
+        throw new Error(`No se pudo descargar el archivo del video (HTTP ${fileResponse.status})`)
+      }
+
+      const arrayBuffer = await fileResponse.arrayBuffer()
+      const buffer = Buffer.from(arrayBuffer)
+      const pesoMB = buffer.length / (1024 * 1024)
+
+      console.log(`[YTV] Peso real descargado: ${pesoMB.toFixed(2)} MB`)
+
+      if (pesoMB > LIMITE_MB) {
+        return sock.sendMessage(
+          jid,
+          {
+            text:
+              `❌ El video pesa ${pesoMB.toFixed(1)} MB y WhatsApp no permite enviar ` +
+              `videos de más de ${LIMITE_MB} MB.\n\n` +
+              `🔗 Puedes descargarlo manualmente aquí:\n${videoUrl}`
+          },
+          { quoted: msg }
+        )
+      }
+
       const caption =
         `╭━━━〔 🎬 YOUTUBE VIDEO 〕━━━╮\n` +
         `┃ 🎵 ${data.titulo || 'Sin título'}\n` +
         `┃ 👤 ${data.canal || 'Desconocido'}\n` +
         `┃ ⏱️ ${data.duracion || 'Desconocida'}\n` +
         `┃ 🎞️ Calidad: ${data.datos.calidad || 'Desconocida'}\n` +
-        `┃ 💾 Tamaño: ${data.datos.tamaño || 'Desconocido'}\n` +
+        `┃ 💾 Tamaño: ${pesoMB.toFixed(1)} MB\n` +
         `╰━━━━━━━━━━━━━━━━━━━━━━╯`
 
       await sock.sendMessage(
         jid,
         {
-          video: {
-            url: videoUrl
-          },
+          video: buffer,
           mimetype: 'video/mp4',
           fileName: filename,
           caption
