@@ -33,18 +33,17 @@ module.exports = {
 
     text = text.trim()
 
-    const imagenes = (config.MENU_IMAGES || []).filter((ruta) => fs.existsSync(ruta))
+    const imagenes = (config.MENU_IMAGES || []).filter((img) => fs.existsSync(img.ruta))
     if (imagenes.length === 0) {
       return sock.sendMessage(jid, { text })
     }
 
-    const rutaElegida = imagenes[Math.floor(Math.random() * imagenes.length)]
-    const esGif = rutaElegida.toLowerCase().endsWith('.gif')
+    const elegida = imagenes[Math.floor(Math.random() * imagenes.length)]
 
     try {
-      const buffer = fs.readFileSync(rutaElegida)
+      const buffer = fs.readFileSync(elegida.ruta)
 
-      if (esGif) {
+      if (elegida.animado) {
         await sock.sendMessage(jid, {
           video: buffer,
           gifPlayback: true,
