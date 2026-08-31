@@ -2,7 +2,7 @@
 const { APIS } = require('../../defaults')
 const API_KEY = APIS.LEMPI_KEY
 const API_URL = 'https://api.lempi.lat/dl/ytv'
-const LIMITE_MB = 16
+const LIMITE_VIDEO_MB = 64
 
 module.exports = {
   name: 'ytv',
@@ -95,19 +95,6 @@ module.exports = {
 
       console.log(`[YTV] Peso real descargado: ${pesoMB.toFixed(2)} MB`)
 
-      if (pesoMB > LIMITE_MB) {
-        return sock.sendMessage(
-          jid,
-          {
-            text:
-              `❌ El video pesa ${pesoMB.toFixed(1)} MB y WhatsApp no permite enviar ` +
-              `videos de más de ${LIMITE_MB} MB.\n\n` +
-              `🔗 Puedes descargarlo manualmente aquí:\n${videoUrl}`
-          },
-          { quoted: msg }
-        )
-      }
-
       const caption =
         `╭━━━〔 🎬 YOUTUBE VIDEO 〕━━━╮\n` +
         `┃ 🎵 ${data.titulo || 'Sin título'}\n` +
@@ -117,16 +104,30 @@ module.exports = {
         `┃ 💾 Tamaño: ${pesoMB.toFixed(1)} MB\n` +
         `╰━━━━━━━━━━━━━━━━━━━━━━╯`
 
-      await sock.sendMessage(
-        jid,
-        {
-          video: buffer,
-          mimetype: 'video/mp4',
-          fileName: filename,
-          caption
-        },
-        { quoted: msg }
-      )
+      if (pesoMB <= LIMITE_VIDEO_MB) {
+        await sock.sendMessage(
+          jid,
+          {
+            video: buffer,
+            mimetype: 'video/mp4',
+            fileName: filename,
+            caption
+          },
+          { quoted: msg }
+        )
+      } else {
+        console.log(`[YTV] Peso mayor a ${LIMITE_VIDEO_MB}MB, enviando como documento`)
+        await sock.sendMessage(
+          jid,
+          {
+            document: buffer,
+            mimetype: 'video/mp4',
+            fileName: filename,
+            caption
+          },
+          { quoted: msg }
+        )
+      }
 
     } catch (error) {
       console.error('[YTV]', error)
