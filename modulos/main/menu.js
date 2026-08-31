@@ -29,6 +29,36 @@ module.exports = {
     }
     text += `╰─➤ _Prefijos: ${config.PREFIXES.join(' ')}${config.ALLOW_NO_PREFIX ? ' (o sin prefijo)' : ''}_ 🥀`
 
-    await sock.sendMessage(jid, { text: text.trim() })
+    text = text.trim()
+
+    const imagenes = config.MENU_IMAGES || []
+    if (imagenes.length === 0) {
+      return sock.sendMessage(jid, { text })
+    }
+
+    const urlElegida = imagenes[Math.floor(Math.random() * imagenes.length)]
+    const esGif = urlElegida.toLowerCase().endsWith('.gif')
+
+    try {
+      const respuesta = await fetch(urlElegida)
+      if (!respuesta.ok) throw new Error(`HTTP ${respuesta.status}`)
+      const buffer = Buffer.from(await respuesta.arrayBuffer())
+
+      if (esGif) {
+        await sock.sendMessage(jid, {
+          video: buffer,
+          gifPlayback: true,
+          caption: text,
+        })
+      } else {
+        await sock.sendMessage(jid, {
+          image: buffer,
+          caption: text,
+        })
+      }
+    } catch (error) {
+      console.error('[MENU] No se pudo enviar la imagen, se envía solo texto:', error)
+      await sock.sendMessage(jid, { text })
+    }
   },
 }
