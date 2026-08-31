@@ -7,6 +7,7 @@ module.exports = {
   name: 'yts',
   aliases: ['ytsearch'],
   description: 'Busca videos en YouTube',
+  category: 'download',
 
   async execute(sock, msg, args) {
     const jid = msg.key.remoteJid
