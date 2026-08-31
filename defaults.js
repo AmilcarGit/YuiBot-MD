@@ -18,3 +18,4 @@ module.exports = {
     { ruta: path.join(__dirname, 'media', 'menu1.mp4'), animado: true },
     { ruta: path.join(__dirname, 'media', 'menu2.jpg'), animado: false },
   ],
+};
