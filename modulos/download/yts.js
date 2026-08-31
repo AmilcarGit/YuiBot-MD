@@ -4,16 +4,11 @@ const API_URL = 'https://api.lempi.lat/s/youtube'
 module.exports = {
   name: 'yts',
   aliases: ['ytsearch'],
-
   description: 'Busca videos en YouTube',
 
   async execute(sock, msg, args) {
     const jid = msg.key.remoteJid
     const query = args.join(' ').trim()
-
-    // ─────────────────────────────
-    // VALIDAR BÚSQUEDA
-    // ─────────────────────────────
 
     if (!query) {
       return sock.sendMessage(
@@ -29,10 +24,6 @@ module.exports = {
     }
 
     try {
-      // ─────────────────────────────
-      // MENSAJE DE ESPERA
-      // ─────────────────────────────
-
       await sock.sendMessage(
         jid,
         {
@@ -42,10 +33,6 @@ module.exports = {
         },
         { quoted: msg }
       )
-
-      // ─────────────────────────────
-      // CONSULTAR API
-      // ─────────────────────────────
 
       const url =
         `${API_URL}?query=${encodeURIComponent(query)}` +
@@ -58,12 +45,6 @@ module.exports = {
       }
 
       const data = await response.json()
-
-      console.log('[YTS] Respuesta API:', data)
-
-      // ─────────────────────────────
-      // VALIDAR RESPUESTA
-      // ─────────────────────────────
 
       if (
         !data ||
@@ -81,10 +62,6 @@ module.exports = {
 
       const videos = data.datos.results.videos
 
-      // ─────────────────────────────
-      // SIN RESULTADOS
-      // ─────────────────────────────
-
       if (videos.length === 0) {
         return sock.sendMessage(
           jid,
@@ -95,12 +72,7 @@ module.exports = {
         )
       }
 
-      // Máximo 10 resultados
       const resultados = videos.slice(0, 10)
-
-      // ─────────────────────────────
-      // CREAR MENSAJE
-      // ─────────────────────────────
 
       let mensaje =
         `╭━━━〔 🔎 YOUTUBE SEARCH 〕━━━╮\n` +
@@ -121,10 +93,6 @@ module.exports = {
       })
 
       mensaje += `🤖 Powered by Lempi API`
-
-      // ─────────────────────────────
-      // ENVIAR RESULTADOS
-      // ─────────────────────────────
 
       await sock.sendMessage(
         jid,
