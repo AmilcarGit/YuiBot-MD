@@ -1,3 +1,6 @@
+//CÓDIGO ORIGINAL DE YUIBOT-MD
+const { BOT_NAME, PREFIX } = require('../../defaults');
+
 module.exports = {
   name: 'menu',
   aliases: ['ayuda', 'help'],
@@ -15,11 +18,11 @@ module.exports = {
     // Evitar duplicados (por los alias apuntando al mismo comando)
     const uniqueCommands = [...new Set(allCommands.values())];
 
-    let text = '🤖 *MENÚ DEL BOT*\n\n';
+    let text = `⛧───「 ${BOT_NAME} 」───⛧\n\n`;
     for (const cmd of uniqueCommands) {
-      text += `▪️ *!${cmd.name}* — ${cmd.description}\n`;
+      text += `  ❖ ${PREFIX}${cmd.name}     → ${cmd.description}\n`;
     }
-    text += '\n_Escribe !comando para usarlo._';
+    text += `\n╰─➤ _Escribe ${PREFIX} antes de cada comando_ 🥀`;
 
     await sock.sendMessage(jid, { text });
   },
