@@ -1,7 +1,7 @@
 {
-  "name": "YuiBot-MD",
+  "name": "yuibot-md",
   "version": "1.0.0",
-  "description": "Bot de WhatsApp con sistema de comandos extensible (Baileys)",
+  "description": "YuiBot-MD — Bot de WhatsApp con sistema de comandos extensible (Baileys)",
   "main": "main.js",
   "type": "commonjs",
   "scripts": {
