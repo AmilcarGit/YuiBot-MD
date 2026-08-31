@@ -1,3 +1,4 @@
+//CÓDIGO ORIGINAL DE YUIBOT-MD
 const {
   default: makeWASocket,
   useMultiFileAuthState,
@@ -10,8 +11,7 @@ const pino = require('pino');
 const path = require('path');
 
 const { loadCommands } = require('./lib/cargador');
-
-const PREFIX = '!'; // cambia esto si quieres otro prefijo, ej: "/" o "."
+const { BOT_NAME, PREFIX } = require('./defaults');
 
 async function startBot() {
   const { state, saveCreds } = await useMultiFileAuthState(
@@ -33,7 +33,7 @@ async function startBot() {
     const { connection, lastDisconnect, qr } = update;
 
     if (qr) {
-      console.log('📱 Escanea este QR con WhatsApp (Dispositivos vinculados):');
+      console.log(`📱 Escanea este QR con WhatsApp para vincular ${BOT_NAME}:`);
       qrcode.generate(qr, { small: true });
     }
 
@@ -43,7 +43,7 @@ async function startBot() {
       console.log('❌ Conexión cerrada.', shouldReconnect ? 'Reconectando...' : 'Sesión cerrada, borra /session y vuelve a escanear.');
       if (shouldReconnect) startBot();
     } else if (connection === 'open') {
-      console.log('✅ Bot conectado a WhatsApp.');
+      console.log(`✅ ${BOT_NAME} conectado a WhatsApp.`);
     }
   });
 
@@ -82,4 +82,4 @@ async function startBot() {
   });
 }
 
-startBot().catch((err) => console.error('Error al iniciar el bot:', err));
+startBot().catch((err) => console.error(`Error al iniciar ${BOT_NAME}:`, err));
