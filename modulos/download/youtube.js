@@ -8,6 +8,7 @@ module.exports = {
   name: 'ytv',
   aliases: ['ytvideo'],
   description: 'Descarga un video de YouTube',
+  category: 'download',
 
   async execute(sock, msg, args) {
     const jid = msg.key.remoteJid
