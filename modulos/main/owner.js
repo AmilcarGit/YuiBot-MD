@@ -2,12 +2,18 @@
 module.exports = {
   name: 'owner',
   aliases: [],
-  description: 'Muestra información de contacto del owner',
+  description: 'Muestra información del owner',
   category: 'main',
 
   async execute(sock, msg, args, { config }) {
     const jid = msg.key.remoteJid;
-    const text = `👑 Owner de ${config.BOT_NAME}\n` + config.OWNERS.map((o) => `wa.me/${o}`).join('\n');
-    await sock.sendMessage(jid, { text });
+
+    let text = `⛧───「 ${config.BOT_NAME} 」───⛧\n\n`;
+    for (const o of config.OWNERS) {
+      text += `  ❖ nombre: ${o.nombre}\n  ❖ rango: ${o.rango}\n  ❖ contacto: wa.me/${o.numero}\n\n`;
+    }
+    text += `╰─➤ _${config.BOT_NAME}_ 🥀`;
+
+    await sock.sendMessage(jid, { text: text.trim() });
   },
 };
