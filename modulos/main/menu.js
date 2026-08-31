@@ -1,4 +1,6 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const fs = require('fs')
+
 const EMOJIS_CATEGORIA = {
   main: '🏠',
   download: '📥',
@@ -31,18 +33,16 @@ module.exports = {
 
     text = text.trim()
 
-    const imagenes = config.MENU_IMAGES || []
+    const imagenes = (config.MENU_IMAGES || []).filter((ruta) => fs.existsSync(ruta))
     if (imagenes.length === 0) {
       return sock.sendMessage(jid, { text })
     }
 
-    const urlElegida = imagenes[Math.floor(Math.random() * imagenes.length)]
-    const esGif = urlElegida.toLowerCase().endsWith('.gif')
+    const rutaElegida = imagenes[Math.floor(Math.random() * imagenes.length)]
+    const esGif = rutaElegida.toLowerCase().endsWith('.gif')
 
     try {
-      const respuesta = await fetch(urlElegida)
-      if (!respuesta.ok) throw new Error(`HTTP ${respuesta.status}`)
-      const buffer = Buffer.from(await respuesta.arrayBuffer())
+      const buffer = fs.readFileSync(rutaElegida)
 
       if (esGif) {
         await sock.sendMessage(jid, {
@@ -57,7 +57,7 @@ module.exports = {
         })
       }
     } catch (error) {
-      console.error('[MENU] No se pudo enviar la imagen, se envía solo texto:', error)
+      console.error('[MENU] No se pudo leer la imagen local, se envía solo texto:', error)
       await sock.sendMessage(jid, { text })
     }
   },
