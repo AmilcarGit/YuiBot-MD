@@ -15,7 +15,6 @@ module.exports = {
     LEMPI_KEY: 'lem_dc158e5ad3f4f6ee2de2905a222bfb68f61dd754',
   },
   MENU_IMAGES: [
-    path.join(__dirname, 'media', 'menu1.gif'),
-    path.join(__dirname, 'media', 'menu2.jpg'),
+    { ruta: path.join(__dirname, 'media', 'menu1.mp4'), animado: true },
+    { ruta: path.join(__dirname, 'media', 'menu2.jpg'), animado: false },
   ],
-};
