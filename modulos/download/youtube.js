@@ -1,4 +1,6 @@
-const API_KEY = 'lem_dc158e5ad3f4f6ee2de2905a222bfb68f61dd754'
+//CÓDIGO ORIGINAL DE YUIBOT-MD
+const { APIS } = require('../../defaults')
+const API_KEY = APIS.LEMPI_KEY
 const API_URL = 'https://api.lempi.lat/dl/ytv'
 
 module.exports = {
