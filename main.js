@@ -9,16 +9,29 @@ const { Boom } = require('@hapi/boom');
 const qrcode = require('qrcode-terminal');
 const pino = require('pino');
 const path = require('path');
+const readline = require('readline');
 
 const { loadCommands } = require('./lib/cargador');
 const { getMessageBody, parseCommand, isOwner } = require('./lib/handler');
 const config = require('./defaults');
+
+function askQuestion(text) {
+  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+  return new Promise((resolve) => {
+    rl.question(text, (answer) => {
+      rl.close();
+      resolve(answer);
+    });
+  });
+}
 
 async function startBot() {
   const { state, saveCreds } = await useMultiFileAuthState(
     path.join(__dirname, 'session')
   );
   const { version } = await fetchLatestBaileysVersion();
+
+  const usePairingCode = !state.creds.registered && config.USE_PAIRING_CODE;
 
   const sock = makeWASocket({
     version,
@@ -29,10 +42,24 @@ async function startBot() {
 
   const { commands, categories } = loadCommands();
 
+  if (usePairingCode) {
+    const phoneNumber = config.PHONE_NUMBER || (await askQuestion('📞 Escribe tu número con código de país, sin "+" ni espacios (ej: 5218110000000): '));
+
+    setTimeout(async () => {
+      try {
+        const code = await sock.requestPairingCode(phoneNumber.trim());
+        console.log(`🔑 Tu código de vinculación de ${config.BOT_NAME} es: ${code}`);
+        console.log('📱 Ve a WhatsApp > Dispositivos vinculados > Vincular con número de teléfono, e ingresa ese código.');
+      } catch (err) {
+        console.error('❌ No se pudo generar el código de vinculación:', err);
+      }
+    }, 3000);
+  }
+
   sock.ev.on('connection.update', (update) => {
     const { connection, lastDisconnect, qr } = update;
 
-    if (qr) {
+    if (qr && !usePairingCode) {
       console.log(`📱 Escanea este QR con WhatsApp para vincular ${config.BOT_NAME}:`);
       qrcode.generate(qr, { small: true });
     }
