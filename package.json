@@ -1,5 +1,5 @@
 {
-  "name": "TheYui-MD",
+  "name": "TheYuiBot-MD",
   "version": "1.0.0",
   "description": "Bot de WhatsApp con sistema de comandos extensible (Baileys)",
   "main": "main.js",
