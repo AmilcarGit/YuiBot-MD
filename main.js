@@ -11,7 +11,8 @@ const pino = require('pino');
 const path = require('path');
 
 const { loadCommands } = require('./lib/cargador');
-const { BOT_NAME, PREFIX } = require('./defaults');
+const { getMessageBody, parseCommand, isOwner } = require('./lib/handler');
+const config = require('./defaults');
 
 async function startBot() {
   const { state, saveCreds } = await useMultiFileAuthState(
@@ -22,18 +23,17 @@ async function startBot() {
   const sock = makeWASocket({
     version,
     auth: state,
-    logger: pino({ level: 'silent' }), // cambia a 'info' si quieres ver logs de Baileys
-    printQRInTerminal: false, // lo manejamos manualmente abajo
+    logger: pino({ level: 'silent' }),
+    printQRInTerminal: false,
   });
 
-  const commands = loadCommands();
+  const { commands, categories } = loadCommands();
 
-  // --- Conexión / QR ---
   sock.ev.on('connection.update', (update) => {
     const { connection, lastDisconnect, qr } = update;
 
     if (qr) {
-      console.log(`📱 Escanea este QR con WhatsApp para vincular ${BOT_NAME}:`);
+      console.log(`📱 Escanea este QR con WhatsApp para vincular ${config.BOT_NAME}:`);
       qrcode.generate(qr, { small: true });
     }
 
@@ -43,13 +43,12 @@ async function startBot() {
       console.log('❌ Conexión cerrada.', shouldReconnect ? 'Reconectando...' : 'Sesión cerrada, borra /session y vuelve a escanear.');
       if (shouldReconnect) startBot();
     } else if (connection === 'open') {
-      console.log(`✅ ${BOT_NAME} conectado a WhatsApp.`);
+      console.log(`✅ ${config.BOT_NAME} conectado a WhatsApp.`);
     }
   });
 
   sock.ev.on('creds.update', saveCreds);
 
-  // --- Manejo de mensajes ---
   sock.ev.on('messages.upsert', async ({ messages, type }) => {
     if (type !== 'notify') return;
 
@@ -57,24 +56,23 @@ async function startBot() {
     if (!msg.message || msg.key.fromMe) return;
 
     const jid = msg.key.remoteJid;
-    const body =
-      msg.message.conversation ||
-      msg.message.extendedTextMessage?.text ||
-      msg.message.imageMessage?.caption ||
-      '';
+    const body = getMessageBody(msg);
 
-    if (!body.startsWith(PREFIX)) return;
+    const parsed = parseCommand(body, config);
+    if (!parsed) return;
 
-    const args = body.slice(PREFIX.length).trim().split(/\s+/);
-    const commandName = args.shift().toLowerCase();
+    const command = commands.get(parsed.commandName);
+    if (!command) return;
 
-    const command = commands.get(commandName);
-    if (!command) return; // podrías responder "comando no encontrado" si prefieres
+    if (command.ownerOnly && !isOwner(msg.key.participant || jid, config)) {
+      await sock.sendMessage(jid, { text: '⛔ Este comando es solo para el owner del bot.' });
+      return;
+    }
 
     try {
-      await command.execute(sock, msg, args, commands);
+      await command.execute(sock, msg, parsed.args, { commands, categories, config });
     } catch (err) {
-      console.error(`Error ejecutando "${commandName}":`, err);
+      console.error(`Error ejecutando "${parsed.commandName}":`, err);
       await sock.sendMessage(jid, {
         text: '⚠️ Ocurrió un error ejecutando ese comando.',
       });
@@ -82,4 +80,4 @@ async function startBot() {
   });
 }
 
-startBot().catch((err) => console.error(`Error al iniciar ${BOT_NAME}:`, err));
+startBot().catch((err) => console.error(`Error al iniciar ${config.BOT_NAME}:`, err));
