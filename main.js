@@ -92,12 +92,9 @@ async function startBot() {
     if (!command) return;
 
     if (command.ownerOnly) {
-      console.log('[DEBUG OWNER] jid:', jid)
-      console.log('[DEBUG OWNER] participant:', msg.key.participant)
-      console.log('[DEBUG OWNER] participantAlt:', msg.key.participantAlt)
-      console.log('[DEBUG OWNER] OWNERS configurados:', config.OWNERS)
+      const senderJid = msg.key.participantAlt || msg.key.participant || jid;
 
-      if (!isOwner(msg.key.participant || jid, config)) {
+      if (!isOwner(senderJid, config)) {
         await sock.sendMessage(jid, { text: '⛔ Este comando es solo para el owner del bot.' });
         return;
       }
