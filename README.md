@@ -2,7 +2,7 @@
 
   <div align="center">
 
-  <img src="https://raw.githubusercontent.com/AmilcarGit/YuiBot-MD/main/media/menu1.mp4"
+  <img src="https://raw.githubusercontent.com/AmilcarGit/YuiBot-MD/main/media/menu2.jpg"
        alt="YuiBot-MD Preview"
        width="350"/>
 
