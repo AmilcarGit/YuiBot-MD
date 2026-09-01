@@ -30,14 +30,12 @@ async function descargarImagenValida(url) {
   })
   if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
 
-  const contentType = resp.headers.get('content-type') || ''
-  if (!contentType.startsWith('image/')) {
-    throw new Error(`No es una imagen válida (content-type: ${contentType || 'desconocido'})`)
-  }
-
   const buffer = Buffer.from(await resp.arrayBuffer())
-  if (buffer.length < 500) {
-    throw new Error(`Archivo demasiado pequeño (${buffer.length} bytes), probablemente roto`)
+
+  const esRiffValido = buffer.length > 12 && buffer.toString('ascii', 0, 4) === 'RIFF' && buffer.toString('ascii', 8, 12) === 'WEBP'
+
+  if (!esRiffValido) {
+    throw new Error(`Link vencido o inválido (la API no devolvió un WebP real, ${buffer.length} bytes)`)
   }
 
   return buffer
@@ -125,7 +123,7 @@ module.exports = {
 
       await sock.sendMessage(
         jid,
-        { text: `✅ Enviados: ${enviados}${fallidos > 0 ? `\n⚠️ Fallidos: ${fallidos} (links rotos de la API)` : ''}` },
+        { text: `✅ Enviados: ${enviados}${fallidos > 0 ? `\n⚠️ Fallidos: ${fallidos} (links vencidos de la API)` : ''}` },
         { quoted: msg }
       )
 
