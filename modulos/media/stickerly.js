@@ -109,7 +109,7 @@ module.exports = {
 
         try {
           const buffer = await descargarImagenValida(url)
-          const webp = await crearStickerWebp(buffer, { animado: false, config })
+          const webp = await crearStickerWebp(buffer, { animado: false, config, extensionEntrada: 'webp' })
           await sock.sendMessage(jid, { sticker: webp }, { quoted: msg })
           enviados++
         } catch (errIndividual) {
