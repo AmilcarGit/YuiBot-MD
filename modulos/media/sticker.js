@@ -94,20 +94,22 @@ module.exports = {
       const img = new webpmux.Image()
       await img.load(salida)
 
-      const exif = {
+      const json = {
         'sticker-pack-id': `yuibot-md-${Date.now()}`,
         'sticker-pack-name': config.BOT_NAME,
         'sticker-pack-publisher': config.OWNERS?.[0]?.nombre || config.BOT_NAME,
         emojis: ['🥀'],
       }
 
-      const exifAttr = Buffer.concat([
-        Buffer.from([0x49, 0x49, 0x2a, 0x00, 0x08, 0x00, 0x00, 0x00, 0x01, 0x00, 0x41, 0x57, 0x07, 0x00]),
-        Buffer.from([0, 0, 0, 0, 22, 0, 0, 0]),
-        Buffer.from(JSON.stringify(exif)),
+      const jsonBuffer = Buffer.from(JSON.stringify(json), 'utf-8')
+      const exifHeader = Buffer.from([
+        0x49, 0x49, 0x2a, 0x00, 0x08, 0x00, 0x00, 0x00, 0x01, 0x00, 0x41, 0x57, 0x07, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x16, 0x00, 0x00, 0x00
       ])
+      const exif = Buffer.concat([exifHeader, jsonBuffer])
+      exif.writeUIntLE(jsonBuffer.length, 14, 4)
 
-      img.exif = exifAttr
+      img.exif = exif
       await img.save(salida)
 
       const webpFinal = fs.readFileSync(salida)
