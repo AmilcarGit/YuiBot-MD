@@ -105,13 +105,6 @@ async function startBot() {
     try {
       const metadata = await sock.groupMetadata(jidGrupo);
 
-      let guildIcon = 'https://i.imgur.com/8Km9tLL.png'; // ícono genérico de respaldo si el grupo no tiene foto
-      try {
-        guildIcon = await sock.profilePictureUrl(jidGrupo, 'image');
-      } catch {
-        // el grupo no tiene foto de perfil pública, se usa el ícono de respaldo
-      }
-
       for (const participanteJid of update.participants) {
         const numero = participanteJid.split('@')[0].split(':')[0];
 
@@ -133,10 +126,10 @@ async function startBot() {
         const imagen = await generarImagenBienvenida({
           username,
           guildName: metadata.subject,
-          guildIcon,
           memberCount: metadata.participants.length,
           avatar,
           background: config.WELCOME_BACKGROUND,
+          botName: config.BOT_NAME,
         });
 
         await sock.sendMessage(jidGrupo, {
