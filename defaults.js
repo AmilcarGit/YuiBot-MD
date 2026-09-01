@@ -7,6 +7,7 @@ module.exports = {
   ALLOW_NO_PREFIX: true,
   OWNERS: [
     { numero: '51910227479', nombre: 'AmilcarGit', rango: 'creador' },
+    { numero: '584241819270', nombre: 'Leo', rango: 'colaborador' },
   ],
   BOT_VERSION: '1.0.0',
   USE_PAIRING_CODE: true,
