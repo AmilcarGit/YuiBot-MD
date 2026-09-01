@@ -32,7 +32,7 @@
 
 **YuiBot-MD** es un bot de WhatsApp Multi-Device desarrollado con **Node.js** y **Baileys**.
 
-El proyecto está comenzando y tiene como objetivo construir una base de bot **simple, modular, organizada y fácil de personalizar**.
+El proyecto está comenzando y tiene como objetivo construir una base **simple, modular, organizada y fácil de personalizar**.
 
 > 🚧 **YuiBot-MD está actualmente en desarrollo.**
 >
