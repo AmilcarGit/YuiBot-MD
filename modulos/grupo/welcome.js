@@ -40,6 +40,13 @@ module.exports = {
       // grupo sin foto pública, se usa el ícono de respaldo
     }
 
+    let avatar = 'https://i.imgur.com/8Km9tLL.png'
+    try {
+      avatar = await sock.profilePictureUrl(remitente, 'image')
+    } catch {
+      // sin foto de perfil pública, se usa el ícono de respaldo
+    }
+
     await sock.sendMessage(jid, { text: '⏳ Generando imagen de bienvenida de prueba...' }, { quoted: msg })
 
     try {
@@ -48,6 +55,8 @@ module.exports = {
         guildName: metadata.subject,
         guildIcon,
         memberCount: metadata.participants.length,
+        avatar,
+        background: config.WELCOME_BACKGROUND,
       })
 
       await sock.sendMessage(
