@@ -16,7 +16,7 @@ const { getMessageBody, parseCommand, isOwner } = require('./lib/handler');
 const { generarImagenBienvenida } = require('./lib/welcome');
 const config = require('./defaults');
 
-let metodoElegido = null; // se decide una sola vez por ejecución, no en cada reconexión
+let metodoElegido = null;
 
 function askQuestion(text) {
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
@@ -87,7 +87,7 @@ async function startBot() {
       const statusCode = new Boom(lastDisconnect?.error)?.output?.statusCode;
       const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
       console.log('❌ Conexión cerrada.', shouldReconnect ? 'Reconectando...' : 'Sesión cerrada, borra /session y vuelve a escanear.');
-      if (!shouldReconnect) metodoElegido = null; // si te desloguearon de verdad, vuelve a preguntar la próxima vez
+      if (!shouldReconnect) metodoElegido = null;
       if (shouldReconnect) startBot();
     } else if (connection === 'open') {
       console.log(`✅ ${config.BOT_NAME} conectado a WhatsApp.`);
@@ -96,7 +96,7 @@ async function startBot() {
 
   sock.ev.on('creds.update', saveCreds);
 
-  sock.ev.on('group-participants-update', async (update) => {
+  sock.ev.on('group-participants.update', async (update) => {
     console.log('[DEBUG WELCOME] Evento recibido:', JSON.stringify(update));
     if (!config.WELCOME_ENABLED) return;
     if (update.action !== 'add') return;
