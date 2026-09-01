@@ -13,6 +13,7 @@ const readline = require('readline');
 
 const { loadCommands } = require('./lib/cargador');
 const { getMessageBody, parseCommand, isOwner } = require('./lib/handler');
+const { generarImagenBienvenida } = require('./lib/welcome');
 const config = require('./defaults');
 
 let metodoElegido = null; // se decide una sola vez por ejecución, no en cada reconexión
@@ -94,6 +95,51 @@ async function startBot() {
   });
 
   sock.ev.on('creds.update', saveCreds);
+
+  sock.ev.on('group-participants-update', async (update) => {
+    if (!config.WELCOME_ENABLED) return;
+    if (update.action !== 'add') return;
+
+    const jidGrupo = update.id;
+
+    try {
+      const metadata = await sock.groupMetadata(jidGrupo);
+
+      let guildIcon = 'https://i.imgur.com/8Km9tLL.png'; // ícono genérico de respaldo si el grupo no tiene foto
+      try {
+        guildIcon = await sock.profilePictureUrl(jidGrupo, 'image');
+      } catch {
+        // el grupo no tiene foto de perfil pública, se usa el ícono de respaldo
+      }
+
+      for (const participanteJid of update.participants) {
+        const numero = participanteJid.split('@')[0].split(':')[0];
+
+        let username = numero;
+        try {
+          const [info] = await sock.onWhatsApp(participanteJid);
+          username = info?.notify || numero;
+        } catch {
+          // si falla, se usa el número tal cual
+        }
+
+        const imagen = await generarImagenBienvenida({
+          username,
+          guildName: metadata.subject,
+          guildIcon,
+          memberCount: metadata.participants.length,
+        });
+
+        await sock.sendMessage(jidGrupo, {
+          image: imagen,
+          caption: `🥀 ¡Bienvenido/a @${numero} a *${metadata.subject}*!`,
+          mentions: [participanteJid],
+        });
+      }
+    } catch (error) {
+      console.error('[WELCOME]', error);
+    }
+  });
 
   sock.ev.on('messages.upsert', async ({ messages, type }) => {
     if (type !== 'notify') return;
