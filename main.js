@@ -91,9 +91,16 @@ async function startBot() {
     const command = commands.get(parsed.commandName);
     if (!command) return;
 
-    if (command.ownerOnly && !isOwner(msg.key.participant || jid, config)) {
-      await sock.sendMessage(jid, { text: '⛔ Este comando es solo para el owner del bot.' });
-      return;
+    if (command.ownerOnly) {
+      console.log('[DEBUG OWNER] jid:', jid)
+      console.log('[DEBUG OWNER] participant:', msg.key.participant)
+      console.log('[DEBUG OWNER] participantAlt:', msg.key.participantAlt)
+      console.log('[DEBUG OWNER] OWNERS configurados:', config.OWNERS)
+
+      if (!isOwner(msg.key.participant || jid, config)) {
+        await sock.sendMessage(jid, { text: '⛔ Este comando es solo para el owner del bot.' });
+        return;
+      }
     }
 
     try {
