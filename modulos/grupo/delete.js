@@ -7,80 +7,171 @@ module.exports = {
   async execute(sock, msg, args, { config }) {
     const jid = msg.key.remoteJid
 
-    // Solo en grupos
-    if (!jid.endsWith('@g.us')) {
-      return sock.sendMessage(jid, { text: '❌ Este comando solo funciona en grupos.' }, { quoted: msg })
+    if (!jid || !jid.endsWith('@g.us')) {
+      return sock.sendMessage(
+        jid,
+        { text: '❌ Este comando solo funciona en grupos.' },
+        { quoted: msg }
+      )
     }
 
-    // Obtener metadata del grupo
     let metadata
+
     try {
       metadata = await sock.groupMetadata(jid)
     } catch (error) {
-      console.error('[DELETE] Error al obtener metadata:', error)
-      return sock.sendMessage(jid, { text: '❌ No se pudo obtener la información del grupo.' }, { quoted: msg })
+      console.error('[DELETE] Error metadata:', error)
+
+      return sock.sendMessage(
+        jid,
+        { text: '❌ No se pudo obtener la información del grupo.' },
+        { quoted: msg }
+      )
     }
 
-    // Verificar que el usuario que ejecuta el comando sea admin o owner
-    const remitente = msg.key.participantAlt || msg.key.participant || jid
-    const numeroRemitente = remitente.split('@')[0].split(':')[0]
+    const remitente =
+      msg.key.participantAlt ||
+      msg.key.participant ||
+      msg.key.remoteJid
 
-    const participante = metadata.participants.find((p) => p.id.split('@')[0].split(':')[0] === numeroRemitente)
-    const esAdmin = participante?.admin === 'admin' || participante?.admin === 'superadmin'
-    const esOwnerBot = config.OWNERS.some((o) => o.numero === numeroRemitente)
+    const numeroRemitente = remitente
+      .split('@')[0]
+      .split(':')[0]
+
+    const participante = metadata.participants.find(p => {
+      const idNumero = p.id?.split('@')[0]?.split(':')[0]
+      const lidNumero = p.lid?.split('@')[0]?.split(':')[0]
+
+      return (
+        idNumero === numeroRemitente ||
+        lidNumero === numeroRemitente
+      )
+    })
+
+    const esAdmin =
+      participante?.admin === 'admin' ||
+      participante?.admin === 'superadmin'
+
+    const owners = config?.OWNERS || []
+
+    const esOwnerBot = owners.some(o => {
+      const numeroOwner =
+        typeof o === 'string'
+          ? o.replace(/\D/g, '')
+          : String(o.numero || '').replace(/\D/g, '')
+
+      return numeroOwner === numeroRemitente
+    })
 
     if (!esAdmin && !esOwnerBot) {
-      return sock.sendMessage(jid, { text: '⛔ Solo los administradores del grupo pueden usar este comando.' }, { quoted: msg })
+      return sock.sendMessage(
+        jid,
+        {
+          text: '⛔ Solo los administradores del grupo pueden usar este comando.'
+        },
+        { quoted: msg }
+      )
     }
 
-    // Verificar que el bot sea administrador del grupo
-    const botId = sock.user.id.split(':')[0] + '@s.whatsapp.net' // Normalizar ID
-    const botParticipante = metadata.participants.find((p) => p.id === botId)
-    const botEsAdmin = botParticipante?.admin === 'admin' || botParticipante?.admin === 'superadmin'
+    const botJid = sock.user?.id
+      ? sock.user.id.split(':')[0] + '@s.whatsapp.net'
+      : null
+
+    const botLid =
+      sock.user?.lid ||
+      sock.user?.lidJid ||
+      null
+
+    const botParticipante = metadata.participants.find(p => {
+      return (
+        p.id === botJid ||
+        p.id === sock.user?.id ||
+        (botLid && p.id === botLid) ||
+        (botLid && p.lid === botLid)
+      )
+    })
+
+    const botEsAdmin =
+      botParticipante?.admin === 'admin' ||
+      botParticipante?.admin === 'superadmin'
+
+    if (!botParticipante) {
+      return sock.sendMessage(
+        jid,
+        {
+          text: '⚠️ No pude identificar al bot dentro de los participantes del grupo.'
+        },
+        { quoted: msg }
+      )
+    }
 
     if (!botEsAdmin) {
-      return sock.sendMessage(jid, { 
-        text: '⚠️ El bot no es administrador del grupo. No puede eliminar mensajes de otros usuarios.' 
-      }, { quoted: msg })
+      return sock.sendMessage(
+        jid,
+        {
+          text: '⚠️ El bot está en el grupo, pero no es administrador.\n\nHaz administrador al bot e inténtalo nuevamente.'
+        },
+        { quoted: msg }
+      )
     }
 
-    // Obtener el mensaje citado (al que se respondió)
-    const contextInfo = msg.message?.extendedTextMessage?.contextInfo
-    if (!contextInfo || !contextInfo.stanzaId) {
-      return sock.sendMessage(jid, { 
-        text: '❌ Debes responder al mensaje que deseas eliminar.\nEjemplo: !del (respondiendo al mensaje)' 
-      }, { quoted: msg })
+    const contextInfo =
+      msg.message?.extendedTextMessage?.contextInfo ||
+      msg.message?.imageMessage?.contextInfo ||
+      msg.message?.videoMessage?.contextInfo ||
+      msg.message?.documentMessage?.contextInfo
+
+    if (!contextInfo?.stanzaId) {
+      return sock.sendMessage(
+        jid,
+        {
+          text: '❌ Debes responder al mensaje que deseas eliminar.\n\nEjemplo:\n↩️ Responde al mensaje y escribe *.del*'
+        },
+        { quoted: msg }
+      )
     }
 
-    // Construir la clave del mensaje a eliminar
     const deleteKey = {
-      id: contextInfo.stanzaId,
       remoteJid: jid,
       fromMe: false,
-      participant: contextInfo.participant || jid // El remitente del mensaje citado
+      id: contextInfo.stanzaId,
+      participant:
+        contextInfo.participant ||
+        contextInfo.participantAlt ||
+        jid
     }
 
-    // Intentar eliminar
     try {
-      await sock.sendMessage(jid, { delete: deleteKey })
-      
-      // Enviar confirmación (opcional, puede ser que el mensaje desaparezca rápido)
-      await sock.sendMessage(jid, { 
-        text: `✅ Mensaje eliminado correctamente.`,
-        // No mencionamos a nadie para no generar notificaciones adicionales
-      }, { quoted: msg })
+      await sock.sendMessage(jid, {
+        delete: deleteKey
+      })
+
     } catch (error) {
       console.error('[DELETE] Error al eliminar:', error)
-      // Si falla, puede ser por falta de permisos o mensaje muy antiguo
-      let errorMsg = '❌ No se pudo eliminar el mensaje. '
-      if (error.message && error.message.includes('not-authorized')) {
-        errorMsg += 'Verifica que el bot tenga permisos de administrador.'
-      } else if (error.message && error.message.includes('too-old')) {
-        errorMsg += 'El mensaje es demasiado antiguo para ser eliminado (más de 48 horas).'
+
+      const errorText = String(error?.message || error)
+
+      let texto = '❌ No se pudo eliminar el mensaje.'
+
+      if (
+        errorText.includes('not-authorized') ||
+        errorText.includes('not authorized')
+      ) {
+        texto += '\n⚠️ El bot no tiene permisos suficientes.'
+      } else if (
+        errorText.includes('too-old') ||
+        errorText.includes('expired')
+      ) {
+        texto += '\n⏰ El mensaje puede ser demasiado antiguo para eliminarlo.'
       } else {
-        errorMsg += 'Intenta nuevamente.'
+        texto += '\n🔄 Intenta nuevamente.'
       }
-      return sock.sendMessage(jid, { text: errorMsg }, { quoted: msg })
+
+      return sock.sendMessage(
+        jid,
+        { text: texto },
+        { quoted: msg }
+      )
     }
-  },
+  }
 }
