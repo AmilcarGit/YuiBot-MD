@@ -11,6 +11,7 @@ module.exports = {
   BOT_VERSION: '1.0.0',
   USE_PAIRING_CODE: true,
   PHONE_NUMBER: '',
+  PM2_PROCESS_NAME: 'YuiBot-MD',
   APIS: {
     LEMPI_KEY: 'lem_dc158e5ad3f4f6ee2de2905a222bfb68f61dd754',
   },
