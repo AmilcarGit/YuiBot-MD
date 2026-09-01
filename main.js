@@ -25,13 +25,24 @@ function askQuestion(text) {
   });
 }
 
+async function elegirMetodoDeVinculacion() {
+  console.log(`\n⛧───「 ${config.BOT_NAME} 」───⛧`);
+  console.log('¿Cómo quieres vincular el bot?\n');
+  console.log('  [Enter]  → Vincular con código QR');
+  console.log('  [1]      → Vincular con código de emparejamiento (número de teléfono)\n');
+
+  const respuesta = await askQuestion('Elige una opción: ');
+  return respuesta.trim() === '1';
+}
+
 async function startBot() {
   const { state, saveCreds } = await useMultiFileAuthState(
     path.join(__dirname, 'session')
   );
   const { version } = await fetchLatestBaileysVersion();
 
-  const usePairingCode = !state.creds.registered && config.USE_PAIRING_CODE;
+  const yaVinculado = state.creds.registered;
+  const usePairingCode = !yaVinculado && (await elegirMetodoDeVinculacion());
 
   const sock = makeWASocket({
     version,
