@@ -1,34 +1,27 @@
-// COMANDO DELETE PARA YUIBOT-MD (versión corregida)
 module.exports = {
   name: 'delete',
   aliases: ['del', 'borrar', 'eliminar'],
-  description: 'Elimina un mensaje del grupo para todos (solo admins). Responde al mensaje que quieras borrar.',
+  description: 'Elimina un mensaje del grupo (solo admins, el bot debe ser admin)',
   category: 'grupo',
 
   async execute(sock, msg, args, { config }) {
     const jid = msg.key.remoteJid
 
-    // Verificar que sea un grupo
+    // Solo en grupos
     if (!jid.endsWith('@g.us')) {
       return sock.sendMessage(jid, { text: '❌ Este comando solo funciona en grupos.' }, { quoted: msg })
     }
 
-    // Verificar que el mensaje sea una respuesta
-    if (!msg.message?.extendedTextMessage?.contextInfo?.stanzaId) {
-      return sock.sendMessage(jid, {
-        text: '❌ Debes responder al mensaje que deseas eliminar.\nEjemplo: !delete (respondiendo al mensaje)'
-      }, { quoted: msg })
-    }
-
+    // Obtener metadata del grupo
     let metadata
     try {
       metadata = await sock.groupMetadata(jid)
     } catch (error) {
-      console.error('[DELETE]', error)
+      console.error('[DELETE] Error al obtener metadata:', error)
       return sock.sendMessage(jid, { text: '❌ No se pudo obtener la información del grupo.' }, { quoted: msg })
     }
 
-    // Obtener información del remitente (quien ejecuta el comando)
+    // Verificar que el usuario que ejecuta el comando sea admin o owner
     const remitente = msg.key.participantAlt || msg.key.participant || jid
     const numeroRemitente = remitente.split('@')[0].split(':')[0]
 
@@ -36,54 +29,58 @@ module.exports = {
     const esAdmin = participante?.admin === 'admin' || participante?.admin === 'superadmin'
     const esOwnerBot = config.OWNERS.some((o) => o.numero === numeroRemitente)
 
-    // Verificar permisos del usuario que ejecuta
     if (!esAdmin && !esOwnerBot) {
-      return sock.sendMessage(jid, { text: '⛔ Solo los administradores del grupo pueden eliminar mensajes.' }, { quoted: msg })
+      return sock.sendMessage(jid, { text: '⛔ Solo los administradores del grupo pueden usar este comando.' }, { quoted: msg })
     }
 
-    // Obtener datos del mensaje a eliminar
-    const contextInfo = msg.message.extendedTextMessage.contextInfo
-    const targetId = contextInfo.stanzaId
-    const targetParticipant = contextInfo.participant // JID del autor del mensaje original
+    // Verificar que el bot sea administrador del grupo
+    const botId = sock.user.id.split(':')[0] + '@s.whatsapp.net' // Normalizar ID
+    const botParticipante = metadata.participants.find((p) => p.id === botId)
+    const botEsAdmin = botParticipante?.admin === 'admin' || botParticipante?.admin === 'superadmin'
 
-    if (!targetParticipant) {
-      return sock.sendMessage(jid, {
-        text: '❌ No se pudo identificar al autor del mensaje. Asegúrate de responder al mensaje correctamente.'
+    if (!botEsAdmin) {
+      return sock.sendMessage(jid, { 
+        text: '⚠️ El bot no es administrador del grupo. No puede eliminar mensajes de otros usuarios.' 
       }, { quoted: msg })
     }
 
-    // Verificar si el bot es administrador (necesario solo si el mensaje no es del bot)
-    const botJid = sock.user.id.split(':')[0] + '@s.whatsapp.net'
-    const botEsAdmin = metadata.participants.some(p => p.id === botJid && (p.admin === 'admin' || p.admin === 'superadmin'))
-
-    if (targetParticipant !== botJid && !botEsAdmin) {
-      return sock.sendMessage(jid, {
-        text: '⚠️ El bot necesita ser administrador para eliminar mensajes de otros usuarios.'
+    // Obtener el mensaje citado (al que se respondió)
+    const contextInfo = msg.message?.extendedTextMessage?.contextInfo
+    if (!contextInfo || !contextInfo.stanzaId) {
+      return sock.sendMessage(jid, { 
+        text: '❌ Debes responder al mensaje que deseas eliminar.\nEjemplo: !del (respondiendo al mensaje)' 
       }, { quoted: msg })
     }
 
-    // Preparar el objeto de eliminación
-    const deleteMessage = {
+    // Construir la clave del mensaje a eliminar
+    const deleteKey = {
+      id: contextInfo.stanzaId,
       remoteJid: jid,
-      fromMe: targetParticipant === botJid, // true si es mensaje del bot
-      id: targetId,
-      participant: targetParticipant // obligatorio para mensajes de otros
+      fromMe: false,
+      participant: contextInfo.participant || jid // El remitente del mensaje citado
     }
 
+    // Intentar eliminar
     try {
-      await sock.sendMessage(jid, { delete: deleteMessage })
-
-      // Enviar confirmación (opcional, pero siguiendo el estilo del comando promote)
-      await sock.sendMessage(jid, {
-        text: `✅ Mensaje eliminado por @${numeroRemitente}`,
-        mentions: [remitente]
+      await sock.sendMessage(jid, { delete: deleteKey })
+      
+      // Enviar confirmación (opcional, puede ser que el mensaje desaparezca rápido)
+      await sock.sendMessage(jid, { 
+        text: `✅ Mensaje eliminado correctamente.`,
+        // No mencionamos a nadie para no generar notificaciones adicionales
       }, { quoted: msg })
-
     } catch (error) {
       console.error('[DELETE] Error al eliminar:', error)
-      await sock.sendMessage(jid, {
-        text: '❌ No se pudo eliminar el mensaje. Puede que ya haya sido eliminado o que no tengas permisos suficientes.'
-      }, { quoted: msg })
+      // Si falla, puede ser por falta de permisos o mensaje muy antiguo
+      let errorMsg = '❌ No se pudo eliminar el mensaje. '
+      if (error.message && error.message.includes('not-authorized')) {
+        errorMsg += 'Verifica que el bot tenga permisos de administrador.'
+      } else if (error.message && error.message.includes('too-old')) {
+        errorMsg += 'El mensaje es demasiado antiguo para ser eliminado (más de 48 horas).'
+      } else {
+        errorMsg += 'Intenta nuevamente.'
+      }
+      return sock.sendMessage(jid, { text: errorMsg }, { quoted: msg })
     }
-  }
+  },
 }
