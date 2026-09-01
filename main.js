@@ -97,6 +97,7 @@ async function startBot() {
   sock.ev.on('creds.update', saveCreds);
 
   sock.ev.on('group-participants-update', async (update) => {
+    console.log('[DEBUG WELCOME] Evento recibido:', JSON.stringify(update));
     if (!config.WELCOME_ENABLED) return;
     if (update.action !== 'add') return;
 
