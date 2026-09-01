@@ -8,9 +8,6 @@
 
 </div>
 
-<p align="center">
-  <img src="https://i.postimg.cc/Dzks0qR5/Yui-Bot-MD-ezgif-com-video-to-gif-converter.gif" alt="YuiBot-MD Demo" width="500">
-</p><p align="center">
   <strong>Bot de WhatsApp Multi-Device desarrollado con Node.js y Baileys.</strong>
 </p><p align="center">
   <a href="https://github.com/AmilcarGit/YuiBot-MD/stargazers">
