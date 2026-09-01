@@ -97,31 +97,56 @@ async function startBot() {
   sock.ev.on('creds.update', saveCreds);
 
   sock.ev.on('group-participants.update', async (update) => {
-    console.log('[DEBUG WELCOME] Evento recibido:', JSON.stringify(update));
-    if (!config.WELCOME_ENABLED) return;
-    if (update.action !== 'add') return;
+    console.log('[WELCOME] Evento group-participants.update recibido:', JSON.stringify(update));
+
+    if (!config.WELCOME_ENABLED) {
+      console.log('[WELCOME] WELCOME_ENABLED está en false, se omite el envío.');
+      return;
+    }
+
+    if (update.action !== 'add') {
+      console.log(`[WELCOME] Acción "${update.action}" ignorada (solo se procesa "add").`);
+      return;
+    }
 
     const jidGrupo = update.id;
+    let metadata;
 
     try {
-      const metadata = await sock.groupMetadata(jidGrupo);
+      metadata = await sock.groupMetadata(jidGrupo);
+    } catch (error) {
+      console.error('[WELCOME] No se pudo obtener la metadata del grupo, se aborta:', error);
+      return;
+    }
 
-      for (const participanteJid of update.participants) {
-        const numero = participanteJid.split('@')[0].split(':')[0];
+    for (const participante of update.participants) {
+      try {
+        const esObjeto = participante !== null && typeof participante === 'object';
+        const jidOriginal = esObjeto
+          ? (participante.id || participante.jid || participante.lid)
+          : participante;
+
+        if (!jidOriginal) {
+          console.warn('[WELCOME] Participante sin id/jid reconocible, se omite:', participante);
+          continue;
+        }
+
+        const jidReal = (esObjeto && participante.phoneNumber) || jidOriginal;
+        const numero = String(jidReal).split('@')[0].split(':')[0];
 
         let username = numero;
         try {
-          const [info] = await sock.onWhatsApp(participanteJid);
-          username = info?.notify || numero;
-        } catch {
-          // si falla, se usa el número tal cual
+          const [info] = await sock.onWhatsApp(jidReal);
+          if (info?.notify) username = info.notify;
+        } catch (error) {
+          console.warn(`[WELCOME] onWhatsApp() no disponible para ${jidReal}, se usa el número.`);
         }
 
         let avatar = 'https://i.imgur.com/8Km9tLL.png';
         try {
-          avatar = await sock.profilePictureUrl(participanteJid, 'image');
-        } catch {
-          // sin foto de perfil pública, se usa el ícono de respaldo
+          avatar = await sock.profilePictureUrl(jidReal, 'image');
+        } catch (error) {
+          console.warn(`[WELCOME] Sin foto de perfil pública para ${numero}, se usa la imagen de respaldo.`);
         }
 
         const imagen = await generarImagenBienvenida({
@@ -136,11 +161,13 @@ async function startBot() {
         await sock.sendMessage(jidGrupo, {
           image: imagen,
           caption: `🥀 ¡Bienvenido/a @${numero} a *${metadata.subject}*!`,
-          mentions: [participanteJid],
+          mentions: [jidReal],
         });
+
+        console.log(`[WELCOME] Bienvenida enviada a ${numero} en "${metadata.subject}".`);
+      } catch (error) {
+        console.error('[WELCOME] Error procesando a un participante, se continúa con los demás:', error);
       }
-    } catch (error) {
-      console.error('[WELCOME]', error);
     }
   });
 
