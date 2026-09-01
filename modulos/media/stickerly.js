@@ -1,4 +1,6 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const { crearStickerWebp } = require('../../lib/stickers')
+
 const SEARCH_URL = 'https://api.delirius.online/search/stickerly'
 const DOWNLOAD_URL = 'https://api.delirius.online/download/stickerly'
 
@@ -21,7 +23,7 @@ function esUrlStickerly(texto) {
 module.exports = {
   name: 'stickerly',
   aliases: ['spack', 'stickerpack'],
-  description: 'Busca y envía un pack de stickers desde Sticker.ly',
+  description: 'Busca y envía stickers desde Sticker.ly',
   category: 'media',
 
   async execute(sock, msg, args, { config }) {
@@ -74,10 +76,24 @@ module.exports = {
         throw new Error(`No se pudieron obtener los stickers de "${query}"`)
       }
 
-      for (const st of stickers) {
+      const LIMITE = 10
+      const seleccion = stickers.slice(0, LIMITE)
+
+      await sock.sendMessage(jid, { text: `🔎 Encontrados ${stickers.length} stickers, enviando ${seleccion.length}...` }, { quoted: msg })
+
+      for (const st of seleccion) {
         const url = typeof st === 'string' ? st : st?.url || st?.image
         if (!url) continue
-        await sock.sendMessage(jid, { sticker: { url } }, { quoted: msg })
+
+        try {
+          const respImg = await fetch(url)
+          if (!respImg.ok) continue
+          const buffer = Buffer.from(await respImg.arrayBuffer())
+          const webp = await crearStickerWebp(buffer, { animado: false, config })
+          await sock.sendMessage(jid, { sticker: webp }, { quoted: msg })
+        } catch (errIndividual) {
+          console.error('[STICKERLY] Error en un sticker individual:', errIndividual)
+        }
       }
     } catch (error) {
       console.error('[STICKERLY]', error)
