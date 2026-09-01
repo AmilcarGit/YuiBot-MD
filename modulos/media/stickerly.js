@@ -3,6 +3,7 @@ const { crearStickerWebp } = require('../../lib/stickers')
 
 const SEARCH_URL = 'https://api.delirius.online/search/stickerly'
 const DOWNLOAD_URL = 'https://api.delirius.online/download/stickerly'
+const LIMITE = 10
 
 function extraerLista(json) {
   if (Array.isArray(json)) return json
@@ -18,6 +19,23 @@ function urlDePaquete(item) {
 
 function esUrlStickerly(texto) {
   return /^https?:\/\/(www\.)?sticker\.ly\//i.test(texto)
+}
+
+async function descargarImagenValida(url) {
+  const resp = await fetch(url)
+  if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
+
+  const contentType = resp.headers.get('content-type') || ''
+  if (!contentType.startsWith('image/')) {
+    throw new Error(`No es una imagen válida (content-type: ${contentType || 'desconocido'})`)
+  }
+
+  const buffer = Buffer.from(await resp.arrayBuffer())
+  if (buffer.length < 500) {
+    throw new Error(`Archivo demasiado pequeño (${buffer.length} bytes), probablemente roto`)
+  }
+
+  return buffer
 }
 
 module.exports = {
@@ -76,25 +94,36 @@ module.exports = {
         throw new Error(`No se pudieron obtener los stickers de "${query}"`)
       }
 
-      const LIMITE = 10
       const seleccion = stickers.slice(0, LIMITE)
+      await sock.sendMessage(jid, { text: `🔎 Encontrados ${stickers.length} stickers, procesando ${seleccion.length}...` }, { quoted: msg })
 
-      await sock.sendMessage(jid, { text: `🔎 Encontrados ${stickers.length} stickers, enviando ${seleccion.length}...` }, { quoted: msg })
+      let enviados = 0
+      let fallidos = 0
 
       for (const st of seleccion) {
         const url = typeof st === 'string' ? st : st?.url || st?.image
-        if (!url) continue
+        if (!url) {
+          fallidos++
+          continue
+        }
 
         try {
-          const respImg = await fetch(url)
-          if (!respImg.ok) continue
-          const buffer = Buffer.from(await respImg.arrayBuffer())
+          const buffer = await descargarImagenValida(url)
           const webp = await crearStickerWebp(buffer, { animado: false, config })
           await sock.sendMessage(jid, { sticker: webp }, { quoted: msg })
+          enviados++
         } catch (errIndividual) {
-          console.error('[STICKERLY] Error en un sticker individual:', errIndividual)
+          fallidos++
+          console.error(`[STICKERLY] Falló ${url}:`, errIndividual.message)
         }
       }
+
+      await sock.sendMessage(
+        jid,
+        { text: `✅ Enviados: ${enviados}${fallidos > 0 ? `\n⚠️ Fallidos: ${fallidos} (links rotos de la API)` : ''}` },
+        { quoted: msg }
+      )
+
     } catch (error) {
       console.error('[STICKERLY]', error)
       await sock.sendMessage(
