@@ -1,7 +1,7 @@
 module.exports = {
   name: 'delete',
   aliases: ['del', 'borrar', 'eliminar'],
-  description: 'Elimina un mensaje del grupo (solo admins, el bot debe ser admin)',
+  description: 'Elimina un mensaje del grupo',
   category: 'grupo',
 
   async execute(sock, msg, args, { config }) {
@@ -20,7 +20,7 @@ module.exports = {
     try {
       metadata = await sock.groupMetadata(jid)
     } catch (error) {
-      console.error('[DELETE] Error metadata:', error)
+      console.error('[DELETE] Error obteniendo metadata:', error)
 
       return sock.sendMessage(
         jid,
@@ -32,25 +32,29 @@ module.exports = {
     const remitente =
       msg.key.participantAlt ||
       msg.key.participant ||
-      msg.key.remoteJid
+      jid
 
     const numeroRemitente = remitente
       .split('@')[0]
       .split(':')[0]
 
     const participante = metadata.participants.find(p => {
-      const idNumero = p.id?.split('@')[0]?.split(':')[0]
-      const lidNumero = p.lid?.split('@')[0]?.split(':')[0]
+      const id = p.id?.split('@')[0]?.split(':')[0]
+      const lid = p.lid?.split('@')[0]?.split(':')[0]
+      const phone = p.phoneNumber?.split('@')[0]?.split(':')[0]
 
       return (
-        idNumero === numeroRemitente ||
-        lidNumero === numeroRemitente
+        id === numeroRemitente ||
+        lid === numeroRemitente ||
+        phone === numeroRemitente
       )
     })
 
     const esAdmin =
       participante?.admin === 'admin' ||
-      participante?.admin === 'superadmin'
+      participante?.admin === 'superadmin' ||
+      participante?.isAdmin === true ||
+      participante?.isSuperAdmin === true
 
     const owners = config?.OWNERS || []
 
@@ -58,7 +62,7 @@ module.exports = {
       const numeroOwner =
         typeof o === 'string'
           ? o.replace(/\D/g, '')
-          : String(o.numero || '').replace(/\D/g, '')
+          : String(o?.numero || '').replace(/\D/g, '')
 
       return numeroOwner === numeroRemitente
     })
@@ -68,48 +72,6 @@ module.exports = {
         jid,
         {
           text: '⛔ Solo los administradores del grupo pueden usar este comando.'
-        },
-        { quoted: msg }
-      )
-    }
-
-    const botJid = sock.user?.id
-      ? sock.user.id.split(':')[0] + '@s.whatsapp.net'
-      : null
-
-    const botLid =
-      sock.user?.lid ||
-      sock.user?.lidJid ||
-      null
-
-    const botParticipante = metadata.participants.find(p => {
-      return (
-        p.id === botJid ||
-        p.id === sock.user?.id ||
-        (botLid && p.id === botLid) ||
-        (botLid && p.lid === botLid)
-      )
-    })
-
-    const botEsAdmin =
-      botParticipante?.admin === 'admin' ||
-      botParticipante?.admin === 'superadmin'
-
-    if (!botParticipante) {
-      return sock.sendMessage(
-        jid,
-        {
-          text: '⚠️ No pude identificar al bot dentro de los participantes del grupo.'
-        },
-        { quoted: msg }
-      )
-    }
-
-    if (!botEsAdmin) {
-      return sock.sendMessage(
-        jid,
-        {
-          text: '⚠️ El bot está en el grupo, pero no es administrador.\n\nHaz administrador al bot e inténtalo nuevamente.'
         },
         { quoted: msg }
       )
@@ -134,42 +96,59 @@ module.exports = {
     const deleteKey = {
       remoteJid: jid,
       fromMe: false,
-      id: contextInfo.stanzaId,
-      participant:
-        contextInfo.participant ||
-        contextInfo.participantAlt ||
-        jid
+      id: contextInfo.stanzaId
+    }
+
+    if (contextInfo.participant) {
+      deleteKey.participant = contextInfo.participant
+    }
+
+    if (contextInfo.participantAlt) {
+      deleteKey.participantAlt = contextInfo.participantAlt
     }
 
     try {
       await sock.sendMessage(jid, {
         delete: deleteKey
       })
-
     } catch (error) {
       console.error('[DELETE] Error al eliminar:', error)
 
       const errorText = String(error?.message || error)
 
-      let texto = '❌ No se pudo eliminar el mensaje.'
-
       if (
         errorText.includes('not-authorized') ||
-        errorText.includes('not authorized')
+        errorText.includes('not authorized') ||
+        errorText.includes('forbidden') ||
+        errorText.includes('401')
       ) {
-        texto += '\n⚠️ El bot no tiene permisos suficientes.'
-      } else if (
+        return sock.sendMessage(
+          jid,
+          {
+            text: '⚠️ No puedo eliminar ese mensaje. Verifica que el bot sea administrador del grupo.'
+          },
+          { quoted: msg }
+        )
+      }
+
+      if (
         errorText.includes('too-old') ||
         errorText.includes('expired')
       ) {
-        texto += '\n⏰ El mensaje puede ser demasiado antiguo para eliminarlo.'
-      } else {
-        texto += '\n🔄 Intenta nuevamente.'
+        return sock.sendMessage(
+          jid,
+          {
+            text: '⏰ Ese mensaje es demasiado antiguo para eliminarlo.'
+          },
+          { quoted: msg }
+        )
       }
 
       return sock.sendMessage(
         jid,
-        { text: texto },
+        {
+          text: '❌ No se pudo eliminar el mensaje.'
+        },
         { quoted: msg }
       )
     }
