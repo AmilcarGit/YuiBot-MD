@@ -123,11 +123,20 @@ async function startBot() {
           // si falla, se usa el número tal cual
         }
 
+        let avatar = 'https://i.imgur.com/8Km9tLL.png';
+        try {
+          avatar = await sock.profilePictureUrl(participanteJid, 'image');
+        } catch {
+          // sin foto de perfil pública, se usa el ícono de respaldo
+        }
+
         const imagen = await generarImagenBienvenida({
           username,
           guildName: metadata.subject,
           guildIcon,
           memberCount: metadata.participants.length,
+          avatar,
+          background: config.WELCOME_BACKGROUND,
         });
 
         await sock.sendMessage(jidGrupo, {
