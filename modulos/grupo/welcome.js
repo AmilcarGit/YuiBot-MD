@@ -33,13 +33,6 @@ module.exports = {
       // si falla, se usa el número tal cual
     }
 
-    let guildIcon = 'https://i.imgur.com/8Km9tLL.png'
-    try {
-      guildIcon = await sock.profilePictureUrl(jid, 'image')
-    } catch {
-      // grupo sin foto pública, se usa el ícono de respaldo
-    }
-
     let avatar = 'https://i.imgur.com/8Km9tLL.png'
     try {
       avatar = await sock.profilePictureUrl(remitente, 'image')
@@ -53,10 +46,10 @@ module.exports = {
       const imagen = await generarImagenBienvenida({
         username,
         guildName: metadata.subject,
-        guildIcon,
         memberCount: metadata.participants.length,
         avatar,
         background: config.WELCOME_BACKGROUND,
+        botName: config.BOT_NAME,
       })
 
       await sock.sendMessage(
