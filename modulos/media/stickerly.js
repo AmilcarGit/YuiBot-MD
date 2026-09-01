@@ -22,7 +22,12 @@ function esUrlStickerly(texto) {
 }
 
 async function descargarImagenValida(url) {
-  const resp = await fetch(url)
+  const resp = await fetch(url, {
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Mobile Safari/537.36',
+      'Referer': 'https://sticker.ly/',
+    },
+  })
   if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
 
   const contentType = resp.headers.get('content-type') || ''
