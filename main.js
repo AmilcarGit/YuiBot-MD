@@ -15,6 +15,8 @@ const { loadCommands } = require('./lib/cargador');
 const { getMessageBody, parseCommand, isOwner } = require('./lib/handler');
 const config = require('./defaults');
 
+let metodoElegido = null; // se decide una sola vez por ejecución, no en cada reconexión
+
 function askQuestion(text) {
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
   return new Promise((resolve) => {
@@ -42,7 +44,12 @@ async function startBot() {
   const { version } = await fetchLatestBaileysVersion();
 
   const yaVinculado = state.creds.registered;
-  const usePairingCode = !yaVinculado && (await elegirMetodoDeVinculacion());
+
+  if (metodoElegido === null) {
+    metodoElegido = yaVinculado ? false : await elegirMetodoDeVinculacion();
+  }
+
+  const usePairingCode = !yaVinculado && metodoElegido;
 
   const sock = makeWASocket({
     version,
@@ -79,6 +86,7 @@ async function startBot() {
       const statusCode = new Boom(lastDisconnect?.error)?.output?.statusCode;
       const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
       console.log('❌ Conexión cerrada.', shouldReconnect ? 'Reconectando...' : 'Sesión cerrada, borra /session y vuelve a escanear.');
+      if (!shouldReconnect) metodoElegido = null; // si te desloguearon de verdad, vuelve a preguntar la próxima vez
       if (shouldReconnect) startBot();
     } else if (connection === 'open') {
       console.log(`✅ ${config.BOT_NAME} conectado a WhatsApp.`);
