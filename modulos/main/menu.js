@@ -5,6 +5,7 @@ const EMOJIS_CATEGORIA = {
   main: '🏠',
   download: '📥',
   owner: '👑',
+  media: '🖼️',
 }
 
 module.exports = {
