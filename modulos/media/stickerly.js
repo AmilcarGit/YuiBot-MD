@@ -1,129 +1,104 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const { APIS } = require('../../defaults')
 const { crearStickerWebp } = require('../../lib/stickers')
 
-const SEARCH_URL = 'https://api.delirius.online/search/stickerly'
-const DOWNLOAD_URL = 'https://api.delirius.online/download/stickerly'
-const LIMITE = 10
+const SEARCH_URL = 'https://api.lempi.lat/s/stickers'
+const LIMITE_STICKERS = 10
 
-function extraerLista(json) {
-  if (Array.isArray(json)) return json
-  if (Array.isArray(json?.data)) return json.data
-  if (Array.isArray(json?.data?.result)) return json.data.result
-  if (Array.isArray(json?.result)) return json.result
-  return []
-}
-
-function urlDePaquete(item) {
-  return item?.url || item?.link || item?.share_url || item?.packUrl || null
-}
-
-function esUrlStickerly(texto) {
-  return /^https?:\/\/(www\.)?sticker\.ly\//i.test(texto)
-}
-
-async function descargarImagenValida(url) {
-  const resp = await fetch(url, {
-    headers: {
-      'User-Agent': 'Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Mobile Safari/537.36',
-      'Referer': 'https://sticker.ly/',
-    },
-  })
-  if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
-
-  const buffer = Buffer.from(await resp.arrayBuffer())
-
-  const esRiffValido = buffer.length > 12 && buffer.toString('ascii', 0, 4) === 'RIFF' && buffer.toString('ascii', 8, 12) === 'WEBP'
-
-  if (!esRiffValido) {
-    throw new Error(`Link vencido o inválido (la API no devolvió un WebP real, ${buffer.length} bytes)`)
-  }
-
-  return buffer
+function extensionDe(url) {
+  const match = url.match(/\.(\w+)(\?|$)/)
+  return match ? match[1].toLowerCase() : 'png'
 }
 
 module.exports = {
   name: 'stickerly',
   aliases: ['spack', 'stickerpack'],
-  description: 'Busca y envía stickers desde Sticker.ly',
+  description: 'Busca y envía un paquete de stickers',
   category: 'media',
 
   async execute(sock, msg, args, { config }) {
     const jid = msg.key.remoteJid
     const prefijo = config.PREFIXES[0]
-    const query = args.join(' ').trim()
+
+    const partes = args.join(' ').trim().split(/\s+/)
+    const ultimoEsNumero = /^\d+$/.test(partes[partes.length - 1])
+    const numeroPack = ultimoEsNumero ? parseInt(partes.pop(), 10) : 1
+    const query = partes.join(' ').trim()
 
     if (!query) {
       return sock.sendMessage(
         jid,
         {
           text:
-            `❌ Escribe una búsqueda o pega el link de un pack de sticker.ly.\n` +
-            `📌 Ejemplo: ${prefijo}stickerly my melody\n` +
-            `📌 Ejemplo: ${prefijo}stickerly https://sticker.ly/s/MPTYYK`
+            `❌ Escribe qué quieres buscar.\n\n` +
+            `📌 Ejemplo: ${prefijo}stickerly gatitos\n` +
+            `📌 Para elegir otro paquete de los resultados: ${prefijo}stickerly gatitos 3`
         },
         { quoted: msg }
       )
     }
 
     try {
-      let urlPaquete = query
+      const url = `${SEARCH_URL}?q=${encodeURIComponent(query)}&apikey=${encodeURIComponent(APIS.LEMPI_KEY)}`
+      const resp = await fetch(url)
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
 
-      if (!esUrlStickerly(query)) {
-        const respBusqueda = await fetch(`${SEARCH_URL}?query=${encodeURIComponent(query)}`)
-        if (!respBusqueda.ok) throw new Error(`La búsqueda respondió con estado ${respBusqueda.status}`)
+      const data = await resp.json()
 
-        const jsonBusqueda = await respBusqueda.json()
-        const lista = extraerLista(jsonBusqueda)
-
-        if (!lista.length) {
-          throw new Error(`No se encontraron packs de stickers para "${query}"`)
-        }
-
-        urlPaquete = urlDePaquete(lista[0])
-        if (!urlPaquete) {
-          throw new Error('No se pudo obtener la URL del primer resultado')
-        }
+      if (!data?.status || !Array.isArray(data?.resultados) || data.resultados.length === 0) {
+        throw new Error(`No se encontraron paquetes de stickers para "${query}"`)
       }
 
-      const respDescarga = await fetch(`${DOWNLOAD_URL}?url=${encodeURIComponent(urlPaquete)}`)
-      if (!respDescarga.ok) throw new Error(`La descarga respondió con estado ${respDescarga.status}`)
+      const paquetes = data.resultados
 
-      const jsonDescarga = await respDescarga.json()
-      const stickers = extraerLista(
-        jsonDescarga?.data?.stickers || jsonDescarga?.stickers || jsonDescarga
+      if (numeroPack < 1 || numeroPack > paquetes.length) {
+        let lista = `❌ Ese paquete no existe. Hay ${paquetes.length} disponibles para "${query}":\n\n`
+        paquetes.forEach((p, i) => {
+          lista += `${i + 1}. ${p.titulo} — por ${p.autor} (${p.stickers.length} stickers)\n`
+        })
+        lista += `\n📌 Usa: ${prefijo}stickerly ${query} <número>`
+        return sock.sendMessage(jid, { text: lista }, { quoted: msg })
+      }
+
+      const paquete = paquetes[numeroPack - 1]
+      const seleccion = paquete.stickers.slice(0, LIMITE_STICKERS)
+
+      await sock.sendMessage(
+        jid,
+        {
+          text:
+            `📦 "${paquete.titulo}" por ${paquete.autor}\n` +
+            `Enviando ${seleccion.length} de ${paquete.stickers.length} stickers...`
+        },
+        { quoted: msg }
       )
-
-      if (!stickers.length) {
-        throw new Error(`No se pudieron obtener los stickers de "${query}"`)
-      }
-
-      const seleccion = stickers.slice(0, LIMITE)
-      await sock.sendMessage(jid, { text: `🔎 Encontrados ${stickers.length} stickers, procesando ${seleccion.length}...` }, { quoted: msg })
 
       let enviados = 0
       let fallidos = 0
 
-      for (const st of seleccion) {
-        const url = typeof st === 'string' ? st : st?.url || st?.image
-        if (!url) {
-          fallidos++
-          continue
-        }
-
+      for (const urlSticker of seleccion) {
         try {
-          const buffer = await descargarImagenValida(url)
-          const webp = await crearStickerWebp(buffer, { animado: false, config, extensionEntrada: 'webp' })
+          const respImg = await fetch(urlSticker)
+          if (!respImg.ok) throw new Error(`HTTP ${respImg.status}`)
+
+          const buffer = Buffer.from(await respImg.arrayBuffer())
+          if (buffer.length < 200) throw new Error('Archivo demasiado pequeño')
+
+          const ext = extensionDe(urlSticker)
+          const esAnimado = ext === 'gif'
+
+          const webp = await crearStickerWebp(buffer, { animado: esAnimado, config, extensionEntrada: ext })
           await sock.sendMessage(jid, { sticker: webp }, { quoted: msg })
           enviados++
         } catch (errIndividual) {
           fallidos++
-          console.error(`[STICKERLY] Falló ${url}:`, errIndividual.message)
+          console.error(`[STICKERLY] Falló ${urlSticker}:`, errIndividual.message)
         }
       }
 
       await sock.sendMessage(
         jid,
-        { text: `✅ Enviados: ${enviados}${fallidos > 0 ? `\n⚠️ Fallidos: ${fallidos} (links vencidos de la API)` : ''}` },
+        { text: `✅ Enviados: ${enviados}${fallidos > 0 ? `\n⚠️ Fallidos: ${fallidos}` : ''}` },
         { quoted: msg }
       )
 
