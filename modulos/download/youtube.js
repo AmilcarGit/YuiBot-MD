@@ -1,6 +1,6 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
 const { pedirVideo } = require('../../lib/youtube')
-const LIMITE_VIDEO_MB = 300
+const LIMITE_VIDEO_MB = 3000
 
 module.exports = {
   name: 'ytv',
