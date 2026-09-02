@@ -1,4 +1,6 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const fs = require('fs')
+
 const ORDEN_CATEGORIAS = ['main', 'usuario', 'grupo', 'download', 'media', 'diversion', 'utilidad', 'owner']
 
 const CATEGORIAS = {
@@ -54,6 +56,24 @@ module.exports = {
     }
 
     texto += `\n🌸 _${config.BOT_NAME}_`
+
+    const medios = config.MENU_IMAGES || []
+    const elegido = medios.length ? medios[Math.floor(Math.random() * medios.length)] : null
+
+    if (elegido) {
+      try {
+        const buffer = fs.readFileSync(elegido.ruta)
+
+        if (elegido.animado) {
+          await sock.sendMessage(jid, { video: buffer, caption: texto, gifPlayback: true })
+        } else {
+          await sock.sendMessage(jid, { image: buffer, caption: texto })
+        }
+        return
+      } catch (error) {
+        console.error('[MENU] No se pudo leer el archivo de MENU_IMAGES, se envía solo texto:', error.message)
+      }
+    }
 
     await sock.sendMessage(jid, { text: texto })
   },
