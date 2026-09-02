@@ -15,6 +15,12 @@ module.exports = {
   PM2_PROCESS_NAME: 'YuiBot-MD',
   WELCOME_ENABLED: true,
   WELCOME_BACKGROUND: 'https://files.catbox.moe/vajp5d.jpeg',
+  PROFILE_BACKGROUND: 'https://files.catbox.moe/9fqfuv.png',
+  XP: {
+    COOLDOWN_MS: 60000,
+    MIN: 5,
+    MAX: 15,
+  },
   APIS: {
     LEMPI_KEY: 'lem_dc158e5ad3f4f6ee2de2905a222bfb68f61dd754',
     EVOGB_KEY: 'evogb-jRhjmDSp',
