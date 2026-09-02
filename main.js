@@ -15,6 +15,7 @@ const { loadCommands } = require('./lib/cargador');
 const { getMessageBody, parseCommand, isOwner } = require('./lib/handler');
 const { generarImagenBienvenida } = require('./lib/welcome');
 const { agregarXpConCooldown } = require('./lib/db');
+const { contieneLink, detectarFlood, esAdminDeGrupo } = require('./lib/moderacion');
 const config = require('./defaults');
 
 let metodoElegido = null;
@@ -204,6 +205,45 @@ async function startBot() {
         }
       } catch (error) {
         console.error('[XP] Error actualizando experiencia:', error);
+      }
+
+      const antilinkActivo = config.MODERACION?.ANTILINK;
+      const antifloodActivo = config.MODERACION?.ANTIFLOOD?.ENABLED;
+
+      if (antilinkActivo || antifloodActivo) {
+        try {
+          const esOwnerBot = isOwner(remitente, config);
+
+          if (!esOwnerBot) {
+            let metadata = null;
+
+            if (antilinkActivo && contieneLink(body)) {
+              metadata = metadata || await sock.groupMetadata(jid);
+              if (!esAdminDeGrupo(metadata, numeroRemitente)) {
+                console.log(`[MODERACION] Link detectado de ${numeroRemitente}, se elimina el mensaje.`);
+                await sock.sendMessage(jid, { delete: msg.key });
+                await sock.sendMessage(jid, {
+                  text: `🚫 @${numeroRemitente}, no se permiten enlaces en este grupo.`,
+                  mentions: [remitente],
+                });
+                return;
+              }
+            }
+
+            if (antifloodActivo) {
+              metadata = metadata || await sock.groupMetadata(jid);
+              if (!esAdminDeGrupo(metadata, numeroRemitente) && detectarFlood(numeroRemitente, config.MODERACION.ANTIFLOOD)) {
+                console.log(`[MODERACION] Flood detectado de ${numeroRemitente}.`);
+                await sock.sendMessage(jid, {
+                  text: `⚠️ @${numeroRemitente}, estás enviando mensajes muy rápido. Tranquilo un momento.`,
+                  mentions: [remitente],
+                });
+              }
+            }
+          }
+        } catch (error) {
+          console.error('[MODERACION] Error al procesar antilink/antiflood:', error);
+        }
       }
     }
 
