@@ -1,18 +1,15 @@
+const os = require('os');
 const fs = require('fs');
 const path = require('path');
-const os = require('os');
-
-const COMMAND_CACHE_TIME = 30000;
-let commandCache = {
-  count: 0,
-  categories: {},
-  updated: 0
-};
+const statistics = require('./estadisticas');
 
 function formatBytes(bytes) {
-  if (!Number.isFinite(bytes) || bytes < 0) return '0 B';
+  if (!Number.isFinite(bytes)) {
+    return '0 B';
+  }
 
   const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+
   let value = bytes;
   let index = 0;
 
@@ -34,181 +31,57 @@ function formatUptime(seconds) {
   seconds %= 3600;
 
   const minutes = Math.floor(seconds / 60);
-  const secs = seconds % 60;
+  seconds %= 60;
 
   const parts = [];
 
   if (days) parts.push(`${days}d`);
   if (hours) parts.push(`${hours}h`);
   if (minutes) parts.push(`${minutes}m`);
-  if (secs || !parts.length) parts.push(`${secs}s`);
+  if (seconds || !parts.length) parts.push(`${seconds}s`);
 
   return parts.join(' ');
 }
 
-function getDateInfo() {
-  const now = new Date();
-
-  return {
-    date: now.toLocaleDateString('es-PE', {
-      timeZone: 'America/Lima',
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    }),
-    time: now.toLocaleTimeString('es-PE', {
-      timeZone: 'America/Lima',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false
-    })
-  };
+function formatDate(date = new Date()) {
+  return new Intl.DateTimeFormat('es-PE', {
+    dateStyle: 'full',
+    timeStyle: 'medium',
+    timeZone: 'America/Lima'
+  }).format(date);
 }
 
-function getCpuUsage() {
-  const cpus = os.cpus();
-
-  if (!cpus || !cpus.length) {
-    return {
-      model: 'Desconocido',
-      cores: 0,
-      speed: 0
-    };
-  }
-
-  const totalSpeed = cpus.reduce((sum, cpu) => sum + (cpu.speed || 0), 0);
-
-  return {
-    model: cpus[0]?.model || 'Desconocido',
-    cores: cpus.length,
-    speed: Math.round(totalSpeed / cpus.length)
-  };
-}
-
-function getMemoryInfo() {
-  const memory = process.memoryUsage();
-
-  return {
-    rss: memory.rss,
-    heapUsed: memory.heapUsed,
-    heapTotal: memory.heapTotal,
-    external: memory.external,
-    systemTotal: os.totalmem(),
-    systemFree: os.freemem()
-  };
-}
-
-function getMemoryPercent() {
-  const total = os.totalmem();
-  const free = os.freemem();
-
-  if (!total) return 0;
-
-  return ((total - free) / total) * 100;
-}
-
-function getNodeInfo() {
-  return {
-    version: process.version,
-    platform: process.platform,
-    arch: process.arch,
-    pid: process.pid
-  };
-}
-
-function getConnectionInfo(sock) {
-  const connection =
-    sock?.ws?.socket?.readyState === 1
-      ? true
-      : Boolean(sock?.user);
-
-  let status = '🔴 DESCONOCIDO';
-
-  if (connection) {
-    status = '🟢 CONECTADO';
-  }
-
-  const user = sock?.user || {};
-
-  const jid = user?.id || '';
-  const name =
-    user?.name ||
-    user?.verifiedName ||
-    'YuiBot-MD';
-
-  return {
-    connected: connection,
-    status,
-    jid,
-    name
-  };
-}
-
-async function getGroupsInfo(sock) {
-  try {
-    if (!sock || typeof sock.groupFetchAllParticipating !== 'function') {
-      return {
-        available: false,
-        groups: 0,
-        participants: 0
-      };
-    }
-
-    const groups = await sock.groupFetchAllParticipating();
-    const list = Object.values(groups || {});
-
-    let participants = 0;
-
-    for (const group of list) {
-      if (Array.isArray(group?.participants)) {
-        participants += group.participants.length;
-      }
-    }
-
-    return {
-      available: true,
-      groups: list.length,
-      participants
-    };
-  } catch {
-    return {
-      available: false,
-      groups: 0,
-      participants: 0
-    };
-  }
-}
-
-function findCommandDirectories() {
-  const cwd = process.cwd();
-
-  const candidates = [
-    path.join(cwd, 'commands'),
-    path.join(cwd, 'command'),
-    path.join(cwd, 'plugins'),
-    path.join(cwd, 'plugin'),
-    path.join(cwd, 'src', 'commands'),
-    path.join(cwd, 'src', 'command'),
-    path.join(cwd, 'src', 'plugins'),
-    path.join(cwd, 'src', 'plugin'),
-    path.join(cwd, 'lib', 'commands'),
-    path.join(cwd, 'lib', 'plugins')
+function getCommandDirectories() {
+  return [
+    path.join(process.cwd(), 'comandos'),
+    path.join(process.cwd(), 'commands'),
+    path.join(process.cwd(), 'plugins'),
+    path.join(process.cwd(), 'plugins', 'commands'),
+    path.join(process.cwd(), 'src', 'commands'),
+    path.join(process.cwd(), 'src', 'comandos')
   ];
-
-  return candidates.filter(directory => {
-    try {
-      return fs.existsSync(directory) && fs.statSync(directory).isDirectory();
-    } catch {
-      return false;
-    }
-  });
 }
 
-function scanCommands(directory, result, visited) {
-  if (!directory || visited.has(directory)) return;
+function countCommandFiles(directory, visited = new Set()) {
+  if (!fs.existsSync(directory)) {
+    return 0;
+  }
 
-  visited.add(directory);
+  let total = 0;
+
+  let realDirectory;
+
+  try {
+    realDirectory = fs.realpathSync(directory);
+  } catch {
+    return 0;
+  }
+
+  if (visited.has(realDirectory)) {
+    return 0;
+  }
+
+  visited.add(realDirectory);
 
   let entries;
 
@@ -217,412 +90,353 @@ function scanCommands(directory, result, visited) {
       withFileTypes: true
     });
   } catch {
-    return;
+    return 0;
   }
 
   for (const entry of entries) {
     const fullPath = path.join(directory, entry.name);
 
-    if (entry.name === 'node_modules') continue;
-    if (entry.name.startsWith('.')) continue;
-
     if (entry.isDirectory()) {
-      scanCommands(fullPath, result, visited);
+      total += countCommandFiles(fullPath, visited);
       continue;
     }
 
-    if (!entry.isFile()) continue;
-
-    const extension = path.extname(entry.name).toLowerCase();
-
-    if (!['.js', '.cjs', '.mjs'].includes(extension)) {
+    if (!entry.isFile()) {
       continue;
     }
 
-    try {
-      const source = fs.readFileSync(fullPath, 'utf8');
+    if (!entry.name.endsWith('.js')) {
+      continue;
+    }
 
-      if (!/module\.exports\s*=/.test(source)) {
-        continue;
-      }
+    if (
+      entry.name === 'main.js' ||
+      entry.name === 'crear-comando.js' ||
+      entry.name === 'estadisticas.js'
+    ) {
+      continue;
+    }
 
-      if (
-        !/name\s*:\s*['"`]/.test(source) &&
-        !/name\s*:\s*`/.test(source)
-      ) {
-        continue;
-      }
-
-      const categoryMatch = source.match(
-        /category\s*:\s*['"`]([^'"`]+)['"`]/
-      );
-
-      const category = categoryMatch
-        ? categoryMatch[1].toLowerCase()
-        : 'sin categoría';
-
-      result.count++;
-      result.categories[category] =
-        (result.categories[category] || 0) + 1;
-    } catch {}
+    total++;
   }
+
+  return total;
 }
 
-function getCommandInfo() {
-  const now = Date.now();
-
-  if (now - commandCache.updated < COMMAND_CACHE_TIME) {
-    return commandCache;
-  }
-
-  const result = {
-    count: 0,
-    categories: {},
-    updated: now
-  };
-
-  const directories = findCommandDirectories();
+function countCommands() {
   const visited = new Set();
+  let total = 0;
 
-  for (const directory of directories) {
-    scanCommands(directory, result, visited);
+  for (const directory of getCommandDirectories()) {
+    total += countCommandFiles(directory, visited);
   }
 
-  commandCache = result;
-
-  return result;
-}
-
-function getCategoryText(categories) {
-  const entries = Object.entries(categories || {});
-
-  if (!entries.length) {
-    return 'No disponible';
-  }
-
-  return entries
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 10)
-    .map(([name, count]) => `${name}: ${count}`)
-    .join(' • ');
-}
-
-function getLoadAverage() {
-  const load = os.loadavg();
-
-  if (!load || !load.length) {
-    return 'No disponible';
-  }
-
-  return load
-    .map(value => Number(value).toFixed(2))
-    .join(' / ');
-}
-
-function getProcessInfo() {
-  const usage = process.cpuUsage();
-
-  const user = usage.user / 1000000;
-  const system = usage.system / 1000000;
-
-  return {
-    user,
-    system
-  };
-}
-
-function getNetworkStatus(sock) {
-  if (!sock) {
-    return '🔴 No disponible';
-  }
-
-  if (sock.ws?.socket?.readyState === 1) {
-    return '🟢 Activa';
-  }
-
-  if (sock.user) {
-    return '🟢 Activa';
-  }
-
-  return '🟡 Desconocida';
+  return total;
 }
 
 function getBotName(sock) {
-  return (
-    sock?.user?.name ||
-    sock?.user?.verifiedName ||
-    'YuiBot-MD'
-  );
+  try {
+    const user = sock?.user;
+
+    if (user?.name) {
+      return user.name;
+    }
+
+    if (user?.verifiedName) {
+      return user.verifiedName;
+    }
+
+    if (user?.id) {
+      return user.id.split(':')[0];
+    }
+  } catch {}
+
+  return 'YuiBot-MD';
 }
 
-function buildHeader(sock) {
-  const connection = getConnectionInfo(sock);
+function getConnectionStatus(sock) {
+  try {
+    if (!sock) {
+      return '❌ Sin conexión';
+    }
 
-  return [
-    '╭━━━〔 🤖 YUIBOT-MD 〕━━━╮',
-    `┃ ${connection.status}`,
-    `┃ 👤 ${getBotName(sock)}`
-  ];
-}
+    if (sock.ws?.isOpen) {
+      return '🟢 Conectado';
+    }
 
-function buildGeneral(info) {
-  return [
-    '╭━━━〔 🤖 INFOBOT 〕━━━╮',
-    '┃',
-    `┃ 🟢 Estado: ${info.connection.status}`,
-    `┃ 📡 Conexión: ${info.network}`,
-    `┃ ⚡ Latencia: ${info.latency} ms`,
-    `┃`,
-    `┃ ⏱️ Uptime: ${info.uptime}`,
-    `┃ 📅 Fecha: ${info.date}`,
-    `┃ 🕐 Hora: ${info.time}`,
-    `┃`,
-    `┃ 👥 Grupos: ${info.groups}`,
-    `┃ 👤 Participantes: ${info.participants}`,
-    `┃ 🧩 Comandos: ${info.commands}`,
-    `┃`,
-    `┃ 💾 RAM del proceso: ${formatBytes(info.memory.rss)}`,
-    `┃ 🧠 Heap: ${formatBytes(info.memory.heapUsed)}`,
-    `┃ 🖥️ RAM sistema: ${info.systemMemoryPercent.toFixed(1)}%`,
-    '┃',
-    `┃ 🟢 WhatsApp: ${info.network}`,
-    '┃',
-    '╰━━━━━━━━━━━━━━━━━━━━━━╯',
-    '',
-    'Usa:',
-    '• .infobot todo',
-    '• .infobot sistema',
-    '• .infobot conexion',
-    '• .infobot grupos'
-  ].join('\n');
-}
+    if (sock.user) {
+      return '🟡 Sesión activa';
+    }
 
-function buildSystem(info) {
-  return [
-    '╭━━━〔 🖥️ SISTEMA 〕━━━╮',
-    '┃',
-    `┃ 🤖 Bot: ${getBotName(info.sock)}`,
-    `┃ ⏱️ Uptime: ${info.uptime}`,
-    `┃`,
-    `┃ 🟢 Node.js: ${info.node.version}`,
-    `┃ 📦 PID: ${info.node.pid}`,
-    `┃ 💻 SO: ${info.node.platform}`,
-    `┃ 🏗️ Arquitectura: ${info.node.arch}`,
-    `┃`,
-    `┃ 🧠 CPU: ${info.cpu.model}`,
-    `┃ 🔢 Núcleos: ${info.cpu.cores}`,
-    `┃ ⚙️ Frecuencia: ${info.cpu.speed} MHz`,
-    `┃ 📊 Carga: ${info.load}`,
-    `┃`,
-    `┃ 💾 RAM proceso: ${formatBytes(info.memory.rss)}`,
-    `┃ 🧠 Heap usado: ${formatBytes(info.memory.heapUsed)}`,
-    `┃ 🧠 Heap total: ${formatBytes(info.memory.heapTotal)}`,
-    `┃ 📦 Externa: ${formatBytes(info.memory.external)}`,
-    `┃`,
-    `┃ 💽 RAM total: ${formatBytes(info.memory.systemTotal)}`,
-    `┃ 🟢 RAM libre: ${formatBytes(info.memory.systemFree)}`,
-    `┃ 📊 Uso RAM: ${info.systemMemoryPercent.toFixed(2)}%`,
-    '┃',
-    '╰━━━━━━━━━━━━━━━━━━━━━━╯'
-  ].join('\n');
-}
-
-function buildConnection(info) {
-  return [
-    '╭━━━〔 📡 CONEXIÓN 〕━━━╮',
-    '┃',
-    `┃ 🟢 Estado: ${info.connection.status}`,
-    `┃ 📶 WebSocket: ${info.network}`,
-    `┃ ⚡ Latencia: ${info.latency} ms`,
-    `┃`,
-    `┃ 👤 Nombre: ${getBotName(info.sock)}`,
-    `┃ 🆔 JID: ${info.connection.jid || 'No disponible'}`,
-    `┃`,
-    `┃ 📅 Fecha: ${info.date}`,
-    `┃ 🕐 Hora: ${info.time}`,
-    '┃',
-    '╰━━━━━━━━━━━━━━━━━━━━━━╯'
-  ].join('\n');
-}
-
-function buildGroups(info) {
-  if (!info.groupAvailable) {
-    return [
-      '╭━━━〔 👥 GRUPOS 〕━━━╮',
-      '┃',
-      '┃ ⚠️ La información de grupos',
-      '┃ no está disponible en este momento.',
-      '┃',
-      '╰━━━━━━━━━━━━━━━━━━━━━━╯'
-    ].join('\n');
+    return '🔴 Desconectado';
+  } catch {
+    return '⚪ Desconocido';
   }
-
-  return [
-    '╭━━━〔 👥 ESTADÍSTICAS 〕━━━╮',
-    '┃',
-    `┃ 👥 Grupos: ${info.groups}`,
-    `┃ 👤 Participantes: ${info.participants}`,
-    `┃ 📊 Promedio: ${info.groups > 0
-      ? (info.participants / info.groups).toFixed(1)
-      : '0'} usuarios/grupo`,
-    '┃',
-    `┃ 🧩 Comandos detectados: ${info.commands}`,
-    '┃',
-    '╰━━━━━━━━━━━━━━━━━━━━━━╯'
-  ].join('\n');
 }
 
-function buildEverything(info) {
-  const categoryText = getCategoryText(info.commandCategories);
+async function getGroups(sock) {
+  try {
+    if (!sock?.groupFetchAllParticipating) {
+      return {
+        groups: 0,
+        participants: 0
+      };
+    }
 
-  return [
-    '╭━━━〔 🤖 YUIBOT-MD 〕━━━╮',
-    '┃',
-    `┃ 🟢 Estado: ${info.connection.status}`,
-    `┃ 📡 WhatsApp: ${info.network}`,
-    `┃ ⚡ Latencia: ${info.latency} ms`,
-    `┃`,
-    '┃ 📊 BOT',
-    `┃ ⏱️ Uptime: ${info.uptime}`,
-    `┃ 🧩 Comandos: ${info.commands}`,
-    `┃ 👥 Grupos: ${info.groups}`,
-    `┃ 👤 Participantes: ${info.participants}`,
-    `┃`,
-    '┃ 🖥️ SISTEMA',
-    `┃ 🟢 Node: ${info.node.version}`,
-    `┃ 💻 SO: ${info.node.platform}`,
-    `┃ 🏗️ CPU: ${info.cpu.cores} núcleos`,
-    `┃ ⚙️ CPU: ${info.cpu.speed} MHz`,
-    `┃ 📊 Carga: ${info.load}`,
-    `┃`,
-    '┃ 💾 MEMORIA',
-    `┃ RAM proceso: ${formatBytes(info.memory.rss)}`,
-    `┃ Heap usado: ${formatBytes(info.memory.heapUsed)}`,
-    `┃ Heap total: ${formatBytes(info.memory.heapTotal)}`,
-    `┃ RAM sistema: ${info.systemMemoryPercent.toFixed(2)}%`,
-    `┃`,
-    '┃ 📚 CATEGORÍAS',
-    `┃ ${categoryText}`,
-    `┃`,
-    `┃ 📅 ${info.date}`,
-    `┃ 🕐 ${info.time}`,
-    '┃',
-    '╰━━━━━━━━━━━━━━━━━━━━━━╯'
-  ].join('\n');
+    const groups =
+      await sock.groupFetchAllParticipating();
+
+    const list = Object.values(groups || {});
+
+    let participants = 0;
+
+    for (const group of list) {
+      participants += Array.isArray(group.participants)
+        ? group.participants.length
+        : 0;
+    }
+
+    return {
+      groups: list.length,
+      participants
+    };
+  } catch {
+    return {
+      groups: 0,
+      participants: 0
+    };
+  }
 }
 
-async function collectInfo(sock, startTime) {
-  const connection = getConnectionInfo(sock);
-  const memory = getMemoryInfo();
-  const cpu = getCpuUsage();
-  const node = getNodeInfo();
-  const dateInfo = getDateInfo();
-  const commandInfo = getCommandInfo();
-
-  const groups = await getGroupsInfo(sock);
-
-  const latency = Math.max(
-    0,
-    Date.now() - startTime
-  );
+function getSystemInfo() {
+  const memory = process.memoryUsage();
 
   return {
-    sock,
-    connection,
-    network: getNetworkStatus(sock),
-    memory,
-    cpu,
-    node,
-    groups: groups.groups,
-    participants: groups.participants,
-    groupAvailable: groups.available,
-    commands: commandInfo.count,
-    commandCategories: commandInfo.categories,
-    uptime: formatUptime(process.uptime()),
-    date: dateInfo.date,
-    time: dateInfo.time,
-    latency,
-    load: getLoadAverage(),
-    processCpu: getProcessInfo(),
-    systemMemoryPercent: getMemoryPercent()
+    node: process.version,
+    platform: process.platform,
+    architecture: process.arch,
+    pid: process.pid,
+    cpu: os.cpus().length,
+    cpuModel: os.cpus()[0]?.model || 'Desconocido',
+    memory: memory.rss,
+    totalMemory: os.totalmem(),
+    freeMemory: os.freemem()
   };
 }
 
-function getMode(args) {
-  const value = args
-    .join(' ')
-    .trim()
-    .toLowerCase();
+function buildHeader() {
+  return [
+    '╭━━━〔 🤖 YUIBOT-MD 〕━━━╮',
+    '┃ 📊 INFORMACIÓN EN TIEMPO REAL',
+    '╰━━━━━━━━━━━━━━━━━━━━━━╯'
+  ].join('\n');
+}
 
-  if (
-    ['todo', 'all', 'completo', 'full'].includes(value)
-  ) {
-    return 'todo';
+function buildGeneralInfo(sock, groups) {
+  const stats = statistics.getFormattedSnapshot();
+  const system = getSystemInfo();
+
+  return [
+    buildHeader(),
+    '',
+    `🤖 Bot: ${getBotName(sock)}`,
+    `📡 Estado: ${getConnectionStatus(sock)}`,
+    `⏱️ Uptime: ${stats.uptimeFormatted}`,
+    `📅 Fecha: ${formatDate()}`,
+    '',
+    '╭─〔 📈 ESTADÍSTICAS 〕',
+    `│ 📨 Recibidos: ${stats.messagesReceived}`,
+    `│ 📤 Enviados: ${stats.messagesSent}`,
+    `│ ⚡ Comandos: ${stats.commandsExecuted}`,
+    `│ ❌ Errores: ${stats.errors}`,
+    `│ 🔄 Reinicios: ${stats.restarts}`,
+    `│ 🔌 Reconexiones: ${stats.reconnections}`,
+    '╰────────────────────',
+    '',
+    '╭─〔 👥 WHATSAPP 〕',
+    `│ 👥 Grupos: ${groups.groups}`,
+    `│ 🧑‍🤝‍🧑 Participantes: ${groups.participants}`,
+    '╰────────────────────',
+    '',
+    '╭─〔 💻 SISTEMA 〕',
+    `│ 🟢 Node.js: ${system.node}`,
+    `│ 🖥️ Plataforma: ${system.platform}`,
+    `│ 🧩 Arquitectura: ${system.architecture}`,
+    `│ ⚙️ CPU: ${system.cpu} núcleos`,
+    `│ 🧠 RAM proceso: ${formatBytes(system.memory)}`,
+    `│ 💾 RAM total: ${formatBytes(system.totalMemory)}`,
+    `│ 📦 RAM libre: ${formatBytes(system.freeMemory)}`,
+    `│ 🆔 PID: ${system.pid}`,
+    '╰────────────────────'
+  ].join('\n');
+}
+
+function buildCommandsInfo() {
+  const stats = statistics.getFormattedSnapshot();
+  const commandFiles = countCommands();
+
+  const lines = [
+    buildHeader(),
+    '',
+    '╭─〔 🧩 COMANDOS 〕',
+    `│ 📁 Archivos detectados: ${commandFiles}`,
+    `│ ⚡ Ejecutados: ${stats.commandsExecuted}`,
+    '╰────────────────────',
+    ''
+  ];
+
+  if (stats.topCommands.length) {
+    lines.push('╭─〔 🔥 MÁS USADOS 〕');
+
+    stats.topCommands.forEach((item, index) => {
+      lines.push(
+        `│ ${index + 1}. .${item.command} — ${item.count}`
+      );
+    });
+
+    lines.push('╰────────────────────');
+  } else {
+    lines.push('📭 Todavía no hay comandos registrados.');
   }
 
-  if (
-    ['sistema', 'system', 'server', 'servidor'].includes(value)
-  ) {
-    return 'sistema';
+  return lines.join('\n');
+}
+
+function buildActivityInfo() {
+  const stats = statistics.getFormattedSnapshot();
+
+  const lines = [
+    buildHeader(),
+    '',
+    '╭─〔 ⚡ ACTIVIDAD RECIENTE 〕'
+  ];
+
+  if (!stats.activity.length) {
+    lines.push('│ 📭 Sin actividad registrada.');
+  } else {
+    stats.activity.slice(0, 15).forEach(item => {
+      const time = new Date(item.time).toLocaleTimeString(
+        'es-PE',
+        {
+          timeZone: 'America/Lima',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit'
+        }
+      );
+
+      let description = item.type;
+
+      if (item.type === 'command') {
+        description = `⚡ .${item.command}`;
+      }
+
+      if (item.type === 'message_received') {
+        description = '📨 Mensaje recibido';
+      }
+
+      if (item.type === 'message_sent') {
+        description = '📤 Mensaje enviado';
+      }
+
+      if (item.type === 'error') {
+        description = '❌ Error';
+      }
+
+      if (item.type === 'restart') {
+        description = '🔄 Reinicio';
+      }
+
+      if (item.type === 'reconnect') {
+        description = '🔌 Reconexión';
+      }
+
+      if (item.type === 'connected') {
+        description = '🟢 Conectado';
+      }
+
+      lines.push(`│ ${time} • ${description}`);
+    });
   }
 
-  if (
-    ['conexion', 'conexión', 'connection', 'red', 'network'].includes(value)
-  ) {
-    return 'conexion';
-  }
+  lines.push('╰────────────────────');
 
-  if (
-    ['grupos', 'grupo', 'groups'].includes(value)
-  ) {
-    return 'grupos';
-  }
+  return lines.join('\n');
+}
 
-  return 'general';
+function buildSystemInfo() {
+  const stats = statistics.getFormattedSnapshot();
+  const system = getSystemInfo();
+
+  return [
+    buildHeader(),
+    '',
+    '╭─〔 💻 SISTEMA 〕',
+    `│ 🟢 Node: ${system.node}`,
+    `│ 🖥️ OS: ${system.platform}`,
+    `│ 🧩 Arch: ${system.architecture}`,
+    `│ ⚙️ CPU: ${system.cpu} núcleos`,
+    `│ 🔧 Modelo: ${system.cpuModel}`,
+    `│ 🧠 Proceso: ${stats.memoryFormatted.rss}`,
+    `│ 📊 Heap usado: ${stats.memoryFormatted.heapUsed}`,
+    `│ 📦 Heap total: ${stats.memoryFormatted.heapTotal}`,
+    `│ 💾 RAM total: ${stats.memoryFormatted.systemTotal}`,
+    `│ 🟢 RAM libre: ${stats.memoryFormatted.systemFree}`,
+    `│ 🆔 PID: ${system.pid}`,
+    '╰────────────────────'
+  ].join('\n');
 }
 
 function buildHelp() {
   return [
-    '╭━━━〔 🤖 INFOBOT 〕━━━╮',
-    '┃',
-    '┃ Comando de información',
-    '┃ en tiempo real de YuiBot-MD.',
-    '┃',
-    '┃ 📌 USO',
-    '┃ .infobot',
-    '┃ .infobot todo',
-    '┃ .infobot sistema',
-    '┃ .infobot conexion',
-    '┃ .infobot grupos',
-    '┃',
-    '┃ 📊 Muestra',
-    '┃ • Estado de WhatsApp',
-    '┃ • Latencia',
-    '┃ • Uptime',
-    '┃ • RAM',
-    '┃ • CPU',
-    '┃ • Node.js',
-    '┃ • Sistema operativo',
-    '┃ • Grupos',
-    '┃ • Participantes',
-    '┃ • Comandos',
-    '┃ • Fecha y hora',
-    '┃ • Estado WebSocket',
-    '┃ • Categorías',
-    '┃',
-    '╰━━━━━━━━━━━━━━━━━━━━━━╯'
+    buildHeader(),
+    '',
+    '╭─〔 📖 USO 〕',
+    '│ .infobot',
+    '│ .infobot general',
+    '│ .infobot comandos',
+    '│ .infobot actividad',
+    '│ .infobot sistema',
+    '│ .infobot todo',
+    '╰────────────────────',
+    '',
+    '📊 La información se obtiene al momento de ejecutar el comando.',
+    '⚡ Las estadísticas se actualizan mientras el bot funciona.'
+  ].join('\n');
+}
+
+async function buildAllInfo(sock) {
+  const groups = await getGroups(sock);
+
+  const general = buildGeneralInfo(sock, groups);
+  const commands = buildCommandsInfo();
+  const activity = buildActivityInfo();
+  const system = buildSystemInfo();
+
+  return [
+    general,
+    '',
+    commands,
+    '',
+    system,
+    '',
+    activity
   ].join('\n');
 }
 
 module.exports = {
   name: 'infobot',
+
   aliases: [
     'botinfo',
     'info',
     'estado',
     'status'
   ],
-  description: 'Información avanzada y en tiempo real de YuiBot-MD.',
+
+  description:
+    'Muestra información y estadísticas del bot en tiempo real.',
+
   category: 'informacion',
 
   async execute(sock, msg, args) {
@@ -632,72 +446,83 @@ module.exports = {
       return;
     }
 
-    const startTime = Date.now();
-
     try {
-      const mode = getMode(args);
-
-      if (
-        args.length &&
-        ['ayuda', 'help', '?'].includes(
-          args.join(' ').trim().toLowerCase()
-        )
-      ) {
-        await sock.sendMessage(jid, {
-          text: buildHelp()
-        });
-        return;
-      }
+      const option = args
+        .join(' ')
+        .trim()
+        .toLowerCase();
 
       await sock.sendMessage(jid, {
         text: '⏳ Consultando información en tiempo real...'
       });
 
-      const info = await collectInfo(
-        sock,
-        startTime
-      );
+      let response;
 
-      let text;
-
-      switch (mode) {
-        case 'todo':
-          text = buildEverything(info);
-          break;
-
-        case 'sistema':
-          text = buildSystem(info);
-          break;
-
-        case 'conexion':
-          text = buildConnection(info);
-          break;
-
-        case 'grupos':
-          text = buildGroups(info);
-          break;
-
-        default:
-          text = buildGeneral(info);
-          break;
+      if (
+        !option ||
+        ['general', 'estado', 'status'].includes(option)
+      ) {
+        const groups = await getGroups(sock);
+        response = buildGeneralInfo(sock, groups);
+      } else if (
+        ['comandos', 'commands', 'cmds'].includes(option)
+      ) {
+        response = buildCommandsInfo();
+      } else if (
+        ['actividad', 'activity', 'logs'].includes(option)
+      ) {
+        response = buildActivityInfo();
+      } else if (
+        ['sistema', 'system', 'server'].includes(option)
+      ) {
+        response = buildSystemInfo();
+      } else if (
+        ['todo', 'all', 'completo', 'full'].includes(option)
+      ) {
+        response = await buildAllInfo(sock);
+      } else if (
+        ['ayuda', 'help', '?'].includes(option)
+      ) {
+        response = buildHelp();
+      } else {
+        response = [
+          buildHeader(),
+          '',
+          `❌ Opción desconocida: ${option}`,
+          '',
+          'Usa:',
+          '`.infobot ayuda`'
+        ].join('\n');
       }
 
       await sock.sendMessage(jid, {
-        text
+        text: response
       });
+
+      statistics.messageSent({
+        jid,
+        type: 'infobot'
+      });
+
     } catch (error) {
+      statistics.errorOccurred(error, {
+        command: 'infobot',
+        jid
+      });
+
       try {
         await sock.sendMessage(jid, {
           text: [
-            '╭━━━〔 🤖 INFOBOT 〕━━━╮',
-            '┃',
-            '┃ ❌ No pude obtener',
-            '┃ toda la información.',
-            '┃',
-            `┃ 📌 ${error?.message || 'Error desconocido'}`,
-            '┃',
-            '╰━━━━━━━━━━━━━━━━━━━━━━╯'
+            '╭━━━〔 ❌ INFOBOT 〕━━━╮',
+            '┃ No pude obtener toda',
+            '┃ la información del bot.',
+            '╰━━━━━━━━━━━━━━━━━━━━╯'
           ].join('\n')
+        });
+
+        statistics.messageSent({
+          jid,
+          type: 'infobot_error'
         });
       } catch {}
     }
