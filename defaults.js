@@ -21,6 +21,14 @@ module.exports = {
     MIN: 5,
     MAX: 15,
   },
+  ECONOMIA: {
+    DAILY: {
+      COOLDOWN_MS: 86400000,
+      MIN: 100,
+      MAX: 300,
+    },
+    TRIVIA_RECOMPENSA: 50,
+  },
   APIS: {
     LEMPI_KEY: 'lem_dc158e5ad3f4f6ee2de2905a222bfb68f61dd754',
     EVOGB_KEY: 'evogb-jRhjmDSp',
