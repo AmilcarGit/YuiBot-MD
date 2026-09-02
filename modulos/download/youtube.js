@@ -1,7 +1,7 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
 const { APIS } = require('../../defaults')
 const API_URL = 'https://api.lempi.lat/dl/ytv'
-const LIMITE_VIDEO_MB = 64
+const LIMITE_VIDEO_MB = 1000
 
 async function pedirConFallback(youtubeUrl) {
   const keys = [APIS.LEMPI_KEY, APIS.LEMPI_KEY_2].filter(Boolean)
