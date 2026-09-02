@@ -1,6 +1,7 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
 const { obtenerUsuario, calcularNivel, xpParaNivel } = require('../../lib/db')
 const { generarImagenPerfil } = require('../../lib/welcome')
+const { CATALOGO } = require('../../lib/tienda')
 
 module.exports = {
   name: 'perfil',
@@ -27,6 +28,10 @@ module.exports = {
     const xpActualNivel = xpParaNivel(nivel)
     const xpSiguienteNivel = xpParaNivel(nivel + 1)
 
+    const insignia = CATALOGO.find((i) => i.id === datos?.insigniaEquipada)?.valor || ''
+    const titulo = CATALOGO.find((i) => i.id === datos?.tituloEquipado)?.valor || ''
+    const colorBarra = CATALOGO.find((i) => i.id === datos?.colorEquipado)?.valor || '#a349ff'
+
     let avatar = 'https://i.imgur.com/8Km9tLL.png'
     try {
       avatar = await sock.profilePictureUrl(objetivoJid, 'image')
@@ -36,7 +41,7 @@ module.exports = {
 
     try {
       const imagen = await generarImagenPerfil({
-        username: nombre,
+        username: `${insignia ? insignia + ' ' : ''}${nombre}`.trim(),
         numero,
         nivel,
         xp,
@@ -46,6 +51,8 @@ module.exports = {
         avatar,
         background: config.PROFILE_BACKGROUND || config.WELCOME_BACKGROUND,
         botName: config.BOT_NAME,
+        titulo,
+        colorBarra,
       })
 
       await sock.sendMessage(jid, { image: imagen, caption: `⛧ Perfil de ${nombre} ⛧` }, { quoted: msg })
@@ -56,7 +63,8 @@ module.exports = {
 
     let texto = `⛧───「 Perfil 」───⛧\n\n`
     texto += `  ❖ número: +${numero}\n`
-    texto += `  ❖ nombre: ${nombre}\n`
+    texto += `  ❖ nombre: ${insignia ? insignia + ' ' : ''}${nombre}\n`
+    if (titulo) texto += `  ❖ título: ${titulo}\n`
     texto += `  ❖ nivel: ${nivel}\n`
     texto += `  ❖ xp: ${xp} / ${xpSiguienteNivel}\n`
     texto += `  ❖ mensajes: ${mensajes}\n`
