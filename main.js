@@ -14,6 +14,7 @@ const readline = require('readline');
 const { loadCommands } = require('./lib/cargador');
 const { getMessageBody, parseCommand, isOwner } = require('./lib/handler');
 const { generarImagenBienvenida } = require('./lib/welcome');
+const { agregarXpConCooldown } = require('./lib/db');
 const config = require('./defaults');
 
 let metodoElegido = null;
@@ -190,6 +191,21 @@ async function startBot() {
     );
 
     if (msg.key.fromMe) return;
+
+    if (esGrupo) {
+      try {
+        const resultadoXp = agregarXpConCooldown(numeroRemitente, config.XP);
+        if (resultadoXp?.subioDeNivel) {
+          console.log(`[XP] ${numeroRemitente} subió a nivel ${resultadoXp.nivel}.`);
+          await sock.sendMessage(jid, {
+            text: `🎉 @${numeroRemitente} subió al *nivel ${resultadoXp.nivel}*! (${resultadoXp.xp} XP total)`,
+            mentions: [remitente],
+          });
+        }
+      } catch (error) {
+        console.error('[XP] Error actualizando experiencia:', error);
+      }
+    }
 
     const parsed = parseCommand(body, config);
     if (!parsed) return;
