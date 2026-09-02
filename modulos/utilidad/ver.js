@@ -1,4 +1,5 @@
-// COMANDO PARA LEER MENSAJES DE UNA SOLA VISTA (VIEW ONCE) - VERSIÓN YUIBOT-MD
+// COMANDO PARA LEER MENSAJES DE UNA SOLA VISTA (VIEW ONCE)
+// Adaptado para Yuibot-MD manteniendo TODA la lógica original
 
 const unwrap = (obj, depth = 0) => {
   if (!obj || typeof obj !== 'object' || depth > 6) return obj
@@ -45,60 +46,31 @@ module.exports = {
   category: 'tools',
 
   async execute(sock, msg, args, { config }) {
-    const jid = msg.key.remoteJid
-
-    // --- OBTENER MENSAJE CITADO ---
-    // En Yuibot-MD, el mensaje citado está en contextInfo.quotedMessage
-    const quotedMsg = msg.message?.extendedTextMessage?.contextInfo?.quotedMessage
-    if (!quotedMsg) {
-      return sock.sendMessage(jid, {
-        text: '> ♧ Por favor, responde a un mensaje de una sola vista para ver su contenido.'
-      }, { quoted: msg })
+    // Aquí usamos EXACTAMENTE la misma lógica que el original,
+    // solo cambiamos 'm' por 'msg' y 'conn' por 'sock'
+    const quoted = msg.quoted
+    if (!quoted) {
+      return msg.reply(`> ♧ Por favor, responde a un mensaje de una sola vista para ver su contenido.`)
     }
 
     try {
-      // Reacción de "cargando"
-      await sock.sendMessage(jid, { react: { key: msg.key, text: '🕒' } })
+      await msg.react('🕒')
 
-      // Detectar el medio dentro del mensaje citado
-      const media = getMedia(quotedMsg)
+      const media = getMedia(quoted)
       if (!media) {
-        return sock.sendMessage(jid, {
-          text: '> ❐ El mensaje al que respondiste no contiene un archivo multimedia para leer.'
-        }, { quoted: msg })
+        return msg.reply(`> ❐ El mensaje al que respondiste no contiene un archivo multimedia para leer.`)
       }
 
-      // Descargar el medio usando el método que tenga el bot
-      let buffer
-      if (typeof sock.downloadMediaMessage === 'function') {
-        // Método estándar de Baileys: descarga a partir del mensaje completo
-        // Necesitamos construir un objeto mensaje simulado que contenga el medio
-        const fakeMsg = { message: { [media.type + 'Message']: media.mediaMsg } }
-        buffer = await sock.downloadMediaMessage(fakeMsg)
-      } else if (typeof sock.downloadM === 'function') {
-        // Método alternativo (algunos bots usan downloadM)
-        buffer = await sock.downloadM(media.mediaMsg, media.type)
-      } else {
-        throw new Error('No se encontró un método de descarga disponible en el bot.')
-      }
-
+      const buffer = await sock.downloadM(media.mediaMsg, media.type)
       if (!buffer || !buffer.length) {
-        throw new Error('El buffer descargado está vacío.')
+        return msg.reply(`✦ Lo sentimos, no se pudo cargar el contenido.`)
       }
 
-      // Construir el payload y enviar
-      const payload = buildPayload(buffer, media.mediaMsg, media.type)
-      await sock.sendMessage(jid, payload, { quoted: msg })
-
-      // Reacción de éxito
-      await sock.sendMessage(jid, { react: { key: msg.key, text: '✔️' } })
-    } catch (error) {
-      console.error('[VER] Error:', error)
-      // Reacción de error
-      await sock.sendMessage(jid, { react: { key: msg.key, text: '✖️' } })
-      return sock.sendMessage(jid, {
-        text: `⚠️ Ocurrió un error al procesar el mensaje.\nDetalle: ${error.message || 'Desconocido'}\n\n> Usa *${config.prefix || '.'}report* para informarlo.`
-      }, { quoted: msg })
+      await sock.sendMessage(msg.chat, buildPayload(buffer, media.mediaMsg, media.type), { quoted: msg })
+      await msg.react('✔️')
+    } catch (e) {
+      await msg.react('✖️')
+      return msg.reply(`⚠︎ Se ha producido un problema.\n> Usa *${config.prefix || '.'}report* para informarlo.\n\n${e.message}`)
     }
   }
 }
