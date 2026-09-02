@@ -4,7 +4,7 @@ const { generarImagenPerfil } = require('../../lib/welcome')
 
 module.exports = {
   name: 'perfil',
-  aliases: ['profile', 'p'],
+  aliases: ['profile'],
   description: 'Muestra tu perfil o el de alguien citado',
   category: 'usuario',
 
