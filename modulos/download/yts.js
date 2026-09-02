@@ -31,11 +31,11 @@ const keys = [
   APIS.LEMPI_KEY_2
 ].filter(key => key && key !== '...' && String(key).trim())
 
-if (!keys.length) {
+if (keys.length === 0) {
   return sock.sendMessage(
     jid,
     {
-      text: '❌ No hay claves de Lempi configuradas en defaults.js'
+      text: '❌ No hay ninguna API de Lempi configurada en defaults.js'
     },
     { quoted: msg }
   )
@@ -46,21 +46,23 @@ try {
     jid,
     {
       text:
-        `🔎 *Buscando en YouTube...*\n\n` +
+        `🔎 Buscando en YouTube...\n\n` +
         `> ${query}`
     },
     { quoted: msg }
   )
 
   let data = null
-  let apiUsada = 0
   let ultimoError = null
+  let apiUsada = 0
 
   for (let i = 0; i < keys.length; i++) {
+    const apiKey = keys[i]
+
     try {
       const url =
         `${API_URL}?query=${encodeURIComponent(query)}` +
-        `&apikey=${encodeURIComponent(keys[i])}`
+        `&apikey=${encodeURIComponent(apiKey)}`
 
       const response = await fetch(url)
 
@@ -80,19 +82,18 @@ try {
         throw new Error(
           resultado?.message ||
           resultado?.error ||
-          'Respuesta inválida de Lempi'
+          'La API no devolvió resultados válidos'
         )
       }
 
       data = resultado
       apiUsada = i + 1
-
       break
+
     } catch (error) {
       ultimoError = error
-
       console.error(
-        `[YTS] Lempi API #${i + 1}:`,
+        `[YTS] API Lempi ${i + 1} falló:`,
         error.message
       )
     }
@@ -101,18 +102,18 @@ try {
   if (!data) {
     throw new Error(
       ultimoError?.message ||
-      'Las APIs de Lempi no respondieron'
+      'Las APIs de Lempi no respondieron correctamente'
     )
   }
 
   const videos = data.datos.results.videos
 
-  if (!videos.length) {
+  if (videos.length === 0) {
     return sock.sendMessage(
       jid,
       {
         text:
-          `❌ No encontré resultados para:\n\n` +
+          `❌ No encontré resultados para:\n` +
           `> ${query}`
       },
       { quoted: msg }
@@ -120,104 +121,36 @@ try {
   }
 
   const resultados = videos.slice(0, 10)
-  const primero = resultados[0]
 
-  /*
-   * Intentamos encontrar la mejor miniatura disponible.
-   * Lempi puede devolver diferentes nombres dependiendo
-   * de la versión de la API.
-   */
-  const thumbnail =
-    primero.thumbnail ||
-    primero.thumbnailUrl ||
-    primero.image ||
-    primero.imageUrl ||
-    primero.thumb ||
-    primero.thumbnails?.[0]?.url ||
-    null
+  let mensaje =
+    `╭━━━〔 🔎 YOUTUBE SEARCH 〕━━━╮\n` +
+    `┃ 🔍 Búsqueda: ${query}\n` +
+    `┃ 📊 Resultados: ${resultados.length}\n` +
+    `┃ ⚡ API: Lempi #${apiUsada}\n` +
+    `╰━━━━━━━━━━━━━━━━━━━━━━╯\n\n`
 
-  /*
-   * PRIMER RESULTADO
-   */
-  let principal =
-    `╭━━━〔 🎬 YOUTUBE 〕━━━╮\n` +
-    `┃ 🔎 *${query}*\n` +
-    `╰━━━━━━━━━━━━━━━━━━╯\n\n` +
-    `🏆 *PRIMER RESULTADO*\n\n` +
-    `🎬 *${primero.title || 'Sin título'}*\n` +
-    `👤 Canal: ${primero.channel || 'Desconocido'}\n` +
-    `⏱️ Duración: ${primero.duration || 'Desconocida'}\n` +
-    `👁️ Vistas: ${primero.views || 'Desconocidas'}\n` +
-    `📅 Publicado: ${primero.published || 'Desconocido'}\n\n` +
-    `🔗 ${primero.url || 'Sin URL'}\n\n` +
-    `⚡ Lempi API #${apiUsada}`
+  resultados.forEach((video, index) => {
+    mensaje +=
+      `╭─〔 ${index + 1} 〕──────────\n` +
+      `│ 🎬 *${video.title || 'Sin título'}*\n` +
+      `│ 👤 Canal: ${video.channel || 'Desconocido'}\n` +
+      `│ ⏱️ Duración: ${video.duration || 'Desconocida'}\n` +
+      `│ 👁️ Vistas: ${video.views || 'Desconocidas'}\n` +
+      `│ 📅 Publicado: ${video.published || 'Desconocido'}\n` +
+      `│ 🔗 ${video.url || 'Sin URL'}\n` +
+      `╰────────────────────\n\n`
+  })
 
-  if (thumbnail) {
-    try {
-      await sock.sendMessage(
-        jid,
-        {
-          image: {
-            url: thumbnail
-          },
-          caption: principal
-        },
-        { quoted: msg }
-      )
-    } catch (imageError) {
-      console.error(
-        '[YTS] Error enviando miniatura:',
-        imageError.message
-      )
+  mensaje +=
+    `🤖 Powered by Lempi API`
 
-      await sock.sendMessage(
-        jid,
-        {
-          text: principal
-        },
-        { quoted: msg }
-      )
-    }
-  } else {
-    await sock.sendMessage(
-      jid,
-      {
-        text: principal
-      },
-      { quoted: msg }
-    )
-  }
-
-  /*
-   * RESTO DE RESULTADOS
-   */
-  if (resultados.length > 1) {
-    let lista =
-      `╭━━━〔 🔎 MÁS RESULTADOS 〕━━━╮\n` +
-      `┃ 📊 ${resultados.length - 1} resultados más\n` +
-      `╰━━━━━━━━━━━━━━━━━━━━━━╯\n\n`
-
-    resultados.slice(1).forEach((video, index) => {
-      lista +=
-        `╭─〔 ${index + 2} 〕────────────\n` +
-        `│ 🎬 *${video.title || 'Sin título'}*\n` +
-        `│ 👤 ${video.channel || 'Desconocido'}\n` +
-        `│ ⏱️ ${video.duration || 'Desconocida'}\n` +
-        `│ 👁️ ${video.views || 'Desconocidas'}\n` +
-        `│ 🔗 ${video.url || 'Sin URL'}\n` +
-        `╰────────────────────\n\n`
-    })
-
-    lista += `🤖 Powered by Lempi API`
-
-    await sock.sendMessage(
-      jid,
-      {
-        text: lista
-      },
-      { quoted: msg }
-    )
-  }
+  await sock.sendMessage(
+    jid,
+    {
+      text: mensaje
+    },
+    { quoted: msg }
+  )
 
 } catch (error) {
   console.error('[YTS]', error)
@@ -226,7 +159,7 @@ try {
     jid,
     {
       text:
-        `❌ *Error al buscar en YouTube*\n\n` +
+        `❌ Ocurrió un error al buscar en YouTube.\n\n` +
         `> ${error.message || 'Error desconocido'}`
     },
     { quoted: msg }
