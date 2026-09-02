@@ -1,13 +1,29 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
-const fs = require('fs')
+const ORDEN_CATEGORIAS = ['main', 'usuario', 'grupo', 'download', 'media', 'diversion', 'utilidad', 'owner']
 
-const EMOJIS_CATEGORIA = {
-  main: '🏠',
-  download: '📥',
-  owner: '👑',
-  media: '🖼️',
-  grupo: '👥',
-  utilidad: '🛠️',
+const CATEGORIAS = {
+  main: { emoji: '🌸', titulo: 'PRINCIPAL' },
+  usuario: { emoji: '👤', titulo: 'USUARIO' },
+  grupo: { emoji: '👥', titulo: 'GRUPO' },
+  download: { emoji: '📥', titulo: 'DESCARGAS' },
+  media: { emoji: '🎨', titulo: 'MULTIMEDIA' },
+  diversion: { emoji: '🎮', titulo: 'DIVERSIÓN' },
+  utilidad: { emoji: '🛠️', titulo: 'UTILIDADES' },
+  owner: { emoji: '👑', titulo: 'OWNER' },
+}
+
+function construirCaja(info, comandos, texto) {
+  const unicos = [...new Set(comandos)]
+
+  texto += `\n╭━━━〔 ${info.emoji} ${info.titulo} 〕━━━╮\n`
+  unicos.forEach((cmd, i) => {
+    texto += `┃ ❯ *${cmd.name}*\n`
+    texto += `┃    _${cmd.description}_\n`
+    if (i < unicos.length - 1) texto += `┃\n`
+  })
+  texto += `╰${'━'.repeat(info.titulo.length + 10)}╯\n`
+
+  return texto
 }
 
 module.exports = {
@@ -16,51 +32,29 @@ module.exports = {
   description: 'Muestra la lista de comandos disponibles',
   category: 'main',
 
-  async execute(sock, msg, args, { categories, config }) {
+  async execute(sock, msg, args, { categories, commands, config }) {
     const jid = msg.key.remoteJid
-    const totalComandos = [...categories.values()].reduce((acc, cmds) => acc + new Set(cmds).size, 0)
+    const nombreUsuario = msg.pushName || 'Usuario'
+    const totalComandos = [...new Set(commands.values())].length
 
-    let text = `⛧───「 ${config.BOT_NAME} 」───⛧\n`
-    text += `_${totalComandos} comando(s) disponibles_\n\n`
+    let texto = `🌸 *YUIBOT-MD*\n\n`
+    texto += `👤 Usuario: ${nombreUsuario}\n`
+    texto += `⚡ Prefijo: ${config.PREFIXES[0]}\n`
+    texto += `📦 Comandos: ${totalComandos}\n`
 
-    for (const [category, cmds] of categories) {
-      const emoji = EMOJIS_CATEGORIA[category] || '📂'
-      text += `${emoji} ${category.toUpperCase()}\n`
-      const unique = [...new Set(cmds)]
-      for (const cmd of unique) {
-        text += `  ❖ ${cmd.name}     → ${cmd.description}\n`
-      }
-      text += '\n'
-    }
-    text += `╰─➤ _Prefijos: ${config.PREFIXES.join(' ')}${config.ALLOW_NO_PREFIX ? ' (o sin prefijo)' : ''}_ 🥀`
-
-    text = text.trim()
-
-    const imagenes = (config.MENU_IMAGES || []).filter((img) => fs.existsSync(img.ruta))
-    if (imagenes.length === 0) {
-      return sock.sendMessage(jid, { text })
+    for (const clave of ORDEN_CATEGORIAS) {
+      const cmds = categories.get(clave)
+      if (!cmds || !cmds.length) continue
+      texto = construirCaja(CATEGORIAS[clave], cmds, texto)
     }
 
-    const elegida = imagenes[Math.floor(Math.random() * imagenes.length)]
-
-    try {
-      const buffer = fs.readFileSync(elegida.ruta)
-
-      if (elegida.animado) {
-        await sock.sendMessage(jid, {
-          video: buffer,
-          gifPlayback: true,
-          caption: text,
-        })
-      } else {
-        await sock.sendMessage(jid, {
-          image: buffer,
-          caption: text,
-        })
-      }
-    } catch (error) {
-      console.error('[MENU] No se pudo leer la imagen local, se envía solo texto:', error)
-      await sock.sendMessage(jid, { text })
+    for (const [clave, cmds] of categories) {
+      if (ORDEN_CATEGORIAS.includes(clave) || !cmds.length) continue
+      texto = construirCaja({ emoji: '📂', titulo: clave.toUpperCase() }, cmds, texto)
     }
+
+    texto += `\n🌸 _${config.BOT_NAME}_`
+
+    await sock.sendMessage(jid, { text: texto })
   },
 }
