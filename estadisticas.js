@@ -17,19 +17,19 @@ const stats = {
   activity: []
 };
 
-function now() {
+function timestamp() {
   return Date.now();
 }
 
 function addActivity(type, data = {}) {
-  const item = {
+  const activity = {
     type,
-    time: now(),
+    time: timestamp(),
     ...data
   };
 
-  stats.lastActivity = item;
-  stats.activity.unshift(item);
+  stats.lastActivity = activity;
+  stats.activity.unshift(activity);
 
   if (stats.activity.length > 50) {
     stats.activity.length = 50;
@@ -40,7 +40,7 @@ function messageReceived(data = {}) {
   stats.messagesReceived++;
 
   stats.lastMessage = {
-    time: now(),
+    time: timestamp(),
     ...data
   };
 
@@ -54,11 +54,11 @@ function messageSent(data = {}) {
 }
 
 function commandExecuted(command, data = {}) {
-  stats.commandsExecuted++;
-
   const name = String(command || 'desconocido')
     .trim()
     .toLowerCase();
+
+  stats.commandsExecuted++;
 
   stats.commandUsage.set(
     name,
@@ -67,7 +67,7 @@ function commandExecuted(command, data = {}) {
 
   stats.lastCommand = {
     command: name,
-    time: now(),
+    time: timestamp(),
     ...data
   };
 
@@ -86,7 +86,7 @@ function errorOccurred(error, data = {}) {
 
   stats.lastError = {
     message,
-    time: now(),
+    time: timestamp(),
     ...data
   };
 
@@ -98,7 +98,6 @@ function errorOccurred(error, data = {}) {
 
 function registerRestart(data = {}) {
   stats.restarts++;
-  stats.startedAt = now();
 
   addActivity('restart', data);
 }
@@ -108,7 +107,7 @@ function registerReconnect(data = {}) {
 
   stats.lastConnection = {
     type: 'reconnect',
-    time: now(),
+    time: timestamp(),
     ...data
   };
 
@@ -118,7 +117,7 @@ function registerReconnect(data = {}) {
 function registerConnection(data = {}) {
   stats.lastConnection = {
     type: 'connected',
-    time: now(),
+    time: timestamp(),
     ...data
   };
 
@@ -154,7 +153,7 @@ function getCpu() {
 
   return {
     cores: cpus.length,
-    model: cpus[0].model || 'Desconocido',
+    model: cpus[0]?.model || 'Desconocido',
     speed: Math.round(speed)
   };
 }
@@ -211,7 +210,10 @@ function formatBytes(bytes) {
   let value = bytes;
   let index = 0;
 
-  while (value >= 1024 && index < units.length - 1) {
+  while (
+    value >= 1024 &&
+    index < units.length - 1
+  ) {
     value /= 1024;
     index++;
   }
@@ -236,24 +238,29 @@ function formatUptime(seconds) {
   if (days) parts.push(`${days}d`);
   if (hours) parts.push(`${hours}h`);
   if (minutes) parts.push(`${minutes}m`);
-  if (seconds || !parts.length) parts.push(`${seconds}s`);
+
+  if (seconds || !parts.length) {
+    parts.push(`${seconds}s`);
+  }
 
   return parts.join(' ');
 }
 
 function getFormattedSnapshot() {
-  const data = getSnapshot();
+  const snapshot = getSnapshot();
 
   return {
-    ...data,
-    uptimeFormatted: formatUptime(data.uptime),
+    ...snapshot,
+
+    uptimeFormatted: formatUptime(snapshot.uptime),
+
     memoryFormatted: {
-      rss: formatBytes(data.memory.rss),
-      heapUsed: formatBytes(data.memory.heapUsed),
-      heapTotal: formatBytes(data.memory.heapTotal),
-      external: formatBytes(data.memory.external),
-      systemTotal: formatBytes(data.memory.systemTotal),
-      systemFree: formatBytes(data.memory.systemFree)
+      rss: formatBytes(snapshot.memory.rss),
+      heapUsed: formatBytes(snapshot.memory.heapUsed),
+      heapTotal: formatBytes(snapshot.memory.heapTotal),
+      external: formatBytes(snapshot.memory.external),
+      systemTotal: formatBytes(snapshot.memory.systemTotal),
+      systemFree: formatBytes(snapshot.memory.systemFree)
     }
   };
 }
