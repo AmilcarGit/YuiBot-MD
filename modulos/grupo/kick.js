@@ -1,7 +1,7 @@
 //COMANDO KICK PARA YUIBOT-MD
 module.exports = {
   name: 'kick',
-  aliases: ['eliminar', 'sacar', 'expulsar'],
+  aliases: ['sacar', 'expulsar'],
   description: 'Elimina a un miembro del grupo (solo admins)',
   category: 'grupo',
 
