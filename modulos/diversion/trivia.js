@@ -1,5 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
-const { agregarMonedas } = require('../../lib/db')
+const { agregarMonedasConBoost } = require('../../lib/db')
 
 const PREGUNTAS = [
   { pregunta: '¿Cuál es el planeta más grande del sistema solar?', opciones: ['Marte', 'Júpiter', 'Saturno', 'Tierra'], correcta: 1 },
@@ -64,7 +64,7 @@ module.exports = {
 
     if (respuesta - 1 === item.correcta) {
       const recompensa = config.ECONOMIA?.TRIVIA_RECOMPENSA ?? 50
-      const balance = agregarMonedas(numeroRemitente, recompensa)
+      const balance = agregarMonedasConBoost(numeroRemitente, recompensa)
       return sock.sendMessage(
         jid,
         { text: `✅ ¡Correcto! Ganaste *${recompensa}* monedas.\n💰 Balance: ${balance} monedas.` },
