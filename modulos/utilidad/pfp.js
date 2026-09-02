@@ -3,7 +3,7 @@ const axios = require('axios') // Asegúrate de tener axios instalado
 
 module.exports = {
   name: 'profilepic',
-  aliases: ['pfp', 'foto', 'avatar', 'perfil'],
+  aliases: ['pfp', 'foto', 'avatar'],
   description: 'Obtiene la foto de perfil de un usuario (mencionado, número o el otro participante en privado)',
   category: 'util',
 
