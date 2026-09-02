@@ -1,7 +1,7 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
 const fs = require('fs')
 
-const ORDEN_CATEGORIAS = ['main', 'usuario', 'grupo', 'download', 'media', 'diversion', 'utilidad', 'owner']
+const ORDEN_CATEGORIAS = ['main', 'usuario', 'grupo', 'download', 'media', 'diversion', 'utilidad', 'subbot', 'owner']
 
 const CATEGORIAS = {
   main: { emoji: '🌸', titulo: 'PRINCIPAL' },
@@ -11,6 +11,7 @@ const CATEGORIAS = {
   media: { emoji: '🎨', titulo: 'MULTIMEDIA' },
   diversion: { emoji: '🎮', titulo: 'DIVERSIÓN' },
   utilidad: { emoji: '🛠️', titulo: 'UTILIDADES' },
+  subbot: { emoji: '🔗', titulo: 'SUBBOT' },
   owner: { emoji: '👑', titulo: 'OWNER' },
 }
 
@@ -34,12 +35,14 @@ module.exports = {
   description: 'Muestra la lista de comandos disponibles',
   category: 'main',
 
-  async execute(sock, msg, args, { categories, commands, config }) {
+  async execute(sock, msg, args, { categories, commands, config, esSubBot }) {
     const jid = msg.key.remoteJid
     const nombreUsuario = msg.pushName || 'Usuario'
     const totalComandos = [...new Set(commands.values())].length
+    const tipoBot = esSubBot ? '🔗 SUBBOT' : '🌸 BOT PRINCIPAL'
 
     let texto = `🌸 *YUIBOT-MD*\n\n`
+    texto += `${tipoBot}\n`
     texto += `👤 Usuario: ${nombreUsuario}\n`
     texto += `⚡ Prefijo: ${config.PREFIXES[0]}\n`
     texto += `📦 Comandos: ${totalComandos}\n`
