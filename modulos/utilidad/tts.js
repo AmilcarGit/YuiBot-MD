@@ -101,7 +101,7 @@ module.exports = {
 
       await sock.sendMessage(
         jid,
-        { audio: buffer, mimetype: 'audio/mpeg', ptt: true },
+        { audio: buffer, mimetype: 'audio/mpeg', ptt: false },
         { quoted: msg }
       )
     } catch (error) {
