@@ -16,6 +16,7 @@ const { getMessageBody, parseCommand, isOwner } = require('./lib/handler');
 const { generarImagenBienvenida } = require('./lib/welcome');
 const { agregarXpConCooldown, obtenerGrupo, registrarAvisoAntilink, reiniciarAvisosAntilink } = require('./lib/db');
 const { contieneLink, detectarFlood, esAdminDeGrupo } = require('./lib/moderacion');
+const { obtenerRangoExacto } = require('./lib/roles');
 const config = require('./defaults');
 
 let metodoElegido = null;
@@ -219,6 +220,14 @@ async function startBot() {
             text: `🎉 @${numeroRemitente} subió al *nivel ${resultadoXp.nivel}*! (${resultadoXp.xp} XP total)`,
             mentions: [remitente],
           });
+
+          const rangoNuevo = obtenerRangoExacto(resultadoXp.nivel);
+          if (rangoNuevo) {
+            await sock.sendMessage(jid, {
+              text: `🏅 @${numeroRemitente} desbloqueó el rango *"${rangoNuevo.nombre}"* al llegar a nivel ${rangoNuevo.nivel}.`,
+              mentions: [remitente],
+            });
+          }
         }
       } catch (error) {
         console.error('[XP] Error actualizando experiencia:', error);
