@@ -31,13 +31,17 @@ module.exports = {
     TRIVIA_RECOMPENSA: 50,
   },
   MODERACION: {
-    ANTILINK: true,
-    ANTIFLOOD: {
-      ENABLED: true,
-      MAX_MENSAJES: 5,
-      VENTANA_MS: 7000,
-    },
+  ANTILINK: {
+    ENABLED: true,
+    AUTO_KICK: true,
+    MAX_AVISOS: 3,
   },
+  ANTIFLOOD: {
+    ENABLED: true,
+    MAX_MENSAJES: 5,
+    VENTANA_MS: 7000,
+  },
+},
   APIS: {
     LEMPI_KEY: 'lem_10b02e6bcce68b82f51252de9d9ec71125528d02',
     LEMPI_KEY_2: 'lem_dc158e5ad3f4f6ee2de2905a222bfb68f61dd754',
