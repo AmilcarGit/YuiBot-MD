@@ -14,6 +14,7 @@ module.exports = {
   PHONE_NUMBER: '',
   PM2_PROCESS_NAME: 'YuiBot-MD',
   WELCOME_ENABLED: true,
+  BYE_ENABLED: true,
   WELCOME_BACKGROUND: 'https://files.catbox.moe/vajp5d.jpeg',
   PROFILE_BACKGROUND: 'https://files.catbox.moe/9fqfuv.png',
   XP: {
