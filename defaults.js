@@ -13,6 +13,12 @@ module.exports = {
   USE_PAIRING_CODE: true,
   PHONE_NUMBER: '',
   PM2_PROCESS_NAME: 'YuiBot-MD',
+  MANTENIMIENTO: {
+    LIMPIEZA_PREKEYS_HORAS: 6,
+    PREKEYS_DIAS_ANTIGUEDAD: 3,
+    BACKUP_HORAS: 12,
+    BACKUP_MAX: 5,
+  },
   WELCOME_ENABLED: true,
   BYE_ENABLED: true,
   WELCOME_BACKGROUND: 'https://files.catbox.moe/vajp5d.jpeg',
@@ -31,17 +37,17 @@ module.exports = {
     TRIVIA_RECOMPENSA: 50,
   },
   MODERACION: {
-  ANTILINK: {
-    ENABLED: true,
-    AUTO_KICK: true,
-    MAX_AVISOS: 3,
+    ANTILINK: {
+      ENABLED: true,
+      AUTO_KICK: true,
+      MAX_AVISOS: 3,
+    },
+    ANTIFLOOD: {
+      ENABLED: true,
+      MAX_MENSAJES: 5,
+      VENTANA_MS: 7000,
+    },
   },
-  ANTIFLOOD: {
-    ENABLED: true,
-    MAX_MENSAJES: 5,
-    VENTANA_MS: 7000,
-  },
-},
   APIS: {
     LEMPI_KEY: 'lem_10b02e6bcce68b82f51252de9d9ec71125528d02',
     LEMPI_KEY_2: 'lem_dc158e5ad3f4f6ee2de2905a222bfb68f61dd754',
