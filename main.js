@@ -17,6 +17,7 @@ const { generarImagenBienvenida } = require('./lib/welcome');
 const { agregarXpConCooldown, obtenerGrupo, registrarAvisoAntilink, reiniciarAvisosAntilink } = require('./lib/db');
 const { contieneLink, detectarFlood, esAdminDeGrupo } = require('./lib/moderacion');
 const { obtenerRangoExacto } = require('./lib/roles');
+const { limpiarPreKeysAntiguas, respaldarSesion } = require('./lib/mantenimiento');
 const config = require('./defaults');
 
 const col = {
@@ -41,6 +42,44 @@ function printBanner({ totalComandos }) {
 }
 
 let metodoElegido = null;
+let mantenimientoIniciado = false;
+
+function iniciarMantenimiento() {
+  if (mantenimientoIniciado) return;
+  mantenimientoIniciado = true;
+
+  const rutaSession = path.join(__dirname, 'session');
+  const rutaBackups = path.join(__dirname, 'backups');
+  const cfg = config.MANTENIMIENTO || {};
+
+  const ejecutarLimpieza = () => {
+    try {
+      const { eliminados } = limpiarPreKeysAntiguas(rutaSession, cfg.PREKEYS_DIAS_ANTIGUEDAD ?? 3);
+      if (eliminados > 0) {
+        console.log(`${col.cian}🧹 Limpieza de sesión: ${eliminados} pre-key(s) antigua(s) eliminada(s).${col.reset}`);
+      }
+    } catch (error) {
+      console.error('[MANTENIMIENTO] Error limpiando pre-keys:', error);
+    }
+  };
+
+  const ejecutarBackup = () => {
+    try {
+      const destino = respaldarSesion(rutaSession, rutaBackups, cfg.BACKUP_MAX ?? 5);
+      if (destino) {
+        console.log(`${col.cian}💾 Backup de sesión creado: ${destino}${col.reset}`);
+      }
+    } catch (error) {
+      console.error('[MANTENIMIENTO] Error respaldando sesión:', error);
+    }
+  };
+
+  ejecutarLimpieza();
+  ejecutarBackup();
+
+  setInterval(ejecutarLimpieza, (cfg.LIMPIEZA_PREKEYS_HORAS ?? 6) * 60 * 60 * 1000);
+  setInterval(ejecutarBackup, (cfg.BACKUP_HORAS ?? 12) * 60 * 60 * 1000);
+}
 
 function askQuestion(text) {
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
@@ -85,6 +124,7 @@ async function startBot() {
 
   const { commands, categories } = loadCommands();
   printBanner({ totalComandos: [...new Set(commands.values())].length });
+  iniciarMantenimiento();
 
   if (usePairingCode) {
     const phoneNumber = config.PHONE_NUMBER || (await askQuestion('📞 Escribe tu número con código de país, sin "+" ni espacios (ej: 5218110000000): '));
