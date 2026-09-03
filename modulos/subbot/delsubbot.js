@@ -16,7 +16,7 @@ module.exports = {
   aliases: ['removesubbot'],
   description: 'Elimina un subbot y su sesión',
   category: 'subbot',
-  ownerOnly: true,
+  ownerOnly: false,
 
   async execute(sock, msg, args, { config }) {
     const jid = msg.key.remoteJid
