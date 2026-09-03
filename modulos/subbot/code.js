@@ -92,11 +92,10 @@ module.exports = {
       {
         text:
           `⛧───「 Código de vinculación 」───⛧\n\n` +
-          `  ❖ número: +${numero}\n` +
-          `  ❖ código: *${code}*\n\n` +
-          `╰─➤ _Ve a WhatsApp > Dispositivos vinculados > Vincular con número de teléfono, e ingresa este código en el celular de ese número_ 🥀`
+          `  ❖ número: +${numero}\n\n` +
+          `╰─➤ _Ve a WhatsApp > Dispositivos vinculados > Vincular con número de teléfono, e ingresa el código de abajo en el celular de ese número_ 🥀`
       },
       { quoted: msg }
     )
-  },
-}
+
+    await sock.sendMessage(jid, { text: code })
