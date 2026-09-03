@@ -14,7 +14,7 @@ const readline = require('readline');
 const { loadCommands } = require('./lib/cargador');
 const { getMessageBody, parseCommand, isOwner } = require('./lib/handler');
 const { generarImagenBienvenida } = require('./lib/welcome');
-const { agregarXpConCooldown } = require('./lib/db');
+const { agregarXpConCooldown, obtenerGrupo } = require('./lib/db');
 const { contieneLink, detectarFlood, esAdminDeGrupo } = require('./lib/moderacion');
 const config = require('./defaults');
 
@@ -101,13 +101,21 @@ async function startBot() {
   sock.ev.on('group-participants.update', async (update) => {
     console.log('[WELCOME] Evento group-participants.update recibido:', JSON.stringify(update));
 
-    if (!config.WELCOME_ENABLED) {
+    const esAlta = update.action === 'add';
+    const esBaja = update.action === 'remove';
+
+    if (!esAlta && !esBaja) {
+      console.log(`[WELCOME] Acción "${update.action}" ignorada (solo se procesan "add" y "remove").`);
+      return;
+    }
+
+    if (esAlta && !config.WELCOME_ENABLED) {
       console.log('[WELCOME] WELCOME_ENABLED está en false, se omite el envío.');
       return;
     }
 
-    if (update.action !== 'add') {
-      console.log(`[WELCOME] Acción "${update.action}" ignorada (solo se procesa "add").`);
+    if (esBaja && !config.BYE_ENABLED) {
+      console.log('[WELCOME] BYE_ENABLED está en false, se omite el envío.');
       return;
     }
 
@@ -120,6 +128,8 @@ async function startBot() {
       console.error('[WELCOME] No se pudo obtener la metadata del grupo, se aborta:', error);
       return;
     }
+
+    const datosGrupo = obtenerGrupo(jidGrupo);
 
     for (const participante of update.participants) {
       try {
@@ -151,6 +161,12 @@ async function startBot() {
           console.warn(`[WELCOME] Sin foto de perfil pública para ${numero}, se usa la imagen de respaldo.`);
         }
 
+        const plantillaDefecto = esBaja
+          ? '👋 @user salió de *@grupo*. ¡Hasta pronto!'
+          : '🥀 ¡Bienvenido/a @user a *@grupo*!';
+        const plantilla = (esBaja ? datosGrupo?.textoDespedida : datosGrupo?.textoBienvenida) || plantillaDefecto;
+        const caption = plantilla.replace(/@user/gi, `@${numero}`).replace(/@grupo/gi, metadata.subject);
+
         const imagen = await generarImagenBienvenida({
           username,
           guildName: metadata.subject,
@@ -158,15 +174,16 @@ async function startBot() {
           avatar,
           background: config.WELCOME_BACKGROUND,
           botName: config.BOT_NAME,
+          etiqueta: esBaja ? '⛧ SE FUE DE ⛧' : '⛧ BIENVENIDO A ⛧',
         });
 
         await sock.sendMessage(jidGrupo, {
           image: imagen,
-          caption: `🥀 ¡Bienvenido/a @${numero} a *${metadata.subject}*!`,
+          caption,
           mentions: [jidReal],
         });
 
-        console.log(`[WELCOME] Bienvenida enviada a ${numero} en "${metadata.subject}".`);
+        console.log(`[WELCOME] ${esBaja ? 'Despedida' : 'Bienvenida'} enviada a ${numero} en "${metadata.subject}".`);
       } catch (error) {
         console.error('[WELCOME] Error procesando a un participante, se continúa con los demás:', error);
       }
