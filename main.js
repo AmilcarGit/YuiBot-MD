@@ -14,7 +14,7 @@ const readline = require('readline');
 const { loadCommands } = require('./lib/cargador');
 const { getMessageBody, parseCommand, isOwner } = require('./lib/handler');
 const { generarImagenBienvenida } = require('./lib/welcome');
-const { agregarXpConCooldown, obtenerGrupo } = require('./lib/db');
+const { agregarXpConCooldown, obtenerGrupo, registrarAvisoAntilink, reiniciarAvisosAntilink } = require('./lib/db');
 const { contieneLink, detectarFlood, esAdminDeGrupo } = require('./lib/moderacion');
 const config = require('./defaults');
 
@@ -224,7 +224,7 @@ async function startBot() {
         console.error('[XP] Error actualizando experiencia:', error);
       }
 
-      const antilinkActivo = config.MODERACION?.ANTILINK;
+      const antilinkActivo = config.MODERACION?.ANTILINK?.ENABLED;
       const antifloodActivo = config.MODERACION?.ANTIFLOOD?.ENABLED;
 
       if (antilinkActivo || antifloodActivo) {
@@ -239,6 +239,38 @@ async function startBot() {
               if (!esAdminDeGrupo(metadata, numeroRemitente)) {
                 console.log(`[MODERACION] Link detectado de ${numeroRemitente}, se elimina el mensaje.`);
                 await sock.sendMessage(jid, { delete: msg.key });
+
+                const autoKick = config.MODERACION.ANTILINK.AUTO_KICK;
+                const maxAvisos = config.MODERACION.ANTILINK.MAX_AVISOS || 3;
+
+                if (autoKick) {
+                  const avisos = registrarAvisoAntilink(numeroRemitente);
+
+                  if (avisos >= maxAvisos) {
+                    reiniciarAvisosAntilink(numeroRemitente);
+                    try {
+                      await sock.groupParticipantsUpdate(jid, [remitente], 'remove');
+                      await sock.sendMessage(jid, {
+                        text: `🚫 @${numeroRemitente} fue expulsado por enviar enlaces prohibidos ${maxAvisos} veces.`,
+                        mentions: [remitente],
+                      });
+                    } catch (error) {
+                      console.error('[MODERACION] No se pudo expulsar (¿el bot es admin?):', error);
+                      await sock.sendMessage(jid, {
+                        text: `🚫 @${numeroRemitente} superó el límite de avisos, pero no pude expulsarlo. ¿Soy administrador del grupo?`,
+                        mentions: [remitente],
+                      });
+                    }
+                    return;
+                  }
+
+                  await sock.sendMessage(jid, {
+                    text: `🚫 @${numeroRemitente}, no se permiten enlaces en este grupo. Aviso ${avisos}/${maxAvisos}.`,
+                    mentions: [remitente],
+                  });
+                  return;
+                }
+
                 await sock.sendMessage(jid, {
                   text: `🚫 @${numeroRemitente}, no se permiten enlaces en este grupo.`,
                   mentions: [remitente],
