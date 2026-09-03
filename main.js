@@ -19,6 +19,27 @@ const { contieneLink, detectarFlood, esAdminDeGrupo } = require('./lib/moderacio
 const { obtenerRangoExacto } = require('./lib/roles');
 const config = require('./defaults');
 
+const col = {
+  reset: '\x1b[0m',
+  bold: '\x1b[1m',
+  rosa: '\x1b[95m',
+  morado: '\x1b[35m',
+  verde: '\x1b[92m',
+  amarillo: '\x1b[93m',
+  cian: '\x1b[96m',
+  gris: '\x1b[90m',
+};
+
+function printBanner({ totalComandos }) {
+  const linea = '─'.repeat(42);
+  console.log(`\n${col.morado}┌${linea}┐${col.reset}`);
+  console.log(`${col.morado}│${col.reset}  ${col.bold}${col.rosa}🌸 ${config.BOT_NAME}${col.reset}  ${col.gris}v${config.BOT_VERSION}${col.reset}`);
+  console.log(`${col.morado}│${col.reset}  ${col.cian}Prefijos:${col.reset} ${config.PREFIXES.join(' ')} ${config.ALLOW_NO_PREFIX ? '(o sin prefijo)' : ''}`);
+  console.log(`${col.morado}│${col.reset}  ${col.cian}Comandos:${col.reset} ${totalComandos}`);
+  console.log(`${col.morado}│${col.reset}  ${col.cian}Node:${col.reset} ${process.version}`);
+  console.log(`${col.morado}└${linea}┘${col.reset}\n`);
+}
+
 let metodoElegido = null;
 
 function askQuestion(text) {
@@ -63,6 +84,7 @@ async function startBot() {
   });
 
   const { commands, categories } = loadCommands();
+  printBanner({ totalComandos: [...new Set(commands.values())].length });
 
   if (usePairingCode) {
     const phoneNumber = config.PHONE_NUMBER || (await askQuestion('📞 Escribe tu número con código de país, sin "+" ni espacios (ej: 5218110000000): '));
@@ -89,11 +111,11 @@ async function startBot() {
     if (connection === 'close') {
       const statusCode = new Boom(lastDisconnect?.error)?.output?.statusCode;
       const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
-      console.log('❌ Conexión cerrada.', shouldReconnect ? 'Reconectando...' : 'Sesión cerrada, borra /session y vuelve a escanear.');
+      console.log(`${col.rosa}❌ Conexión cerrada.${col.reset}`, shouldReconnect ? `${col.amarillo}Reconectando...${col.reset}` : `${col.rosa}Sesión cerrada, borra /session y vuelve a escanear.${col.reset}`);
       if (!shouldReconnect) metodoElegido = null;
       if (shouldReconnect) startBot();
     } else if (connection === 'open') {
-      console.log(`✅ ${config.BOT_NAME} conectado a WhatsApp.`);
+      console.log(`${col.verde}${col.bold}✅ ${config.BOT_NAME} conectado a WhatsApp.${col.reset}`);
     }
   });
 
@@ -329,6 +351,20 @@ async function startBot() {
       });
     }
   });
+
+  process.once('SIGINT', () => {
+    console.log(`\n${col.amarillo}👋 Cerrando ${config.BOT_NAME}...${col.reset}`);
+    sock.end(undefined);
+    process.exit(0);
+  });
 }
+
+process.on('unhandledRejection', (reason) => {
+  console.error(`${col.rosa}⚠️ Promesa no manejada:${col.reset}`, reason);
+});
+
+process.on('uncaughtException', (err) => {
+  console.error(`${col.rosa}⚠️ Excepción no capturada:${col.reset}`, err);
+});
 
 startBot().catch((err) => console.error(`Error al iniciar ${config.BOT_NAME}:`, err));
