@@ -3,7 +3,7 @@ const { pedirAudio } = require('../../lib/youtube')
 
 module.exports = {
   name: 'ytmp3',
-  aliases: ['yta', 'ytaudio'],
+  aliases: ['play', 'ytaudio'],
   description: 'Descarga audio (MP3) de un video de YouTube',
   category: 'download',
 
