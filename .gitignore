@@ -1,0 +1,14 @@
+node_modules/
+npm-debug.log*
+
+session/
+backups/
+subbots/
+
+data/
+
+.env
+
+*.log
+tmp/
+.DS_Store
