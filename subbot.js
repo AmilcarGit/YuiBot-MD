@@ -12,6 +12,7 @@ const fs = require('fs')
 
 const { loadCommands } = require('./lib/cargador')
 const { getMessageBody, parseCommand, isOwner } = require('./lib/handler')
+const { iniciarHeartbeat, puedeResponderSubbot } = require('./lib/red')
 const config = require('./defaults')
 
 const numero = process.argv[2]
@@ -26,6 +27,8 @@ const sessionPath = path.join(carpetaSubbot, 'session')
 const codeFilePath = path.join(carpetaSubbot, 'code.txt')
 
 fs.mkdirSync(sessionPath, { recursive: true })
+
+let detenerHeartbeatSubbot = null
 
 async function startSubBot() {
   const { state, saveCreds } = await useMultiFileAuthState(sessionPath)
@@ -67,6 +70,9 @@ async function startSubBot() {
     } else if (connection === 'open') {
       console.log(`✅ Subbot ${numero} conectado a WhatsApp.`)
       if (fs.existsSync(codeFilePath)) fs.unlink(codeFilePath, () => {})
+
+      if (detenerHeartbeatSubbot) detenerHeartbeatSubbot()
+      detenerHeartbeatSubbot = iniciarHeartbeat(numero)
     }
   })
 
@@ -79,6 +85,13 @@ async function startSubBot() {
     if (!msg.message || msg.key.fromMe) return
 
     const jid = msg.key.remoteJid
+    const esGrupo = jid.endsWith('@g.us')
+
+    if (esGrupo) {
+      const puedeResponder = puedeResponderSubbot(numero, jid)
+      if (!puedeResponder) return
+    }
+
     const body = getMessageBody(msg)
 
     const parsed = parseCommand(body, config)
