@@ -2,15 +2,12 @@
 const { exec } = require('child_process')
 const fs = require('fs')
 const path = require('path')
+const { guardarDuenoSubbot } = require('../../lib/subbots')
 
 function ejecutar(comando, cwd) {
   return new Promise((resolve) => {
     exec(comando, { cwd, timeout: 30000 }, (error, stdout, stderr) => {
-      resolve({
-        error,
-        stdout: stdout?.trim() || '',
-        stderr: stderr?.trim() || ''
-      })
+      resolve({ error, stdout: stdout?.trim() || '', stderr: stderr?.trim() || '' })
     })
   })
 }
@@ -18,7 +15,6 @@ function ejecutar(comando, cwd) {
 function esperarArchivo(ruta, timeoutMs) {
   return new Promise((resolve) => {
     const inicio = Date.now()
-
     const intervalo = setInterval(() => {
       if (fs.existsSync(ruta)) {
         clearInterval(intervalo)
@@ -36,7 +32,7 @@ module.exports = {
   aliases: ['subbot', 'addsubbot'],
   description: 'Genera un código para vincular un subbot',
   category: 'subbot',
-  ownerOnly: false,
+  ownerOnly: true,
 
   async execute(sock, msg, args, { config }) {
     const jid = msg.key.remoteJid
@@ -46,11 +42,7 @@ module.exports = {
     if (!numero) {
       return sock.sendMessage(
         jid,
-        {
-          text:
-            `❌ Escribe el número del subbot con lada, sin "+" ni espacios.\n` +
-            `📌 Ejemplo: ${prefijo}code 5218112345678`
-        },
+        { text: `❌ Escribe el número del subbot con lada, sin "+" ni espacios.\n📌 Ejemplo: ${prefijo}code 5218112345678` },
         { quoted: msg }
       )
     }
@@ -63,47 +55,23 @@ module.exports = {
     if (fs.existsSync(credsPath)) {
       return sock.sendMessage(
         jid,
-        {
-          text:
-            `❌ Ese número ya tiene un subbot vinculado.\n` +
-            `Usa ${prefijo}delsubbot ${numero} para eliminarlo primero ` +
-            `si quieres re-vincularlo.`
-        },
+        { text: `❌ Ese número ya tiene un subbot vinculado.\nUsa ${prefijo}delsubbot ${numero} para eliminarlo primero si quieres re-vincularlo.` },
         { quoted: msg }
       )
     }
 
     fs.mkdirSync(carpetaSubbot, { recursive: true })
+    if (fs.existsSync(codeFilePath)) fs.unlinkSync(codeFilePath)
 
-    if (fs.existsSync(codeFilePath)) {
-      fs.unlinkSync(codeFilePath)
-    }
-
-    await sock.sendMessage(
-      jid,
-      {
-        text:
-          `⏳ Iniciando subbot para +${numero}, ` +
-          `esto puede tardar hasta 30 segundos...`
-      },
-      { quoted: msg }
-    )
+    await sock.sendMessage(jid, { text: `⏳ Iniciando subbot para +${numero}, esto puede tardar hasta 30 segundos...` }, { quoted: msg })
 
     const nombreProceso = `subbot-${numero}`
-
-    const resultado = await ejecutar(
-      `pm2 delete ${nombreProceso} 2>/dev/null; pm2 start subbot.js --name ${nombreProceso} -- ${numero}`,
-      raiz
-    )
+    const resultado = await ejecutar(`pm2 delete ${nombreProceso} 2>/dev/null; pm2 start subbot.js --name ${nombreProceso} -- ${numero}`, raiz)
 
     if (resultado.error) {
       return sock.sendMessage(
         jid,
-        {
-          text:
-            `❌ No se pudo iniciar el subbot.\n\n` +
-            `\`\`\`${resultado.stderr || resultado.error.message}\`\`\``
-        },
+        { text: `❌ No se pudo iniciar el subbot.\n\n\`\`\`${resultado.stderr || resultado.error.message}\`\`\`` },
         { quoted: msg }
       )
     }
@@ -113,37 +81,35 @@ module.exports = {
     if (!code) {
       return sock.sendMessage(
         jid,
-        {
-          text:
-            `⚠️ El subbot se inició pero no generó el código a tiempo.\n` +
-            `Revisa \`pm2 logs ${nombreProceso}\` en el servidor.`
-        },
+        { text: `⚠️ El subbot se inició pero no generó el código a tiempo.\nRevisa \`pm2 logs ${nombreProceso}\` en el servidor.` },
         { quoted: msg }
       )
     }
 
     await ejecutar('pm2 save', raiz)
 
-    // MENSAJE INFORMATIVO
+    const remitenteSolicitante = msg.key.participantAlt || msg.key.participant || jid
+    const numeroSolicitante = remitenteSolicitante.split('@')[0].split(':')[0]
+
+    let nombreSolicitante = numeroSolicitante
+    try {
+      const [info] = await sock.onWhatsApp(remitenteSolicitante)
+      if (info?.notify) nombreSolicitante = info.notify
+    } catch {}
+
+    guardarDuenoSubbot(numero, { numero: numeroSolicitante, nombre: nombreSolicitante, creado: Date.now() })
+
     await sock.sendMessage(
       jid,
       {
         text:
           `⛧───「 Código de vinculación 」───⛧\n\n` +
           `  ❖ número: +${numero}\n\n` +
-          `╰─➤ _Ve a WhatsApp > Dispositivos vinculados > ` +
-          `Vincular con número de teléfono, e ingresa el código ` +
-          `de abajo en el celular de ese número_ 🥀`
+          `╰─➤ _Ve a WhatsApp > Dispositivos vinculados > Vincular con número de teléfono, e ingresa el código de abajo en el celular de ese número_ 🥀`
       },
       { quoted: msg }
     )
 
-    // CÓDIGO EN UN MENSAJE SEPARADO
-    await sock.sendMessage(
-      jid,
-      {
-        text: code
-      }
-    )
-  }
+    await sock.sendMessage(jid, { text: code })
+  },
 }
