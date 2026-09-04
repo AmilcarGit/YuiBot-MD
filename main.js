@@ -18,6 +18,7 @@ const { agregarXpConCooldown, obtenerGrupo, registrarAvisoAntilink, reiniciarAvi
 const { contieneLink, detectarFlood, esAdminDeGrupo } = require('./lib/moderacion');
 const { obtenerRangoExacto } = require('./lib/roles');
 const { limpiarPreKeysAntiguas, respaldarSesion } = require('./lib/mantenimiento');
+const { iniciarHeartbeat, actualizarGruposPrincipal, ID_PRINCIPAL } = require('./lib/red');
 const config = require('./defaults');
 
 const col = {
@@ -43,6 +44,8 @@ function printBanner({ totalComandos }) {
 
 let metodoElegido = null;
 let mantenimientoIniciado = false;
+let detenerHeartbeatPrincipal = null;
+let intervaloGruposPrincipal = null;
 
 function iniciarMantenimiento() {
   if (mantenimientoIniciado) return;
@@ -156,6 +159,13 @@ async function startBot() {
       if (shouldReconnect) startBot();
     } else if (connection === 'open') {
       console.log(`${col.verde}${col.bold}✅ ${config.BOT_NAME} conectado a WhatsApp.${col.reset}`);
+
+      if (detenerHeartbeatPrincipal) detenerHeartbeatPrincipal();
+      detenerHeartbeatPrincipal = iniciarHeartbeat(ID_PRINCIPAL);
+
+      if (intervaloGruposPrincipal) clearInterval(intervaloGruposPrincipal);
+      actualizarGruposPrincipal(sock);
+      intervaloGruposPrincipal = setInterval(() => actualizarGruposPrincipal(sock), 30000);
     }
   });
 
