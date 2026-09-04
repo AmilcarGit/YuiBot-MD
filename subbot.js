@@ -13,6 +13,7 @@ const fs = require('fs')
 const { loadCommands } = require('./lib/cargador')
 const { getMessageBody, parseCommand, isOwner } = require('./lib/handler')
 const { iniciarHeartbeat, puedeResponderSubbot } = require('./lib/red')
+const { esDuenoDeSubbot } = require('./lib/subbots')
 const config = require('./defaults')
 
 const numero = process.argv[2]
@@ -102,14 +103,17 @@ async function startSubBot() {
 
     if (command.ownerOnly) {
       const senderJid = msg.key.participantAlt || msg.key.participant || jid
-      if (!isOwner(senderJid, config)) {
-        await sock.sendMessage(jid, { text: '⛔ Este comando es solo para el owner del bot.' })
+      const senderNumero = senderJid.split('@')[0].split(':')[0]
+      const esDueno = esDuenoDeSubbot(numero, senderNumero)
+
+      if (!isOwner(senderJid, config) && !esDueno) {
+        await sock.sendMessage(jid, { text: '⛔ Este comando es solo para el dueño de este subbot.' })
         return
       }
     }
 
     try {
-      await command.execute(sock, msg, parsed.args, { commands, categories, config, esSubBot: true })
+      await command.execute(sock, msg, parsed.args, { commands, categories, config, esSubBot: true, subbotNumero: numero })
     } catch (err) {
       console.error(`[subbot ${numero}] Error ejecutando "${parsed.commandName}":`, err)
       await sock.sendMessage(jid, { text: '⚠️ Ocurrió un error ejecutando ese comando.' })
