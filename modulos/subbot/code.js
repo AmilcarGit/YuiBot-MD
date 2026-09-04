@@ -2,7 +2,8 @@
 const { exec } = require('child_process')
 const fs = require('fs')
 const path = require('path')
-const { guardarDuenoSubbot } = require('../../lib/subbots')
+const { guardarDuenoSubbot, marcarPremium } = require('../../lib/subbots')
+const { tokenValido } = require('../../lib/premium')
 
 function ejecutar(comando, cwd) {
   return new Promise((resolve) => {
@@ -38,11 +39,12 @@ module.exports = {
     const jid = msg.key.remoteJid
     const prefijo = config.PREFIXES[0]
     const numero = (args[0] || '').replace(/\D/g, '')
+    const tokenIngresado = args[1] || null
 
     if (!numero) {
       return sock.sendMessage(
         jid,
-        { text: `❌ Escribe el número del subbot con lada, sin "+" ni espacios.\n📌 Ejemplo: ${prefijo}code 5218112345678` },
+        { text: `❌ Escribe el número del subbot con lada, sin "+" ni espacios.\n📌 Ejemplo: ${prefijo}code 5218112345678\n📌 Con premium: ${prefijo}code 5218112345678 TOKEN` },
         { quoted: msg }
       )
     }
@@ -99,12 +101,19 @@ module.exports = {
 
     guardarDuenoSubbot(numero, { numero: numeroSolicitante, nombre: nombreSolicitante, creado: Date.now() })
 
+    let esPremium = false
+    if (tokenIngresado && tokenValido(tokenIngresado)) {
+      marcarPremium(numero, true)
+      esPremium = true
+    }
+
     await sock.sendMessage(
       jid,
       {
         text:
           `⛧───「 Código de vinculación 」───⛧\n\n` +
-          `  ❖ número: +${numero}\n\n` +
+          `  ❖ número: +${numero}\n` +
+          `  ❖ premium: ${esPremium ? '⭐ sí' : 'no'}\n\n` +
           `╰─➤ _Ve a WhatsApp > Dispositivos vinculados > Vincular con número de teléfono, e ingresa el código de abajo en el celular de ese número_ 🥀`
       },
       { quoted: msg }
