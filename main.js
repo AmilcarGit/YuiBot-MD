@@ -1,3 +1,4 @@
+//CÓDIGO ORIGINAL DE YUIBOT-MD
 const {
   default: makeWASocket,
   useMultiFileAuthState,
