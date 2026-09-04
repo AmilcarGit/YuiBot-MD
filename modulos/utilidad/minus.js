@@ -1,22 +1,27 @@
+//CÓDIGO ORIGINAL DE YUIBOT-MD
+
 module.exports = {
-  name: 'minus',
-  alias: ['minusculas', 'lower'],
-  description: 'Convierte un texto a minúsculas',
 
-  async execute(socket, msg, args) {
-    const texto = args.join(' ').trim()
+name: 'minus',
+aliases: ['minusculas', 'lower'],
+description: 'Convierte un texto a minúsculas',
 
-    if (!texto) {
-      return await msg.reply(
-        '✳️ *USO DEL COMANDO*\n\n' +
-        'Convierte cualquier texto a minúsculas.\n\n' +
-        '📌 Ejemplo:\n' +
-        '`.minus HOLA MUNDO`'
-      )
-    }
+category: 'utilidad',
 
-    const resultado = texto.toLocaleLowerCase('es-ES')
+async execute(sock, msg, args) {
+const texto = args.join(' ').trim()
 
-    await msg.reply(`🔡 *MINÚSCULAS*\n\n${resultado}`)
-  }
+if (!texto) {
+return await sock.sendMessage(msg.key.remoteJid, {
+text: '⛧───「 MINÚSCULAS 」───⛧\n\nEscribe el texto que quieres convertir.\n\nEjemplo:\n.minus HOLA MUNDO'
+})
+}
+
+const resultado = texto.toLocaleLowerCase('es-ES')
+
+await sock.sendMessage(msg.key.remoteJid, {
+text: resultado
+})
+},
+
 }
