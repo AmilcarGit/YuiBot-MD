@@ -1,29 +1,35 @@
+//CÓDIGO ORIGINAL DE YUIBOT-MD
+
 module.exports = {
-  name: 'contar',
-  alias: ['contador', 'count'],
-  description: 'Cuenta palabras y caracteres de un texto',
 
-  async execute(socket, msg, args) {
-    const texto = args.join(' ').trim()
+name: 'contar',
+aliases: ['contador', 'count'],
+description: 'Cuenta palabras y caracteres de un texto',
 
-    if (!texto) {
-      return await msg.reply(
-        '✳️ *USO DEL COMANDO*\n\n' +
-        'Cuenta palabras y caracteres de un texto.\n\n' +
-        '📌 Ejemplo:\n' +
-        '`.contar hola mundo`'
-      )
-    }
+category: 'utilidad',
 
-    const palabras = texto.split(/\s+/).filter(Boolean).length
-    const caracteres = [...texto].length
-    const caracteresSinEspacios = [...texto.replace(/\s/g, '')].length
+async execute(sock, msg, args) {
+const texto = args.join(' ').trim()
 
-    await msg.reply(
-      '📊 *ESTADÍSTICAS DEL TEXTO*\n\n' +
-      `📝 Palabras: *${palabras}*\n` +
-      `🔤 Caracteres: *${caracteres}*\n` +
-      `🔡 Sin espacios: *${caracteresSinEspacios}*`
-    )
-  }
+if (!texto) {
+return await sock.sendMessage(msg.key.remoteJid, {
+text: '⛧───「 CONTADOR 」───⛧\n\nEscribe el texto que quieres contar.\n\nEjemplo:\n.contar hola mundo'
+})
+}
+
+const palabras = texto.split(/\s+/).filter(Boolean).length
+const caracteres = [...texto].length
+const sinEspacios = [...texto.replace(/\s/g, '')].length
+
+const resultado =
+'⛧───「 CONTADOR 」───⛧\n\n' +
+`📝 Palabras: ${palabras}\n` +
+`🔤 Caracteres: ${caracteres}\n` +
+`🔡 Sin espacios: ${sinEspacios}`
+
+await sock.sendMessage(msg.key.remoteJid, {
+text: resultado
+})
+},
+
 }
