@@ -1,22 +1,27 @@
+//CÓDIGO ORIGINAL DE YUIBOT-MD
+
 module.exports = {
-  name: 'mayus',
-  alias: ['mayusculas', 'upper'],
-  description: 'Convierte un texto a MAYÚSCULAS',
 
-  async execute(socket, msg, args) {
-    const texto = args.join(' ').trim()
+name: 'mayus',
+aliases: ['mayusculas', 'upper'],
+description: 'Convierte un texto a MAYÚSCULAS',
 
-    if (!texto) {
-      return await msg.reply(
-        '✳️ *USO DEL COMANDO*\n\n' +
-        'Convierte cualquier texto a MAYÚSCULAS.\n\n' +
-        '📌 Ejemplo:\n' +
-        '`.mayus hola mundo`'
-      )
-    }
+category: 'utilidad',
 
-    const resultado = texto.toLocaleUpperCase('es-ES')
+async execute(sock, msg, args) {
+const texto = args.join(' ').trim()
 
-    await msg.reply(`🔠 *MAYÚSCULAS*\n\n${resultado}`)
-  }
+if (!texto) {
+return await sock.sendMessage(msg.key.remoteJid, {
+text: '⛧───「 MAYÚSCULAS 」───⛧\n\nEscribe el texto que quieres convertir.\n\nEjemplo:\n.mayus hola mundo'
+})
+}
+
+const resultado = texto.toLocaleUpperCase('es-ES')
+
+await sock.sendMessage(msg.key.remoteJid, {
+text: resultado
+})
+},
+
 }
