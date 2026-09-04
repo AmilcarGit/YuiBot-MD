@@ -1,4 +1,3 @@
-//CÓDIGO ORIGINAL DE YUIBOT-MD
 const {
   default: makeWASocket,
   useMultiFileAuthState,
@@ -165,7 +164,7 @@ async function startBot() {
 
       if (intervaloGruposPrincipal) clearInterval(intervaloGruposPrincipal);
       actualizarGruposPrincipal(sock);
-      intervaloGruposPrincipal = setInterval(() => actualizarGruposPrincipal(sock), 30000);
+      intervaloGruposPrincipal = setInterval(() => actualizarGruposPrincipal(sock), 120000);
     }
   });
 
@@ -281,9 +280,7 @@ async function startBot() {
       `[${hora}] ${esGrupo ? '👥' : '👤'} ${nombre} (${numeroRemitente})${esGrupo ? ` en grupo` : ''}: ${body || '[sin texto / multimedia]'}`
     );
 
-    if (msg.key.fromMe) return;
-
-    if (esGrupo) {
+    if (esGrupo && !msg.key.fromMe) {
       try {
         const resultadoXp = agregarXpConCooldown(numeroRemitente, config.XP);
         if (resultadoXp?.subioDeNivel) {
