@@ -1,22 +1,27 @@
+//CÓDIGO ORIGINAL DE YUIBOT-MD
+
 module.exports = {
-  name: 'invertir',
-  alias: ['reverse'],
-  description: 'Invierte el texto',
 
-  async execute(socket, msg, args) {
-    const texto = args.join(' ').trim()
+name: 'invertir',
+aliases: ['reverse'],
+description: 'Invierte un texto',
 
-    if (!texto) {
-      return await msg.reply(
-        '✳️ *USO DEL COMANDO*\n\n' +
-        'Invierte el orden de los caracteres.\n\n' +
-        '📌 Ejemplo:\n' +
-        '`.invertir hola mundo`'
-      )
-    }
+category: 'utilidad',
 
-    const resultado = [...texto].reverse().join('')
+async execute(sock, msg, args) {
+const texto = args.join(' ').trim()
 
-    await msg.reply(`🔄 *TEXTO INVERTIDO*\n\n${resultado}`)
-  }
+if (!texto) {
+return await sock.sendMessage(msg.key.remoteJid, {
+text: '⛧───「 INVERTIR 」───⛧\n\nEscribe el texto que quieres invertir.\n\nEjemplo:\n.invertir hola mundo'
+})
+}
+
+const resultado = [...texto].reverse().join('')
+
+await sock.sendMessage(msg.key.remoteJid, {
+text: resultado
+})
+},
+
 }
