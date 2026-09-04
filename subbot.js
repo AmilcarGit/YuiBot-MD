@@ -64,15 +64,32 @@ async function startSubBot() {
     if (connection === 'close') {
       const statusCode = new Boom(lastDisconnect?.error)?.output?.statusCode
       const shouldReconnect = statusCode !== DisconnectReason.loggedOut
-      console.log(`❌ [subbot ${numero}] Conexión cerrada.`, shouldReconnect ? 'Reconectando...' : 'Sesión cerrada.')
+
+      console.log(
+        `❌ [subbot ${numero}] Conexión cerrada.`,
+        shouldReconnect ? 'Reconectando...' : 'Sesión cerrada.'
+      )
+
       if (shouldReconnect) {
-        setTimeout(() => startSubBot().catch((err) => console.error('❌ Error reconectando subbot:', err)), 3000)
+        setTimeout(
+          () =>
+            startSubBot().catch((err) =>
+              console.error('❌ Error reconectando subbot:', err)
+            ),
+          3000
+        )
       }
     } else if (connection === 'open') {
       console.log(`✅ Subbot ${numero} conectado a WhatsApp.`)
-      if (fs.existsSync(codeFilePath)) fs.unlink(codeFilePath, () => {})
 
-      if (detenerHeartbeatSubbot) detenerHeartbeatSubbot()
+      if (fs.existsSync(codeFilePath)) {
+        fs.unlink(codeFilePath, () => {})
+      }
+
+      if (detenerHeartbeatSubbot) {
+        detenerHeartbeatSubbot()
+      }
+
       detenerHeartbeatSubbot = iniciarHeartbeat(numero)
     }
   })
@@ -83,13 +100,15 @@ async function startSubBot() {
     if (type !== 'notify') return
 
     const msg = messages[0]
-    if (!msg.message || msg.key.fromMe) return
+
+    if (!msg.message) return
 
     const jid = msg.key.remoteJid
     const esGrupo = jid.endsWith('@g.us')
 
     if (esGrupo) {
       const puedeResponder = puedeResponderSubbot(numero, jid)
+
       if (!puedeResponder) return
     }
 
@@ -102,23 +121,62 @@ async function startSubBot() {
     if (!command) return
 
     if (command.ownerOnly) {
-      const senderJid = msg.key.participantAlt || msg.key.participant || jid
-      const senderNumero = senderJid.split('@')[0].split(':')[0]
+      const senderJid =
+        msg.key.participantAlt ||
+        msg.key.participant ||
+        jid
+
+      const senderNumero = senderJid
+        .split('@')[0]
+        .split(':')[0]
+
       const esDueno = esDuenoDeSubbot(numero, senderNumero)
 
       if (!isOwner(senderJid, config) && !esDueno) {
-        await sock.sendMessage(jid, { text: '⛔ Este comando es solo para el dueño de este subbot.' })
+        await sock.sendMessage(
+          jid,
+          {
+            text: '⛔ Este comando es solo para el dueño de este subbot.'
+          }
+        )
+
         return
       }
     }
 
     try {
-      await command.execute(sock, msg, parsed.args, { commands, categories, config, esSubBot: true, subbotNumero: numero })
+      await command.execute(
+        sock,
+        msg,
+        parsed.args,
+        {
+          commands,
+          categories,
+          config,
+          esSubBot: true,
+          subbotNumero: numero
+        }
+      )
     } catch (err) {
-      console.error(`[subbot ${numero}] Error ejecutando "${parsed.commandName}":`, err)
-      await sock.sendMessage(jid, { text: '⚠️ Ocurrió un error ejecutando ese comando.' })
+      console.error(
+        `[subbot ${numero}] Error ejecutando "${parsed.commandName}":`,
+        err
+      )
+
+      await sock.sendMessage(
+        jid,
+        {
+          text: '⚠️ Ocurrió un error ejecutando ese comando.'
+        }
+      )
     }
   })
 }
 
-startSubBot().catch((err) => console.error(`❌ Error al iniciar subbot ${numero}:`, err))
+startSubBot().catch(
+  (err) =>
+    console.error(
+      `❌ Error al iniciar subbot ${numero}:`,
+      err
+    )
+)
