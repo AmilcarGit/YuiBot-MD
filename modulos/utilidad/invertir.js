@@ -15,7 +15,7 @@ module.exports = {
       )
     }
 
-    const resultado = [...texto].reverse().join(' ')
+    const resultado = [...texto].reverse().join('')
 
     await msg.reply(`🔄 *TEXTO INVERTIDO*\n\n${resultado}`)
   }
