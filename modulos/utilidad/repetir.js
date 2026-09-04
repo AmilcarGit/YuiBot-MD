@@ -1,35 +1,46 @@
+//CÓDIGO ORIGINAL DE YUIBOT-MD
+
 module.exports = {
-  name: 'repetir',
-  alias: ['repeat'],
-  description: 'Repite un texto una cantidad determinada de veces',
 
-  async execute(socket, msg, args) {
-    if (args.length < 2) {
-      return await msg.reply(
-        '✳️ *USO DEL COMANDO*\n\n' +
-        'Repite un texto varias veces.\n\n' +
-        '📌 Ejemplo:\n' +
-        '`.repetir 3 hola`'
-      )
-    }
+name: 'repetir',
+aliases: ['repeat'],
+description: 'Repite un texto varias veces',
 
-    const cantidad = Number(args[0])
-    const texto = args.slice(1).join(' ').trim()
+category: 'utilidad',
 
-    if (!Number.isInteger(cantidad) || cantidad < 1) {
-      return await msg.reply('❌ La cantidad debe ser un número entero mayor que 0.')
-    }
+async execute(sock, msg, args) {
+if (args.length < 2) {
+return await sock.sendMessage(msg.key.remoteJid, {
+text: '⛧───「 REPETIR 」───⛧\n\nUsa el comando así:\n.repetir 3 hola'
+})
+}
 
-    if (cantidad > 20) {
-      return await msg.reply('⚠️ Máximo permitido: *20 repeticiones*.')
-    }
+const cantidad = Number(args[0])
+const texto = args.slice(1).join(' ').trim()
 
-    if (!texto) {
-      return await msg.reply('❌ Escribe el texto que quieres repetir.')
-    }
+if (!Number.isInteger(cantidad) || cantidad < 1) {
+return await sock.sendMessage(msg.key.remoteJid, {
+text: '❌ La cantidad debe ser un número entero mayor que 0.'
+})
+}
 
-    const resultado = Array(cantidad).fill(texto).join('\n')
+if (cantidad > 20) {
+return await sock.sendMessage(msg.key.remoteJid, {
+text: '⚠️ El máximo es de 20 repeticiones.'
+})
+}
 
-    await msg.reply(resultado)
-  }
+if (!texto) {
+return await sock.sendMessage(msg.key.remoteJid, {
+text: '❌ Escribe el texto que quieres repetir.'
+})
+}
+
+const resultado = Array(cantidad).fill(texto).join('\n')
+
+await sock.sendMessage(msg.key.remoteJid, {
+text: resultado
+})
+},
+
 }
