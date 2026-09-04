@@ -1,5 +1,7 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
 const { exec } = require('child_process')
+const { esPremium, obtenerNombrePersonalizado } = require('../../lib/subbots')
+const { gruposLiderados } = require('../../lib/red')
 
 function ejecutar(comando) {
   return new Promise((resolve) => {
@@ -7,6 +9,13 @@ function ejecutar(comando) {
       resolve({ error, stdout: stdout?.trim() || '' })
     })
   })
+}
+
+function formatearDuracion(ms) {
+  const totalSegundos = Math.floor(ms / 1000)
+  const h = Math.floor(totalSegundos / 3600)
+  const m = Math.floor((totalSegundos % 3600) / 60)
+  return `${h}h ${m}m`
 }
 
 module.exports = {
@@ -41,7 +50,15 @@ module.exports = {
     for (const p of subbots) {
       const numero = p.name.replace('subbot-', '')
       const estado = p.pm2_env?.status || 'desconocido'
-      texto += `  ❖ +${numero} — ${estado === 'online' ? '🟢' : '🔴'} ${estado}\n`
+      const nombre = obtenerNombrePersonalizado(numero)
+      const premium = esPremium(numero) ? ' ⭐' : ''
+      const grupos = gruposLiderados(numero).length
+      const tiempoActivo = p.pm2_env?.pm_uptime && estado === 'online'
+        ? formatearDuracion(Date.now() - p.pm2_env.pm_uptime)
+        : '—'
+
+      texto += `  ❖ +${numero}${premium}${nombre ? ` (${nombre})` : ''}\n`
+      texto += `     ${estado === 'online' ? '🟢' : '🔴'} ${estado} — activo: ${tiempoActivo} — lidera ${grupos} grupo(s)\n`
     }
     texto += `\n╰─➤ _${subbots.length} subbot(s) en total_ 🥀`
 
