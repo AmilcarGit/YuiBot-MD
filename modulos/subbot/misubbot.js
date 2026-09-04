@@ -1,5 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
-const { obtenerDuenoSubbot } = require('../../lib/subbots')
+const { obtenerDuenoSubbot, esPremium, obtenerNombrePersonalizado } = require('../../lib/subbots')
 const { gruposLiderados } = require('../../lib/red')
 
 function formatearDuracion(segundos) {
@@ -25,11 +25,15 @@ module.exports = {
 
     const dueno = obtenerDuenoSubbot(subbotNumero)
     const grupos = gruposLiderados(subbotNumero)
+    const premium = esPremium(subbotNumero)
+    const nombre = obtenerNombrePersonalizado(subbotNumero)
 
     const texto =
       `⛧───「 Mi Subbot 」───⛧\n\n` +
       `  ❖ número: +${subbotNumero}\n` +
+      `  ❖ nombre: ${nombre || '(sin personalizar)'}\n` +
       `  ❖ dueño: ${dueno?.nombre || 'desconocido'}\n` +
+      `  ❖ premium: ${premium ? '⭐ sí' : 'no'}\n` +
       `  ❖ tiempo activo: ${formatearDuracion(process.uptime())}\n` +
       `  ❖ grupos que lidero ahora: ${grupos.length}\n\n` +
       `╰─➤ _${config.BOT_NAME}_ 🥀`
