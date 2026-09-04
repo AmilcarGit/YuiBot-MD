@@ -49,7 +49,7 @@ module.exports = {
   },
   APIS: {
     LEMPI_KEY: 'lem_dc158e5ad3f4f6ee2de2905a222bfb68f61dd754',
-    LEMPI_KEY_2: 'YuiBot-MD167h7hw',
+    LEMPI_KEY_2: 'lem_10b02e6bcce68b82f51252de9d9ec71125528d02',
     EVOGB_KEY: 'evogb-jRhjmDSp',
     MITZUKI_KEY: 'sk-c8498d1dfbff805b5c10823a491082714dd76ac6f9a9e03dfe12ffc9b646d9a4',
     DVYER_KEY: 'dvyer069408482476',
