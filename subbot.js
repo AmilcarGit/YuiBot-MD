@@ -102,11 +102,17 @@ async function startSubBot() {
     if (!command) return
 
     if (command.ownerOnly) {
-      const senderJid = msg.key.participantAlt || msg.key.participant || jid
-      const senderNumero = senderJid.split('@')[0].split(':')[0]
-      const esDueno = esDuenoDeSubbot(numero, senderNumero)
+      const senderJids = [
+        msg.key.participantAlt,
+        msg.key.remoteJidAlt,
+        msg.key.participant,
+        msg.key.remoteJid,
+      ].filter(Boolean)
 
-      if (!isOwner(senderJid, config) && !esDueno) {
+      const esDueno = esDuenoDeSubbot(numero, senderJids)
+      const esOwnerPrincipal = senderJids.some((senderJid) => isOwner(senderJid, config))
+
+      if (!esOwnerPrincipal && !esDueno) {
         await sock.sendMessage(jid, { text: '⛔ Este comando es solo para el dueño de este subbot.' })
         return
       }
