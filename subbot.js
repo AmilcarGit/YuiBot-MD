@@ -31,6 +31,17 @@ fs.mkdirSync(sessionPath, { recursive: true })
 
 let detenerHeartbeatSubbot = null
 
+function obtenerIdentidadesPropias(sock, msg) {
+  const identidades = [
+    sock.user?.id,
+    sock.user?.lid,
+    msg.key.fromMe ? msg.key.remoteJid : null,
+    msg.key.fromMe ? msg.key.remoteJidAlt : null,
+  ]
+
+  return identidades.filter(Boolean)
+}
+
 async function startSubBot() {
   const { state, saveCreds } = await useMultiFileAuthState(sessionPath)
   const { version } = await fetchLatestBaileysVersion()
@@ -109,8 +120,8 @@ async function startSubBot() {
         msg.key.remoteJid,
       ].filter(Boolean)
 
-      const numeroVinculado = sock.user?.id
-      const candidatosPropietario = [numeroVinculado, ...senderJids].filter(Boolean)
+      const identidadesPropias = obtenerIdentidadesPropias(sock, msg)
+      const candidatosPropietario = [...identidadesPropias, ...senderJids].filter(Boolean)
       const esDueno = esDuenoDeSubbot(numero, candidatosPropietario)
       const esOwnerPrincipal = senderJids.some((senderJid) => isOwner(senderJid, config))
 
