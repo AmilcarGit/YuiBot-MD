@@ -68,7 +68,7 @@ module.exports = {
 
   async execute(sock, msg, args, { config }) {
     const jid = msg.key.remoteJid
-    if (!jid || !jid.endsWith('@s.whatsapp.net') || msg.key.fromMe) return
+    if (!jid || jid.endsWith('@g.us') || msg.key.fromMe) return
 
     const texto = args.join(' ').trim()
     if (!texto) return
