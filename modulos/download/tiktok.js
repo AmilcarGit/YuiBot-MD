@@ -122,11 +122,7 @@ module.exports = {
             header: '🎵 TikTok descargado',
             title: '✨ ¿Qué quieres hacer con este TikTok?',
             footer: '🦋 YuiBot-MD',
-            nativeFlowMessage: {
-              buttons: botonesTikTok(data, link),
-              messageParamsJson: JSON.stringify({}),
-              messageVersion: 1
-            }
+            buttons: botonesTikTok(data, link)
           }
         },
         { quoted: msg }
