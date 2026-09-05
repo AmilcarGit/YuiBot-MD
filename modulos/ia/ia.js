@@ -6,6 +6,10 @@ const MAX_MENSAJES = 12
 const TIMEOUT_MS = 15000
 const CADUCIDAD_MS = 30 * 60 * 1000
 
+function esChatPrivado(jid) {
+  return Boolean(jid && !jid.endsWith('@g.us'))
+}
+
 function consultarIA(texto, apiKey) {
   return new Promise((resolve, reject) => {
     const url = new URL('https://api.lempi.lat/ai/chatgpt')
@@ -68,7 +72,7 @@ module.exports = {
 
   async execute(sock, msg, args, { config }) {
     const jid = msg.key.remoteJid
-    if (!jid || jid.endsWith('@g.us') || msg.key.fromMe) return
+    if (!esChatPrivado(jid) || msg.key.fromMe) return
 
     const texto = args.join(' ').trim()
     if (!texto) return
