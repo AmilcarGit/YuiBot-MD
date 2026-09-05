@@ -26,10 +26,84 @@ if (!numero) {
 const carpetaSubbot = path.join(__dirname, 'subbots', numero)
 const sessionPath = path.join(carpetaSubbot, 'session')
 const codeFilePath = path.join(carpetaSubbot, 'code.txt')
+const socketLockPath = path.join(carpetaSubbot, 'socket.lock')
 
 fs.mkdirSync(sessionPath, { recursive: true })
 
 let detenerHeartbeatSubbot = null
+let socketActivo = null
+let reconexionProgramada = false
+let liberandoSocket = false
+
+function obtenerPidDelLock() {
+  try {
+    return Number(fs.readFileSync(socketLockPath, 'utf-8').trim())
+  } catch {
+    return null
+  }
+}
+
+function procesoActivo(pid) {
+  if (!pid || !Number.isInteger(pid)) return false
+  try {
+    process.kill(pid, 0)
+    return true
+  } catch {
+    return false
+  }
+}
+
+function adquirirSocketUnico() {
+  try {
+    const fd = fs.openSync(socketLockPath, 'wx')
+    fs.writeFileSync(fd, String(process.pid))
+    fs.closeSync(fd)
+    return true
+  } catch (error) {
+    if (error.code !== 'EEXIST') throw error
+
+    const pidAnterior = obtenerPidDelLock()
+    if (procesoActivo(pidAnterior)) {
+      console.error(`❌ [subbot ${numero}] Ya existe un socket activo para este subbot (PID ${pidAnterior}).`)
+      return false
+    }
+
+    try {
+      fs.unlinkSync(socketLockPath)
+      const fd = fs.openSync(socketLockPath, 'wx')
+      fs.writeFileSync(fd, String(process.pid))
+      fs.closeSync(fd)
+      return true
+    } catch {
+      console.error(`❌ [subbot ${numero}] No se pudo tomar el control exclusivo del socket.`)
+      return false
+    }
+  }
+}
+
+function liberarSocketUnico() {
+  if (liberandoSocket) return
+  liberandoSocket = true
+
+  try {
+    const pid = obtenerPidDelLock()
+    if (pid === process.pid && fs.existsSync(socketLockPath)) {
+      fs.unlinkSync(socketLockPath)
+    }
+  } catch {}
+}
+
+if (!adquirirSocketUnico()) process.exit(1)
+
+process.once('exit', liberarSocketUnico)
+process.once('SIGINT', () => {
+  liberarSocketUnico()
+  process.exit(0)
+})
+process.once('SIGTERM', () => {
+  liberarSocketUnico()
+  process.exit(0)
+})
 
 function obtenerIdentidadesPropias(sock, msg) {
   const identidades = [
@@ -43,6 +117,8 @@ function obtenerIdentidadesPropias(sock, msg) {
 }
 
 async function startSubBot() {
+  if (socketActivo) return socketActivo
+
   const { state, saveCreds } = await useMultiFileAuthState(sessionPath)
   const { version } = await fetchLatestBaileysVersion()
 
@@ -55,14 +131,20 @@ async function startSubBot() {
     printQRInTerminal: false,
   })
 
+  socketActivo = sock
+  reconexionProgramada = false
+
   const { commands, categories } = loadCommands()
 
   console.log(`🤖 [subbot ${numero}] Inicializado. Identidad: ${sock.user?.id || 'pendiente'} | LID: ${sock.user?.lid || 'pendiente'}`)
 
   if (!yaVinculado) {
     setTimeout(async () => {
+      if (socketActivo !== sock || state.creds.registered) return
+
       try {
         const code = await sock.requestPairingCode(numero.trim())
+        if (socketActivo !== sock) return
         fs.writeFileSync(codeFilePath, code)
         console.log(`🔑 Código de vinculación para subbot ${numero}: ${code}`)
       } catch (err) {
@@ -75,6 +157,8 @@ async function startSubBot() {
     const { connection, lastDisconnect } = update
 
     if (connection === 'close') {
+      if (socketActivo === sock) socketActivo = null
+
       const error = lastDisconnect?.error
       const boom = new Boom(error)
       const statusCode = boom.output?.statusCode
@@ -85,7 +169,8 @@ async function startSubBot() {
       console.error(`❌ [subbot ${numero}] Conexión cerrada | statusCode=${statusCode || 'N/A'} | message=${errorMessage} | data=${errorData} | shouldReconnect=${shouldReconnect}`)
       console.error(`🔍 [subbot ${numero}] Error completo:`, error)
 
-      if (shouldReconnect) {
+      if (shouldReconnect && !reconexionProgramada) {
+        reconexionProgramada = true
         setTimeout(() => startSubBot().catch((err) => console.error(`❌ [subbot ${numero}] Error reconectando:`, err)), 5000)
       }
     } else if (connection === 'open') {
@@ -184,6 +269,11 @@ async function startSubBot() {
       }
     }
   })
+
+  return sock
 }
 
-startSubBot().catch((err) => console.error(`❌ Error al iniciar subbot ${numero}:`, err))
+startSubBot().catch((err) => {
+  liberarSocketUnico()
+  console.error(`❌ Error al iniciar subbot ${numero}:`, err)
+})
