@@ -3,6 +3,43 @@ const { pedirTikTok } = require('../../lib/tiktok')
 
 const LIMITE_VIDEO_MB = 64
 
+function botonesTikTok(data, link) {
+  const botones = [
+    {
+      name: 'cta_copy',
+      buttonParamsJson: JSON.stringify({
+        display_text: '📋 Copiar enlace',
+        id: 'tiktok_url',
+        copy_code: link
+      })
+    }
+  ]
+
+  if (data?.musica?.url) {
+    botones.push({
+      name: 'cta_url',
+      buttonParamsJson: JSON.stringify({
+        display_text: '🎵 Abrir audio',
+        url: data.musica.url,
+        merchant_url: data.musica.url
+      })
+    })
+  }
+
+  if (data?.portada) {
+    botones.push({
+      name: 'cta_url',
+      buttonParamsJson: JSON.stringify({
+        display_text: '🖼️ Ver portada',
+        url: data.portada,
+        merchant_url: data.portada
+      })
+    })
+  }
+
+  return botones
+}
+
 module.exports = {
   name: 'tiktok',
   aliases: ['tt', 'ttdl'],
@@ -77,6 +114,24 @@ module.exports = {
           { quoted: msg }
         )
       }
+
+      await sock.sendMessage(
+        jid,
+        {
+          text: '✨ ¿Qué quieres hacer con este TikTok?',
+          title: '🎵 TikTok descargado',
+          footer: '🦋 YuiBot-MD',
+          interactiveMessage: {
+            title: '🎵 TikTok descargado',
+            body: { text: 'Selecciona una opción:' },
+            footer: { text: '🦋 YuiBot-MD' },
+            nativeFlowMessage: {
+              buttons: botonesTikTok(data, link)
+            }
+          }
+        },
+        { quoted: msg }
+      )
     } catch (error) {
       console.error('[TIKTOK]', error)
       await sock.sendMessage(
