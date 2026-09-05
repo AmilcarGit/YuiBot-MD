@@ -118,15 +118,14 @@ module.exports = {
       await sock.sendMessage(
         jid,
         {
-          text: '✨ ¿Qué quieres hacer con este TikTok?',
-          title: '🎵 TikTok descargado',
-          footer: '🦋 YuiBot-MD',
           interactiveMessage: {
-            title: '🎵 TikTok descargado',
-            body: { text: 'Selecciona una opción:' },
-            footer: { text: '🦋 YuiBot-MD' },
+            header: '🎵 TikTok descargado',
+            title: '✨ ¿Qué quieres hacer con este TikTok?',
+            footer: '🦋 YuiBot-MD',
             nativeFlowMessage: {
-              buttons: botonesTikTok(data, link)
+              buttons: botonesTikTok(data, link),
+              messageParamsJson: JSON.stringify({}),
+              messageVersion: 1
             }
           }
         },
