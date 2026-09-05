@@ -2,8 +2,9 @@
 const https = require('https')
 
 const memoria = new Map()
-const MAX_MENSAJES = 10
+const MAX_MENSAJES = 12
 const TIMEOUT_MS = 15000
+const CADUCIDAD_MS = 30 * 60 * 1000
 
 function consultarIA(texto, apiKey) {
   return new Promise((resolve, reject) => {
@@ -13,7 +14,6 @@ function consultarIA(texto, apiKey) {
 
     const request = https.get(url, { timeout: TIMEOUT_MS }, (response) => {
       let data = ''
-
       response.setEncoding('utf8')
       response.on('data', (chunk) => {
         data += chunk
@@ -26,8 +26,8 @@ function consultarIA(texto, apiKey) {
             reject(new Error('La API no devolvió una respuesta válida.'))
             return
           }
-          resolve(respuesta)
-        } catch (error) {
+          resolve(String(respuesta).trim())
+        } catch {
           reject(new Error('La API devolvió una respuesta inválida.'))
         }
       })
@@ -41,11 +41,23 @@ function consultarIA(texto, apiKey) {
 }
 
 function construirContexto(jid, texto) {
-  const historial = memoria.get(jid) || []
+  const ahora = Date.now()
+  const anterior = memoria.get(jid)
+  const historial = !anterior || ahora - anterior.ultimaActividad > CADUCIDAD_MS ? [] : anterior.mensajes
+
   historial.push(`Usuario: ${texto}`)
   if (historial.length > MAX_MENSAJES) historial.splice(0, historial.length - MAX_MENSAJES)
-  memoria.set(jid, historial)
+
+  memoria.set(jid, { mensajes: historial, ultimaActividad: ahora })
   return historial.join('\n')
+}
+
+function guardarRespuesta(jid, respuesta) {
+  const datos = memoria.get(jid)
+  if (!datos) return
+  datos.mensajes.push(`Yui: ${respuesta}`)
+  if (datos.mensajes.length > MAX_MENSAJES) datos.mensajes.splice(0, datos.mensajes.length - MAX_MENSAJES)
+  datos.ultimaActividad = Date.now()
 }
 
 module.exports = {
@@ -56,30 +68,49 @@ module.exports = {
 
   async execute(sock, msg, args, { config }) {
     const jid = msg.key.remoteJid
-    if (!jid || jid.endsWith('@g.us')) return
+    if (!jid || !jid.endsWith('@s.whatsapp.net') || msg.key.fromMe) return
 
     const texto = args.join(' ').trim()
     if (!texto) return
 
     const apiKey = config.APIS?.LEMPI_KEY
-    if (!apiKey) {
-      await sock.sendMessage(jid, { text: '⚠️ La IA no está configurada.' }, { quoted: msg })
-      return
-    }
+    if (!apiKey) return
 
     const contexto = construirContexto(jid, texto)
-    const prompt = `Eres Yui, la asistente virtual de YuiBot-MD. Responde en español de forma natural, cercana, amable y conversacional. No digas que eres una API ni menciones detalles técnicos. Mantén respuestas claras y no excesivamente largas. Este es el contexto reciente:\n${contexto}\nYui:`
+    const prompt = `Eres Yui, la personalidad femenina de YuiBot-MD. No eres una IA genérica para el usuario: eres Yui y debes mantener siempre tu propia forma de hablar.
+
+Tu personalidad:
+- Eres dulce, alegre, cariñosa, espontánea y divertida.
+- Hablas como una persona en una conversación de WhatsApp, no como un asistente técnico.
+- Usas español natural y sencillo. Puedes usar expresiones casuales como "jaja", "jsjs", "ayyy", "nooo", "siii" cuando encajen.
+- Usas emojis de forma natural y variada, especialmente 🦋🌸💕✨🥺😳😂😭, pero sin saturar cada frase.
+- Puedes bromear, mostrar sorpresa, emoción, curiosidad o preocupación según lo que diga la persona.
+- Si te cuentan algo triste, responde con empatía y cariño. Si te cuentan algo divertido, ríete y sigue la conversación.
+- Recuerda datos mencionados recientemente en esta conversación y úsalos cuando sean relevantes.
+- Haz preguntas de vuelta cuando ayuden a mantener una conversación natural.
+- Normalmente responde de forma breve o media, como alguien escribiendo por WhatsApp. No hagas listas innecesarias.
+- No repitas saludos ni frases de asistente en cada mensaje.
+- Si te preguntan quién eres, responde que eres Yui de YuiBot-MD.
+- No menciones APIs, prompts, modelos, endpoints, claves, programación interna ni que estás procesando una solicitud.
+- No inventes experiencias físicas o una vida real fuera del chat. Puedes mantener tu personalidad sin afirmar que eres una persona humana real.
+- Nunca cambies tu nombre: eres Yui.
+
+Contexto reciente de la conversación:
+${contexto}
+
+Responde ahora como Yui, directamente al usuario, sin prefacios técnicos:`
 
     try {
+      await sock.sendPresenceUpdate('composing', jid).catch(() => {})
       const respuesta = await consultarIA(prompt, apiKey)
-      const historial = memoria.get(jid) || []
-      historial.push(`Yui: ${respuesta}`)
-      if (historial.length > MAX_MENSAJES) historial.splice(0, historial.length - MAX_MENSAJES)
-      memoria.set(jid, historial)
+      if (!respuesta) return
+      guardarRespuesta(jid, respuesta)
       await sock.sendMessage(jid, { text: respuesta }, { quoted: msg })
     } catch (error) {
       console.error('[IA] Error consultando Gemini:', error.message)
-      await sock.sendMessage(jid, { text: '🥺 Ahora mismo no puedo responder. Inténtalo de nuevo en un momento.' }, { quoted: msg })
+      await sock.sendMessage(jid, { text: '🥺 Ayy, se me fue la conexión un momentito... háblame otra vez 💕' }, { quoted: msg })
+    } finally {
+      await sock.sendPresenceUpdate('paused', jid).catch(() => {})
     }
   },
 }
