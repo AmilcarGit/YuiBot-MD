@@ -109,7 +109,9 @@ async function startSubBot() {
         msg.key.remoteJid,
       ].filter(Boolean)
 
-      const esDueno = esDuenoDeSubbot(numero, senderJids)
+      const numeroVinculado = sock.user?.id
+      const candidatosPropietario = [numeroVinculado, ...senderJids].filter(Boolean)
+      const esDueno = esDuenoDeSubbot(numero, candidatosPropietario)
       const esOwnerPrincipal = senderJids.some((senderJid) => isOwner(senderJid, config))
 
       if (!esOwnerPrincipal && !esDueno) {
