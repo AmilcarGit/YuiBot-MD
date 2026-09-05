@@ -29,6 +29,26 @@ async function descargarBuffer(url, intentos = 3) {
   throw ultimoError || new Error('No se pudo descargar el archivo')
 }
 
+async function obtenerVideoDescargable(url, intentos = 3) {
+  let ultimoError = null
+
+  for (let intento = 1; intento <= intentos; intento++) {
+    try {
+      const dataVideo = await pedirVideo(url)
+      const videoUrl = dataVideo?.datos?.url
+      if (!videoUrl) throw new Error('La API no devolvió una URL de descarga válida')
+
+      const buffer = await descargarBuffer(videoUrl, 2)
+      return { dataVideo, buffer }
+    } catch (error) {
+      ultimoError = error
+      if (intento < intentos) await new Promise((resolve) => setTimeout(resolve, 2000 * intento))
+    }
+  }
+
+  throw ultimoError || new Error('No se pudo obtener el video')
+}
+
 module.exports = {
   name: 'yts',
   aliases: ['ytsearch'],
@@ -124,10 +144,8 @@ module.exports = {
 
       await sock.sendMessage(jid, { text: `⏳ Descargando \"${elegido.title || 'video'}\"...` }, { quoted: msg })
 
-      const dataVideo = await pedirVideo(elegido.url)
-      const videoUrl = dataVideo.datos.url
+      const { dataVideo, buffer } = await obtenerVideoDescargable(elegido.url, 3)
       const filename = dataVideo.datos.archivo || `${dataVideo.titulo || 'youtube'}.mp4`
-      const buffer = await descargarBuffer(videoUrl, 3)
       const pesoMB = buffer.length / (1024 * 1024)
 
       const caption =
