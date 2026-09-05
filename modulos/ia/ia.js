@@ -98,9 +98,10 @@ module.exports = {
   description: 'IA conversacional privada de Yui',
   category: 'ia',
 
-  async execute(sock, msg, args) {
+  async execute(sock, msg, args, { esSubBot } = {}) {
     const jid = msg.key.remoteJid
 
+    if (esSubBot) return
     if (!esChatPrivado(jid) || msg.key.fromMe) return
 
     const texto = args.join(' ').trim()
