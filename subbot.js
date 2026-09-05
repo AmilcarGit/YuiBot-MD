@@ -57,6 +57,8 @@ async function startSubBot() {
 
   const { commands, categories } = loadCommands()
 
+  console.log(`🤖 [subbot ${numero}] Inicializado. Identidad: ${sock.user?.id || 'pendiente'} | LID: ${sock.user?.lid || 'pendiente'}`)
+
   if (!yaVinculado) {
     setTimeout(async () => {
       try {
@@ -64,7 +66,7 @@ async function startSubBot() {
         fs.writeFileSync(codeFilePath, code)
         console.log(`🔑 Código de vinculación para subbot ${numero}: ${code}`)
       } catch (err) {
-        console.error('❌ No se pudo generar el código de vinculación:', err)
+        console.error(`❌ [subbot ${numero}] No se pudo generar el código de vinculación:`, err)
       }
     }, 3000)
   }
@@ -77,10 +79,10 @@ async function startSubBot() {
       const shouldReconnect = statusCode !== DisconnectReason.loggedOut
       console.log(`❌ [subbot ${numero}] Conexión cerrada.`, shouldReconnect ? 'Reconectando...' : 'Sesión cerrada.')
       if (shouldReconnect) {
-        setTimeout(() => startSubBot().catch((err) => console.error('❌ Error reconectando subbot:', err)), 3000)
+        setTimeout(() => startSubBot().catch((err) => console.error(`❌ [subbot ${numero}] Error reconectando:`, err)), 3000)
       }
     } else if (connection === 'open') {
-      console.log(`✅ Subbot ${numero} conectado a WhatsApp.`)
+      console.log(`✅ [subbot ${numero}] Conectado a WhatsApp. Identidad: ${sock.user?.id || 'desconocida'} | LID: ${sock.user?.lid || 'desconocido'}`)
       if (fs.existsSync(codeFilePath)) fs.unlink(codeFilePath, () => {})
 
       if (detenerHeartbeatSubbot) detenerHeartbeatSubbot()
@@ -91,51 +93,84 @@ async function startSubBot() {
   sock.ev.on('creds.update', saveCreds)
 
   sock.ev.on('messages.upsert', async ({ messages, type }) => {
-    if (type !== 'notify') return
+    console.log(`📥 [subbot ${numero}] messages.upsert | tipo=${type} | cantidad=${messages?.length || 0}`)
 
-    const msg = messages[0]
-    if (!msg.message) return
+    if (!messages?.length) return
 
-    const jid = msg.key.remoteJid
-    const esGrupo = jid.endsWith('@g.us')
+    for (const msg of messages) {
+      const key = msg.key || {}
+      const jid = key.remoteJid || key.remoteJidAlt || ''
+      const cuerpo = getMessageBody(msg)
 
-    if (esGrupo) {
-      const puedeResponder = puedeResponderSubbot(numero, jid)
-      if (!puedeResponder) return
-    }
+      console.log(`📩 [subbot ${numero}] mensaje | fromMe=${!!key.fromMe} | remoteJid=${key.remoteJid || '-'} | remoteJidAlt=${key.remoteJidAlt || '-'} | participant=${key.participant || '-'} | participantAlt=${key.participantAlt || '-'} | texto=${cuerpo || '-'}`)
 
-    const body = getMessageBody(msg)
-
-    const parsed = parseCommand(body, config)
-    if (!parsed) return
-
-    const command = commands.get(parsed.commandName)
-    if (!command) return
-
-    if (command.ownerOnly) {
-      const senderJids = [
-        msg.key.participantAlt,
-        msg.key.remoteJidAlt,
-        msg.key.participant,
-        msg.key.remoteJid,
-      ].filter(Boolean)
-
-      const identidadesPropias = obtenerIdentidadesPropias(sock, msg)
-      const candidatosPropietario = [...identidadesPropias, ...senderJids].filter(Boolean)
-      const esDueno = esDuenoDeSubbot(numero, candidatosPropietario)
-      const esOwnerPrincipal = senderJids.some((senderJid) => isOwner(senderJid, config))
-
-      if (!esOwnerPrincipal && !esDueno) {
-        await sock.sendMessage(jid, { text: '⛔ Este comando es solo para el dueño de este subbot.' })
-        return
+      if (!msg.message) {
+        console.log(`⚠️ [subbot ${numero}] Mensaje sin contenido.`)
+        continue
       }
-    }
 
-    try {
-      await command.execute(sock, msg, parsed.args, { commands, categories, config, esSubBot: true, subbotNumero: numero })
-    } catch (err) {
-      console.error(`[subbot ${numero}] Error ejecutando "${parsed.commandName}":`, err)
-      await sock.sendMessage(jid, { text: '⚠️ Ocurrió un error ejecutando ese comando.' })
+      if (type !== 'notify') {
+        console.log(`⏭️ [subbot ${numero}] Ignorado por tipo de evento: ${type}`)
+        continue
+      }
+
+      if (!jid) {
+        console.log(`⚠️ [subbot ${numero}] Mensaje sin JID.`)
+        continue
+      }
+
+      const esGrupo = jid.endsWith('@g.us')
+
+      if (esGrupo) {
+        const puedeResponder = puedeResponderSubbot(numero, jid)
+        console.log(`👥 [subbot ${numero}] Grupo ${jid} | puedeResponder=${puedeResponder}`)
+        if (!puedeResponder) continue
+      }
+
+      const parsed = parseCommand(cuerpo, config)
+      if (!parsed) {
+        console.log(`ℹ️ [subbot ${numero}] No se detectó comando.`)
+        continue
+      }
+
+      console.log(`🔎 [subbot ${numero}] Comando detectado: ${parsed.commandName} | args=${JSON.stringify(parsed.args)}`)
+
+      const command = commands.get(parsed.commandName)
+      if (!command) {
+        console.log(`❓ [subbot ${numero}] Comando no encontrado: ${parsed.commandName}`)
+        continue
+      }
+
+      if (command.ownerOnly) {
+        const senderJids = [
+          key.participantAlt,
+          key.remoteJidAlt,
+          key.participant,
+          key.remoteJid,
+        ].filter(Boolean)
+
+        const identidadesPropias = obtenerIdentidadesPropias(sock, msg)
+        const candidatosPropietario = [...identidadesPropias, ...senderJids].filter(Boolean)
+        const esDueno = esDuenoDeSubbot(numero, candidatosPropietario)
+        const esOwnerPrincipal = senderJids.some((senderJid) => isOwner(senderJid, config))
+
+        console.log(`🔐 [subbot ${numero}] ownerOnly=${command.ownerOnly} | candidatos=${JSON.stringify(candidatosPropietario)} | esDueno=${esDueno} | esOwnerPrincipal=${esOwnerPrincipal}`)
+
+        if (!esOwnerPrincipal && !esDueno) {
+          console.log(`⛔ [subbot ${numero}] Comando rechazado por comprobación de propietario: ${parsed.commandName}`)
+          await sock.sendMessage(jid, { text: '⛔ Este comando es solo para el dueño de este subbot.' })
+          continue
+        }
+      }
+
+      try {
+        console.log(`▶️ [subbot ${numero}] Ejecutando comando: ${parsed.commandName}`)
+        await command.execute(sock, msg, parsed.args, { commands, categories, config, esSubBot: true, subbotNumero: numero })
+        console.log(`✅ [subbot ${numero}] Comando ejecutado: ${parsed.commandName}`)
+      } catch (err) {
+        console.error(`❌ [subbot ${numero}] Error ejecutando "${parsed.commandName}":`, err)
+        await sock.sendMessage(jid, { text: '⚠️ Ocurrió un error ejecutando ese comando.' })
+      }
     }
   })
 }
