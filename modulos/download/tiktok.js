@@ -1,6 +1,6 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
 const { pedirTikTok } = require('../../lib/tiktok')
-const { generateWAMessageFromContent, proto } = require('@whiskeysockets/baileys')
+const { generateWAMessageFromContent, prepareWAMessageMedia, proto } = require('@whiskeysockets/baileys')
 
 const LIMITE_VIDEO_MB = 64
 
@@ -41,21 +41,26 @@ function botonesTikTok(data, link) {
   return botones
 }
 
-async function enviarBotonesTikTok(sock, jid, msg, data, link) {
-  const botones = botonesTikTok(data, link)
+async function enviarTikTokConBotones(sock, jid, msg, data, link, buffer, caption) {
+  const media = await prepareWAMessageMedia(
+    { video: buffer, mimetype: 'video/mp4' },
+    { upload: sock.waUploadToServer }
+  )
+
   const contenido = proto.Message.InteractiveMessage.create({
     body: proto.Message.InteractiveMessage.Body.create({
-      text: '✨ ¿Qué quieres hacer con este TikTok?'
+      text: caption
     }),
     footer: proto.Message.InteractiveMessage.Footer.create({
       text: '🦋 YuiBot-MD'
     }),
     header: proto.Message.InteractiveMessage.Header.create({
       title: '🎵 TikTok descargado',
-      hasMediaAttachment: false
+      hasMediaAttachment: true,
+      videoMessage: media.videoMessage
     }),
     nativeFlowMessage: proto.Message.InteractiveMessage.NativeFlowMessage.create({
-      buttons: botones,
+      buttons: botonesTikTok(data, link),
       messageParamsJson: JSON.stringify({})
     })
   })
@@ -131,16 +136,7 @@ module.exports = {
         `╰━━━━━━━━━━━━━━━━━━━━╯`
 
       if (pesoMB <= LIMITE_VIDEO_MB) {
-        await sock.sendMessage(
-          jid,
-          {
-            video: buffer,
-            mimetype: 'video/mp4',
-            fileName: datos.archivo || 'tiktok.mp4',
-            caption
-          },
-          { quoted: msg }
-        )
+        await enviarTikTokConBotones(sock, jid, msg, data, link, buffer, caption)
       } else {
         await sock.sendMessage(
           jid,
@@ -153,8 +149,6 @@ module.exports = {
           { quoted: msg }
         )
       }
-
-      await enviarBotonesTikTok(sock, jid, msg, data, link)
     } catch (error) {
       console.error('[TIKTOK]', error)
       await sock.sendMessage(
