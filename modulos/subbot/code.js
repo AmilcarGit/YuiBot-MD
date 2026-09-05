@@ -90,8 +90,8 @@ module.exports = {
 
     await ejecutar('pm2 save', raiz)
 
-    const remitenteSolicitante = msg.key.participantAlt || msg.key.participant || jid
-    const numeroSolicitante = remitenteSolicitante.split('@')[0].split(':')[0]
+    const remitenteSolicitante = msg.key.participantAlt || msg.key.remoteJidAlt || msg.key.participant || jid
+    const numeroSolicitante = remitenteSolicitante.split('@')[0].split(':')[0].replace(/\D/g, '')
 
     let nombreSolicitante = numeroSolicitante
     try {
