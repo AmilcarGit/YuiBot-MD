@@ -1,5 +1,10 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
 const { pedirBusqueda, pedirVideo } = require('../../lib/youtube')
+const fs = require('fs')
+const os = require('os')
+const path = require('path')
+const crypto = require('crypto')
+const { spawn } = require('child_process')
 const LIMITE_VIDEO_MB = 3000
 
 async function descargarBuffer(url, intentos = 3) {
@@ -29,6 +34,86 @@ async function descargarBuffer(url, intentos = 3) {
   throw ultimoError || new Error('No se pudo descargar el archivo')
 }
 
+function ejecutarProceso(comando, argumentos) {
+  return new Promise((resolve, reject) => {
+    const proceso = spawn(comando, argumentos, { stdio: ['ignore', 'pipe', 'pipe'] })
+    let stdout = ''
+    let stderr = ''
+
+    proceso.stdout.on('data', (data) => { stdout += data.toString() })
+    proceso.stderr.on('data', (data) => { stderr += data.toString() })
+    proceso.on('error', reject)
+    proceso.on('close', (codigo) => {
+      if (codigo === 0) return resolve({ stdout, stderr })
+      reject(new Error(stderr.trim() || `El proceso terminó con código ${codigo}`))
+    })
+  })
+}
+
+async function normalizarVideo(buffer) {
+  const base = path.join(os.tmpdir(), `yui-yts-${crypto.randomUUID()}`)
+  const entrada = `${base}.input`
+  const salida = `${base}.mp4`
+
+  try {
+    fs.writeFileSync(entrada, buffer)
+
+    let info
+    try {
+      const resultado = await ejecutarProceso('ffprobe', [
+        '-v', 'error',
+        '-show_entries', 'stream=codec_type,codec_name',
+        '-of', 'json',
+        entrada
+      ])
+      info = JSON.parse(resultado.stdout || '{}')
+    } catch (error) {
+      info = null
+    }
+
+    const streams = Array.isArray(info?.streams) ? info.streams : []
+    const video = streams.find((stream) => stream.codec_type === 'video')
+    const audio = streams.find((stream) => stream.codec_type === 'audio')
+
+    if (!video) throw new Error('El archivo descargado no contiene una pista de video válida')
+
+    if (video.codec_name === 'h264' && (!audio || audio.codec_name === 'aac')) {
+      await ejecutarProceso('ffmpeg', [
+        '-y',
+        '-i', entrada,
+        '-map', '0:v:0',
+        '-map', '0:a:0?',
+        '-c', 'copy',
+        '-movflags', '+faststart',
+        salida
+      ])
+    } else {
+      await ejecutarProceso('ffmpeg', [
+        '-y',
+        '-i', entrada,
+        '-map', '0:v:0',
+        '-map', '0:a:0?',
+        '-c:v', 'libx264',
+        '-preset', 'veryfast',
+        '-crf', '23',
+        '-pix_fmt', 'yuv420p',
+        '-c:a', 'aac',
+        '-b:a', '128k',
+        '-movflags', '+faststart',
+        salida
+      ])
+    }
+
+    const resultado = fs.readFileSync(salida)
+    if (!resultado.length) throw new Error('La normalización produjo un archivo vacío')
+    return resultado
+  } finally {
+    for (const archivo of [entrada, salida]) {
+      try { fs.unlinkSync(archivo) } catch {}
+    }
+  }
+}
+
 async function obtenerVideoDescargable(url, intentos = 3) {
   let ultimoError = null
 
@@ -39,7 +124,8 @@ async function obtenerVideoDescargable(url, intentos = 3) {
       if (!videoUrl) throw new Error('La API no devolvió una URL de descarga válida')
 
       const buffer = await descargarBuffer(videoUrl, 2)
-      return { dataVideo, buffer }
+      const videoNormalizado = await normalizarVideo(buffer)
+      return { dataVideo, buffer: videoNormalizado }
     } catch (error) {
       ultimoError = error
       if (intento < intentos) await new Promise((resolve) => setTimeout(resolve, 2000 * intento))
@@ -156,7 +242,7 @@ module.exports = {
         `╰━━━━━━━━━━━━━━━━━━━━━━╯`
 
       if (pesoMB <= LIMITE_VIDEO_MB) {
-        await sock.sendMessage(jid, { video: buffer, mimetype: 'video/mp4', fileName: filename, caption }, { quoted: msg })
+        await sock.sendMessage(jid, { video: buffer, mimetype: 'video/mp4', fileName: filename, caption, gifPlayback: false, ptv: false }, { quoted: msg })
       } else {
         await sock.sendMessage(jid, { document: buffer, mimetype: 'video/mp4', fileName: filename, caption }, { quoted: msg })
       }
