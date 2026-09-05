@@ -158,10 +158,10 @@ async function startSubBot() {
 
         const identidadesPropias = obtenerIdentidadesPropias(sock, msg)
         const candidatosPropietario = [...identidadesPropias, ...senderJids].filter(Boolean)
-        const esDueno = esDuenoDeSubbot(numero, candidatosPropietario)
+        const esDueno = key.fromMe || esDuenoDeSubbot(numero, candidatosPropietario)
         const esOwnerPrincipal = senderJids.some((senderJid) => isOwner(senderJid, config))
 
-        console.log(`🔐 [subbot ${numero}] ownerOnly=${command.ownerOnly} | candidatos=${JSON.stringify(candidatosPropietario)} | esDueno=${esDueno} | esOwnerPrincipal=${esOwnerPrincipal}`)
+        console.log(`🔐 [subbot ${numero}] ownerOnly=${command.ownerOnly} | fromMe=${!!key.fromMe} | candidatos=${JSON.stringify(candidatosPropietario)} | esDueno=${esDueno} | esOwnerPrincipal=${esOwnerPrincipal}`)
 
         if (!esOwnerPrincipal && !esDueno) {
           console.log(`⛔ [subbot ${numero}] Comando rechazado por comprobación de propietario: ${parsed.commandName}`)
@@ -182,4 +182,4 @@ async function startSubBot() {
   })
 }
 
-startSubBot().catch((err) => console.error(`❌ Error al iniciar el subbot ${numero}:`, err))
+startSubBot().catch((err) => console.error(`❌ Error al iniciar subbot ${numero}:`, err))
