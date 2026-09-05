@@ -3,7 +3,7 @@ const { exec } = require('child_process')
 const fs = require('fs')
 const path = require('path')
 const { guardarDuenoSubbot, marcarPremium } = require('../../lib/subbots')
-const { tokenValido } = require('../../lib/premium')
+const { consumirToken } = require('../../lib/premium')
 
 function ejecutar(comando, cwd) {
   return new Promise((resolve) => {
@@ -102,7 +102,7 @@ module.exports = {
     guardarDuenoSubbot(numero, { numero: numeroSolicitante, nombre: nombreSolicitante, creado: Date.now() })
 
     let esPremium = false
-    if (tokenIngresado && tokenValido(tokenIngresado)) {
+    if (tokenIngresado && consumirToken(tokenIngresado)) {
       marcarPremium(numero, true)
       esPremium = true
     }
