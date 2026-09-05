@@ -33,7 +33,7 @@ module.exports = {
   aliases: ['subbot', 'addsubbot'],
   description: 'Genera un código para vincular un subbot',
   category: 'subbot',
-  ownerOnly: true,
+  ownerOnly: false,
 
   async execute(sock, msg, args, { config }) {
     const jid = msg.key.remoteJid
