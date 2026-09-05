@@ -13,7 +13,7 @@ const fs = require('fs')
 const { loadCommands } = require('./lib/cargador')
 const { getMessageBody, parseCommand, isOwner } = require('./lib/handler')
 const { iniciarHeartbeat, puedeResponderSubbot } = require('./lib/red')
-const { esDuenoDeSubbot } = require('./lib/subbots')
+const { esDuenoDeSubbot, obtenerPrefijo } = require('./lib/subbots')
 const config = require('./defaults')
 
 const numero = process.argv[2]
@@ -134,7 +134,11 @@ async function startSubBot() {
         if (!puedeResponder) continue
       }
 
-      const parsed = parseCommand(cuerpo, config)
+      const prefijoPersonalizado = obtenerPrefijo(numero)
+      const configSubbot = prefijoPersonalizado
+        ? { ...config, PREFIXES: [prefijoPersonalizado, ...config.PREFIXES.filter((p) => p !== prefijoPersonalizado)] }
+        : config
+      const parsed = parseCommand(cuerpo, configSubbot)
       if (!parsed) {
         console.log(`ℹ️ [subbot ${numero}] No se detectó comando.`)
         continue
@@ -172,7 +176,7 @@ async function startSubBot() {
 
       try {
         console.log(`▶️ [subbot ${numero}] Ejecutando comando: ${parsed.commandName}`)
-        await command.execute(sock, msg, parsed.args, { commands, categories, config, esSubBot: true, subbotNumero: numero })
+        await command.execute(sock, msg, parsed.args, { commands, categories, config: configSubbot, esSubBot: true, subbotNumero: numero })
         console.log(`✅ [subbot ${numero}] Comando ejecutado: ${parsed.commandName}`)
       } catch (err) {
         console.error(`❌ [subbot ${numero}] Error ejecutando "${parsed.commandName}":`, err)
