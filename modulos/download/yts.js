@@ -2,6 +2,33 @@
 const { pedirBusqueda, pedirVideo } = require('../../lib/youtube')
 const LIMITE_VIDEO_MB = 3000
 
+async function descargarBuffer(url, intentos = 3) {
+  let ultimoError = null
+
+  for (let intento = 1; intento <= intentos; intento++) {
+    try {
+      const controlador = new AbortController()
+      const temporizador = setTimeout(() => controlador.abort(), 60000)
+      const respuesta = await fetch(url, {
+        signal: controlador.signal,
+        headers: { 'User-Agent': 'Mozilla/5.0' }
+      })
+      clearTimeout(temporizador)
+
+      if (!respuesta.ok) throw new Error(`HTTP ${respuesta.status}`)
+
+      const buffer = Buffer.from(await respuesta.arrayBuffer())
+      if (!buffer.length) throw new Error('Respuesta vacía')
+      return buffer
+    } catch (error) {
+      ultimoError = error
+      if (intento < intentos) await new Promise((resolve) => setTimeout(resolve, 1500 * intento))
+    }
+  }
+
+  throw ultimoError || new Error('No se pudo descargar el archivo')
+}
+
 module.exports = {
   name: 'yts',
   aliases: ['ytsearch'],
@@ -56,13 +83,8 @@ module.exports = {
 
       if (primeraMiniatura) {
         try {
-          const respImg = await fetch(primeraMiniatura)
-          if (respImg.ok) {
-            const bufferImg = Buffer.from(await respImg.arrayBuffer())
-            await sock.sendMessage(jid, { image: bufferImg, caption: mensaje }, { quoted: msg })
-          } else {
-            await sock.sendMessage(jid, { text: mensaje }, { quoted: msg })
-          }
+          const bufferImg = await descargarBuffer(primeraMiniatura, 2)
+          await sock.sendMessage(jid, { image: bufferImg, caption: mensaje }, { quoted: msg })
         } catch (errorImg) {
           console.log('[YTS] No se pudo enviar la miniatura, se envía solo texto:', errorImg.message)
           await sock.sendMessage(jid, { text: mensaje }, { quoted: msg })
@@ -100,16 +122,12 @@ module.exports = {
         return sock.sendMessage(jid, { text: '❌ Ese resultado no tiene un enlace válido.' }, { quoted: msg })
       }
 
-      await sock.sendMessage(jid, { text: `⏳ Descargando "${elegido.title || 'video'}"...` }, { quoted: msg })
+      await sock.sendMessage(jid, { text: `⏳ Descargando \"${elegido.title || 'video'}\"...` }, { quoted: msg })
 
       const dataVideo = await pedirVideo(elegido.url)
       const videoUrl = dataVideo.datos.url
       const filename = dataVideo.datos.archivo || `${dataVideo.titulo || 'youtube'}.mp4`
-
-      const fileResponse = await fetch(videoUrl)
-      if (!fileResponse.ok) throw new Error(`No se pudo descargar el archivo (HTTP ${fileResponse.status})`)
-
-      const buffer = Buffer.from(await fileResponse.arrayBuffer())
+      const buffer = await descargarBuffer(videoUrl, 3)
       const pesoMB = buffer.length / (1024 * 1024)
 
       const caption =
