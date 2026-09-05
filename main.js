@@ -33,13 +33,23 @@ const col = {
 };
 
 function printBanner({ totalComandos }) {
-  const linea = '─'.repeat(42);
-  console.log(`\n${col.morado}┌${linea}┐${col.reset}`);
-  console.log(`${col.morado}│${col.reset}  ${col.bold}${col.rosa}🌸 ${config.BOT_NAME}${col.reset}  ${col.gris}v${config.BOT_VERSION}${col.reset}`);
-  console.log(`${col.morado}│${col.reset}  ${col.cian}Prefijos:${col.reset} ${config.PREFIXES.join(' ')} ${config.ALLOW_NO_PREFIX ? '(o sin prefijo)' : ''}`);
-  console.log(`${col.morado}│${col.reset}  ${col.cian}Comandos:${col.reset} ${totalComandos}`);
-  console.log(`${col.morado}│${col.reset}  ${col.cian}Node:${col.reset} ${process.version}`);
-  console.log(`${col.morado}└${linea}┘${col.reset}\n`);
+  const linea = '═'.repeat(50);
+  console.log(`\n${col.rosa}╭${linea}╮${col.reset}`);
+  console.log(`${col.rosa}│${col.reset}        ${col.bold}${col.morado}🌸 Y U I B O T - M D 🌸${col.reset}        ${col.rosa}│${col.reset}`);
+  console.log(`${col.rosa}│${col.reset}              ${col.gris}v${config.BOT_VERSION}  •  SYSTEM ONLINE${col.reset}              ${col.rosa}│${col.reset}`);
+  console.log(`${col.rosa}╠${linea}╣${col.reset}`);
+  console.log(`${col.rosa}│${col.reset}  ${col.cian}🦋 BOT STATUS${col.reset}                              ${col.rosa}│${col.reset}`);
+  console.log(`${col.rosa}│${col.reset}  ${col.gris}◇${col.reset} WhatsApp      ${col.verde}● ONLINE${col.reset}`);
+  console.log(`${col.rosa}│${col.reset}  ${col.gris}◇${col.reset} Commands      ${col.verde}● ${totalComandos} LOADED${col.reset}`);
+  console.log(`${col.rosa}│${col.reset}  ${col.gris}◇${col.reset} Subbots       ${col.verde}● READY${col.reset}`);
+  console.log(`${col.rosa}│${col.reset}  ${col.gris}◇${col.reset} Premium       ${col.verde}● ACTIVE${col.reset}`);
+  console.log(`${col.rosa}│${col.reset}  ${col.gris}◇${col.reset} Node.js       ${col.cian}● ${process.version}${col.reset}`);
+  console.log(`${col.rosa}╠${linea}╣${col.reset}`);
+  console.log(`${col.rosa}│${col.reset}  ${col.cian}⚡ CONFIGURATION${col.reset}`);
+  console.log(`${col.rosa}│${col.reset}  ${col.gris}◇${col.reset} Prefixes      ${col.amarillo}${config.PREFIXES.join('  ')}${col.reset}`);
+  console.log(`${col.rosa}│${col.reset}  ${col.gris}◇${col.reset} No prefix     ${config.ALLOW_NO_PREFIX ? `${col.verde}ENABLED` : `${col.rosa}DISABLED`}${col.reset}`);
+  console.log(`${col.rosa}╰${linea}╯${col.reset}`);
+  console.log(`\n${col.rosa}${col.bold}          🦋 YuiBot-MD está iniciando...${col.reset}\n`);
 }
 
 let metodoElegido = null;
@@ -158,7 +168,10 @@ async function startBot() {
       if (!shouldReconnect) metodoElegido = null;
       if (shouldReconnect) startBot();
     } else if (connection === 'open') {
-      console.log(`${col.verde}${col.bold}✅ ${config.BOT_NAME} conectado a WhatsApp.${col.reset}`);
+      console.log(`\n${col.rosa}╭${'─'.repeat(50)}╮${col.reset}`);
+      console.log(`${col.rosa}│${col.reset}        ${col.verde}${col.bold}🦋 YuiBot-MD ESTÁ ONLINE${col.reset}        ${col.rosa}│${col.reset}`);
+      console.log(`${col.rosa}│${col.reset}        ${col.cian}✦ Conectado a WhatsApp ✦${col.reset}        ${col.rosa}│${col.reset}`);
+      console.log(`${col.rosa}╰${'─'.repeat(50)}╯${col.reset}\n`);
 
       if (detenerHeartbeatPrincipal) detenerHeartbeatPrincipal();
       detenerHeartbeatPrincipal = iniciarHeartbeat(ID_PRINCIPAL);
