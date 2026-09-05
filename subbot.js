@@ -75,11 +75,18 @@ async function startSubBot() {
     const { connection, lastDisconnect } = update
 
     if (connection === 'close') {
-      const statusCode = new Boom(lastDisconnect?.error)?.output?.statusCode
+      const error = lastDisconnect?.error
+      const boom = new Boom(error)
+      const statusCode = boom.output?.statusCode
+      const errorMessage = error?.message || boom.message || 'Sin mensaje'
+      const errorData = error?.data ? JSON.stringify(error.data) : 'Sin data'
       const shouldReconnect = statusCode !== DisconnectReason.loggedOut
-      console.log(`❌ [subbot ${numero}] Conexión cerrada.`, shouldReconnect ? 'Reconectando...' : 'Sesión cerrada.')
+
+      console.error(`❌ [subbot ${numero}] Conexión cerrada | statusCode=${statusCode || 'N/A'} | message=${errorMessage} | data=${errorData} | shouldReconnect=${shouldReconnect}`)
+      console.error(`🔍 [subbot ${numero}] Error completo:`, error)
+
       if (shouldReconnect) {
-        setTimeout(() => startSubBot().catch((err) => console.error(`❌ [subbot ${numero}] Error reconectando:`, err)), 3000)
+        setTimeout(() => startSubBot().catch((err) => console.error(`❌ [subbot ${numero}] Error reconectando:`, err)), 5000)
       }
     } else if (connection === 'open') {
       console.log(`✅ [subbot ${numero}] Conectado a WhatsApp. Identidad: ${sock.user?.id || 'desconocida'} | LID: ${sock.user?.lid || 'desconocido'}`)
@@ -175,4 +182,4 @@ async function startSubBot() {
   })
 }
 
-startSubBot().catch((err) => console.error(`❌ Error al iniciar subbot ${numero}:`, err))
+startSubBot().catch((err) => console.error(`❌ Error al iniciar el subbot ${numero}:`, err))
