@@ -1,5 +1,6 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
 const { pedirTikTok } = require('../../lib/tiktok')
+const { generateWAMessageFromContent, proto } = require('@whiskeysockets/baileys')
 
 const LIMITE_VIDEO_MB = 64
 
@@ -38,6 +39,44 @@ function botonesTikTok(data, link) {
   }
 
   return botones
+}
+
+async function enviarBotonesTikTok(sock, jid, msg, data, link) {
+  const botones = botonesTikTok(data, link)
+  const contenido = proto.Message.InteractiveMessage.create({
+    body: proto.Message.InteractiveMessage.Body.create({
+      text: '✨ ¿Qué quieres hacer con este TikTok?'
+    }),
+    footer: proto.Message.InteractiveMessage.Footer.create({
+      text: '🦋 YuiBot-MD'
+    }),
+    header: proto.Message.InteractiveMessage.Header.create({
+      title: '🎵 TikTok descargado',
+      hasMediaAttachment: false
+    }),
+    nativeFlowMessage: proto.Message.InteractiveMessage.NativeFlowMessage.create({
+      buttons: botones,
+      messageParamsJson: JSON.stringify({})
+    })
+  })
+
+  const mensaje = generateWAMessageFromContent(
+    jid,
+    {
+      viewOnceMessage: {
+        message: {
+          messageContextInfo: {
+            deviceListMetadata: {},
+            deviceListMetadataVersion: 2
+          },
+          interactiveMessage: contenido
+        }
+      }
+    },
+    { userJid: sock.user?.id, quoted: msg }
+  )
+
+  await sock.relayMessage(jid, mensaje.message, { messageId: mensaje.key.id })
 }
 
 module.exports = {
@@ -115,18 +154,7 @@ module.exports = {
         )
       }
 
-      await sock.sendMessage(
-        jid,
-        {
-          interactiveMessage: {
-            header: '🎵 TikTok descargado',
-            title: '✨ ¿Qué quieres hacer con este TikTok?',
-            footer: '🦋 YuiBot-MD',
-            buttons: botonesTikTok(data, link)
-          }
-        },
-        { quoted: msg }
-      )
+      await enviarBotonesTikTok(sock, jid, msg, data, link)
     } catch (error) {
       console.error('[TIKTOK]', error)
       await sock.sendMessage(
