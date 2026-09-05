@@ -8,7 +8,7 @@ const CADUCIDAD_MS = 30 * 60 * 1000
 
 function consultarIA(texto, apiKey) {
   return new Promise((resolve, reject) => {
-    const url = new URL('https://api.lempi.lat/ai/gemini')
+    const url = new URL('https://api.lempi.lat/ai/chatgpt')
     url.searchParams.set('q', texto)
     url.searchParams.set('apikey', apiKey)
 
@@ -23,7 +23,7 @@ function consultarIA(texto, apiKey) {
           const json = JSON.parse(data)
           const respuesta = json?.resultado?.respuesta
           if (!json?.status || !respuesta) {
-            reject(new Error('La API no devolvió una respuesta válida.'))
+            reject(new Error(`La API no devolvió una respuesta válida (${response.statusCode}).`))
             return
           }
           resolve(String(respuesta).trim())
@@ -107,7 +107,7 @@ Responde ahora como Yui, directamente al usuario, sin prefacios técnicos:`
       guardarRespuesta(jid, respuesta)
       await sock.sendMessage(jid, { text: respuesta }, { quoted: msg })
     } catch (error) {
-      console.error('[IA] Error consultando Gemini:', error.message)
+      console.error('[IA] Error consultando ChatGPT:', error.message)
       await sock.sendMessage(jid, { text: '🥺 Ayy, se me fue la conexión un momentito... háblame otra vez 💕' }, { quoted: msg })
     } finally {
       await sock.sendPresenceUpdate('paused', jid).catch(() => {})
