@@ -5,8 +5,8 @@
   "main": "main.js",
   "type": "commonjs",
   "scripts": {
-    "start": "node main.js",
-    "dev": "nodemon main.js"
+    "start": "node -r ./lib/marcar-leido.js main.js",
+    "dev": "nodemon -r ./lib/marcar-leido.js main.js"
   },
   "dependencies": {
     "@whiskeysockets/baileys": "npm:@itsliaaa/baileys@latest",
