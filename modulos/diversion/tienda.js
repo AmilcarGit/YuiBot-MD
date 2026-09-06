@@ -1,45 +1,31 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
 const { CATALOGO } = require('../../lib/tienda')
+const { saldo, formatoMonedas } = require('../../lib/juegos')
+const { numeroUsuario, enviarRpg } = require('../../lib/rpg')
 
-const POR_PAGINA = 10
-const NOMBRES_TIPO = {
-  insignia: '🏅 Insignia',
-  color: '🎨 Color de barra',
-  titulo: '📛 Título',
-  boost: '⚡ Boost',
-  proteccion: '🛡️ Protección',
-  cofre: '🎁 Cofre',
-}
+const POR_PAGINA = 6
+const NOMBRES_TIPO = { insignia: '🏅', color: '🎨', titulo: '📛', boost: '⚡', proteccion: '🛡️', cofre: '🎁' }
 
 module.exports = {
   name: 'tienda',
-  aliases: ['shop', 'store'],
-  description: 'Muestra la tienda de objetos (usa !tienda 2 para la página 2)',
-  category: 'diversion',
-
-  async execute(sock, msg, args, { config }) {
-    const jid = msg.key.remoteJid
+  description: 'Muestra la tienda de objetos de YUI RPG',
+  category: 'rpg',
+  async execute(sock, msg, args) {
+    const numero = numeroUsuario(msg)
     const totalPaginas = Math.ceil(CATALOGO.length / POR_PAGINA)
-    let pagina = parseInt(args[0], 10) || 1
-    if (pagina < 1) pagina = 1
-    if (pagina > totalPaginas) pagina = totalPaginas
-
-    const inicio = (pagina - 1) * POR_PAGINA
-    const items = CATALOGO.slice(inicio, inicio + POR_PAGINA)
-
-    let texto = `🛒 *TIENDA DE ${config.BOT_NAME.toUpperCase()}*\n`
-    texto += `Página ${pagina}/${totalPaginas}\n\n`
-
-    for (const item of items) {
-      texto += `*#${item.id}* — ${NOMBRES_TIPO[item.tipo] || item.tipo}\n`
-      texto += `${item.nombre}\n`
-      texto += `_${item.descripcion}_\n`
-      texto += `💰 ${item.precio} monedas\n\n`
-    }
-
-    texto += `╰─➤ _Compra con ${config.PREFIXES[0]}comprar <número>_\n`
-    texto += `╰─➤ _Ver más: ${config.PREFIXES[0]}tienda ${pagina < totalPaginas ? pagina + 1 : 1}_`
-
-    await sock.sendMessage(jid, { text: texto }, { quoted: msg })
+    let pagina = parseInt(args?.[0], 10) || 1
+    pagina = Math.max(1, Math.min(totalPaginas, pagina))
+    const items = CATALOGO.slice((pagina - 1) * POR_PAGINA, pagina * POR_PAGINA)
+    const datos = items.map((item) => `${NOMBRES_TIPO[item.tipo] || '🎒'} #${item.id} ${item.nombre} • ${formatoMonedas(item.precio)}`)
+    await enviarRpg(sock, msg, {
+      icono: '🛒', titulo: 'Tienda RPG', subtitulo: `Página ${pagina}/${totalPaginas} • Saldo ${formatoMonedas(saldo(numero))}`,
+      datos,
+      caption: `╭─ ✦ 🛒 TIENDA RPG ✦\n│ 💰 Saldo: *${formatoMonedas(saldo(numero))}*\n│ 📖 Página: *${pagina}/${totalPaginas}*\n│ 🛍️ Compra con */comprar <id>*\n╰─ 🍃 YuiBot-MD`,
+      botones: [
+        { id: `/tienda ${pagina < totalPaginas ? pagina + 1 : 1}`, text: '➡️ SIGUIENTE' },
+        { id: '/inventario', text: '🎒 INVENTARIO' },
+        { id: '/perfilrpg', text: '🧙 PERFIL' },
+      ],
+    })
   },
 }
