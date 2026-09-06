@@ -5,7 +5,7 @@ const pino = require('pino')
 const readline = require('readline')
 const config = require('./defaults')
 const iaConfig = require('./config/ia.json')
-const { getMessageBody, parseCommand, isOwner } = require('./lib/handler')
+const { getMessageBody, parseCommand, isOwner, obtenerCandidatosPropietario } = require('./lib/handler')
 const { loadCommands } = require('./lib/cargador')
 
 config.IA_ENABLED = iaConfig.enabled
@@ -34,27 +34,6 @@ async function seleccionarModo() {
   const answer = await preguntar('> ')
   connectionMode = answer === '2' ? 'code' : 'qr'
   return connectionMode
-}
-
-function obtenerIdentidadesPropias(sock, msg) {
-  return [
-    sock.user?.id,
-    sock.user?.lid,
-    msg.key?.fromMe ? msg.key?.remoteJid : null,
-    msg.key?.fromMe ? msg.key?.remoteJidAlt : null,
-  ].filter(Boolean)
-}
-
-function obtenerCandidatosPropietario(sock, msg) {
-  const key = msg.key || {}
-  const senderJids = [
-    key.participantAlt,
-    key.remoteJidAlt,
-    key.participant,
-    key.remoteJid,
-  ].filter(Boolean)
-
-  return [...obtenerIdentidadesPropias(sock, msg), ...senderJids].filter(Boolean)
 }
 
 async function startBot() {
