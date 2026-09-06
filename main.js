@@ -43,9 +43,9 @@ async function startBot() {
   })
 
   if (mode === 'code' && !state.creds.registered) {
-    const phoneNumber = config.PAIRING_NUMBER || ''
+    const phoneNumber = config.PHONE_NUMBER || ''
     if (!phoneNumber) {
-      console.log('❌ Falta configurar PAIRING_NUMBER en defaults.js')
+      console.log('❌ Configura PHONE_NUMBER en defaults.js para usar el código de vinculación')
       process.exit(1)
     }
 
