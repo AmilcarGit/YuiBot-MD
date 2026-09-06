@@ -13,21 +13,26 @@ config.IA_ENABLED = iaConfig.enabled
 let reconnectTimer = null
 let connectionMode = null
 
+function preguntar(texto) {
+  const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
+  return new Promise((resolve) => {
+    rl.question(texto, (answer) => {
+      rl.close()
+      resolve(answer.trim())
+    })
+  })
+}
+
 async function seleccionarModo() {
   if (connectionMode) return connectionMode
 
-  const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
-  connectionMode = await new Promise((resolve) => {
-    console.log('\n╭─ 🔐 VINCULACIÓN YUIBOT-MD')
-    console.log('│ 1️⃣ QR')
-    console.log('│ 2️⃣ Código de vinculación')
-    console.log('╰─ Selecciona una opción:')
-    rl.question('> ', (answer) => {
-      rl.close()
-      resolve(answer.trim() === '2' ? 'code' : 'qr')
-    })
-  })
+  console.log('\n╭─ 🔐 VINCULACIÓN YUIBOT-MD')
+  console.log('│ 1️⃣ QR')
+  console.log('│ 2️⃣ Código de vinculación')
+  console.log('╰─ Selecciona una opción:')
 
+  const answer = await preguntar('> ')
+  connectionMode = answer === '2' ? 'code' : 'qr'
   return connectionMode
 }
 
@@ -43,16 +48,22 @@ async function startBot() {
   })
 
   if (mode === 'code' && !state.creds.registered) {
-    const phoneNumber = config.PHONE_NUMBER || ''
-    if (!phoneNumber) {
-      console.log('❌ Configura PHONE_NUMBER en defaults.js para usar el código de vinculación')
+    let phoneNumber = await preguntar('\n📱 Escribe tu número con código de país, sin + ni espacios: ')
+    phoneNumber = phoneNumber.replace(/[^0-9]/g, '')
+
+    if (!phoneNumber || phoneNumber.length < 8) {
+      console.log('❌ Número no válido.')
       process.exit(1)
     }
 
-    const cleanNumber = String(phoneNumber).replace(/[^0-9]/g, '')
-    const code = await sock.requestPairingCode(cleanNumber)
-    console.log(`\n🔐 CÓDIGO DE VINCULACIÓN: ${code}`)
-    console.log('WhatsApp → Dispositivos vinculados → Vincular un dispositivo → Vincular con número de teléfono')
+    try {
+      const code = await sock.requestPairingCode(phoneNumber)
+      console.log(`\n🔐 CÓDIGO DE VINCULACIÓN: ${code}`)
+      console.log('WhatsApp → Dispositivos vinculados → Vincular un dispositivo → Vincular con número de teléfono')
+    } catch (error) {
+      console.error('❌ No se pudo generar el código de vinculación:', error.message)
+      process.exit(1)
+    }
   }
 
   sock.ev.on('creds.update', saveCreds)
