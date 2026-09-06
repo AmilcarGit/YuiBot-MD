@@ -1,4 +1,4 @@
-//CÓDIGO ORIGINAL DE YUIBOT-MD (corregido)
+//CÓDIGO ORIGINAL DE YUIBOT-MD
 const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = require('@whiskeysockets/baileys')
 const { Boom } = require('@hapi/boom')
 const pino = require('pino')
@@ -40,7 +40,6 @@ async function startBot() {
   const { state, saveCreds } = await useMultiFileAuthState('./sesion')
   const { commands, categories } = loadCommands()
 
-  // Si ya existe una sesión registrada, no preguntar nada: conectar directo.
   const isRegistered = !!state.creds?.registered
   const mode = isRegistered ? null : await seleccionarModo()
 
@@ -112,9 +111,14 @@ async function startBot() {
     const command = commands.get(commandName)
     if (!command) return
 
-    const senderJid = msg.key.participant || jid
+    const senderJids = [
+      msg.key.participant,
+      msg.key.participantAlt,
+      msg.key.remoteJid,
+      msg.key.remoteJidAlt,
+    ].filter(Boolean)
 
-    if (command.ownerOnly && !isOwner(senderJid, config)) {
+    if (command.ownerOnly && !senderJids.some((senderJid) => isOwner(senderJid, config))) {
       await sock.sendMessage(jid, { text: '❌ Este comando es solo para el propietario.' })
       return
     }
