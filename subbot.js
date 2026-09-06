@@ -223,17 +223,19 @@ async function startSubBot() {
       const parsed = parseCommand(cuerpo, configSubbot)
 
       if (!parsed) {
-        console.log(`💬 [subbot ${numero}] ${tipoChat}\n   👤 ${remitente}\n   📝 ${cuerpo}`)
+        console.log(`💬 [subbot ${numero}] ${tipoChat}\n   👤 ${remitente}\n   📝 ${cuerpo}\n   ℹ️ No se detectó comando`)
+        console.log(`🔧 [subbot ${numero}] DEBUG | messages.upsert=${type} | remoteJid=${key.remoteJid || '-'} | participant=${key.participant || '-'} | fromMe=${!!key.fromMe} | puedeResponder=${esGrupo ? 'true' : 'N/A'} | ownerOnly=false`)
         continue
       }
 
       const command = commands.get(parsed.commandName)
       if (!command) {
         console.log(`⚡ [subbot ${numero}] ${tipoChat}\n   👤 ${remitente}\n   ❓ Comando no encontrado: ${parsed.commandName}`)
+        console.log(`🔧 [subbot ${numero}] DEBUG | messages.upsert=${type} | remoteJid=${key.remoteJid || '-'} | participant=${key.participant || '-'} | fromMe=${!!key.fromMe} | puedeResponder=${esGrupo ? 'true' : 'N/A'} | ownerOnly=false`)
         continue
       }
 
-      console.log(`⚡ [subbot ${numero}] ${tipoChat}\n   👤 ${remitente}\n   ▶️ ${configSubbot.PREFIXES[0] || ''}${parsed.commandName}${parsed.args.length ? ` ${parsed.args.join(' ')}` : ''}`)
+      console.log(`╭─ ⚡ SUBBOT ${numero}\n│ ${tipoChat}\n│ 👤 ${remitente}\n│ ▶️ ${configSubbot.PREFIXES[0] || ''}${parsed.commandName}${parsed.args.length ? ` ${parsed.args.join(' ')}` : ''}`)
 
       if (command.ownerOnly) {
         const senderJids = [
@@ -250,6 +252,7 @@ async function startSubBot() {
 
         if (!esOwnerPrincipal && !esDueno) {
           console.log(`⛔ [subbot ${numero}] ${parsed.commandName} → rechazado`)
+          console.log(`🔧 [subbot ${numero}] DEBUG | messages.upsert=${type} | remoteJid=${key.remoteJid || '-'} | participant=${key.participant || '-'} | fromMe=${!!key.fromMe} | puedeResponder=${esGrupo ? 'true' : 'N/A'} | ownerOnly=true`)
           await sock.sendMessage(jid, { text: '⛔ Este comando es solo para el dueño de este subbot.' })
           continue
         }
@@ -257,10 +260,9 @@ async function startSubBot() {
 
       try {
         await command.execute(sock, msg, parsed.args, { commands, categories, config: configSubbot, esSubBot: true, subbotNumero: numero })
-        console.log(`   ✅ ${parsed.commandName} → ejecutado`)
+        console.log(`│ ✅ ${parsed.commandName} → ejecutado\n╰────────────────────`)
       } catch (err) {
-        console.error(`❌ [subbot ${numero}] ${parsed.commandName} → error:`, err)
-        await sock.sendMessage(jid, { text: '⚠️ Ocurrió un error ejecutando ese comando.' })
+        console.error(`❌ SUBBOT ${numero}\n   ${configSubbot.PREFIXES[0] || ''}${parsed.commandName} → error:`, err)
       }
     }
   })
