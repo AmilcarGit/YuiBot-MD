@@ -1,11 +1,9 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
-const { obtenerUsuario, calcularNivel, xpParaNivel } = require('../../lib/db')
-const { generarImagenPerfil } = require('../../lib/welcome')
-const { CATALOGO } = require('../../lib/tienda')
+const { obtenerUsuario } = require('../../lib/db')
 
 module.exports = {
   name: 'perfil',
-  aliases: ['profile'],
+  aliases: ['profile', 'p'],
   description: 'Muestra tu perfil o el de alguien citado',
   category: 'usuario',
 
@@ -21,60 +19,39 @@ module.exports = {
     const numero = objetivoJid.split('@')[0].split(':')[0]
 
     const datos = obtenerUsuario(numero)
-    const nombre = datos?.nombre || numero
-    const xp = datos?.xp || 0
-    const nivel = datos?.nivel ?? calcularNivel(xp)
-    const mensajes = datos?.mensajes || 0
-    const xpActualNivel = xpParaNivel(nivel)
-    const xpSiguienteNivel = xpParaNivel(nivel + 1)
-
-    const insignia = CATALOGO.find((i) => i.id === datos?.insigniaEquipada)?.valor || ''
-    const titulo = CATALOGO.find((i) => i.id === datos?.tituloEquipado)?.valor || ''
-    const colorBarra = CATALOGO.find((i) => i.id === datos?.colorEquipado)?.valor || '#a349ff'
-
-    let avatar = 'https://i.imgur.com/8Km9tLL.png'
-    try {
-      avatar = await sock.profilePictureUrl(objetivoJid, 'image')
-    } catch (error) {
-      console.warn(`[PERFIL] Sin foto de perfil pública para ${numero}, se usa la imagen de respaldo.`)
-    }
-
-    try {
-      const imagen = await generarImagenPerfil({
-        username: `${insignia ? insignia + ' ' : ''}${nombre}`.trim(),
-        numero,
-        nivel,
-        xp,
-        xpActualNivel,
-        xpSiguienteNivel,
-        mensajes,
-        avatar,
-        background: config.PROFILE_BACKGROUND || config.WELCOME_BACKGROUND,
-        botName: config.BOT_NAME,
-        titulo,
-        colorBarra,
-      })
-
-      await sock.sendMessage(jid, { image: imagen, caption: `⛧ Perfil de ${nombre} ⛧` }, { quoted: msg })
-      return
-    } catch (error) {
-      console.error('[PERFIL] No se pudo generar la tarjeta, se envía solo texto:', error)
-    }
 
     let texto = `⛧───「 Perfil 」───⛧\n\n`
     texto += `  ❖ número: +${numero}\n`
-    texto += `  ❖ nombre: ${insignia ? insignia + ' ' : ''}${nombre}\n`
-    if (titulo) texto += `  ❖ título: ${titulo}\n`
-    texto += `  ❖ nivel: ${nivel}\n`
-    texto += `  ❖ xp: ${xp} / ${xpSiguienteNivel}\n`
-    texto += `  ❖ mensajes: ${mensajes}\n`
 
-    if (!datos) {
-      texto += `\n_Usa ${prefijo}reg Nombre, Edad para registrarte._`
+    if (datos) {
+      texto += `  ❖ nombre: ${datos.nombre}\n`
+      if (datos.genero) texto += `  ❖ género: ${datos.genero}\n`
+      texto += `  ❖ edad: ${datos.edad}\n`
+    } else {
+      texto += `  ❖ nombre: sin registrar\n`
+      texto += `\n_Usa ${prefijo}reg para registrarte._`
     }
 
     texto += `\n\n╰─➤ _${config.BOT_NAME}_ 🥀`
 
-    await sock.sendMessage(jid, { text: texto }, { quoted: msg })
+    let fotoUrl = null
+    try {
+      fotoUrl = await sock.profilePictureUrl(objetivoJid, 'image')
+    } catch {
+      fotoUrl = null
+    }
+
+    if (fotoUrl) {
+      try {
+        const resp = await fetch(fotoUrl)
+        const buffer = Buffer.from(await resp.arrayBuffer())
+        await sock.sendMessage(jid, { image: buffer, caption: texto }, { quoted: msg })
+        return
+      } catch (error) {
+        console.error('[PERFIL] No se pudo descargar la foto, se envía solo texto:', error)
+      }
+    }
+
+    await sock.sendMessage(jid, { text: texto + '\n\n_(sin foto de perfil pública)_' }, { quoted: msg })
   },
 }
