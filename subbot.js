@@ -11,7 +11,7 @@ const path = require('path')
 const fs = require('fs')
 
 const { loadCommands } = require('./lib/cargador')
-const { getMessageBody, parseCommand, isOwner } = require('./lib/handler')
+const { getMessageBody, parseCommand, isOwner, obtenerCandidatosPropietario } = require('./lib/handler')
 const { iniciarHeartbeat, puedeResponderSubbot } = require('./lib/red')
 const { esDuenoDeSubbot, obtenerPrefijo } = require('./lib/subbots')
 const config = require('./defaults')
@@ -104,17 +104,6 @@ process.once('SIGTERM', () => {
   liberarSocketUnico()
   process.exit(0)
 })
-
-function obtenerIdentidadesPropias(sock, msg) {
-  const identidades = [
-    sock.user?.id,
-    sock.user?.lid,
-    msg.key.fromMe ? msg.key.remoteJid : null,
-    msg.key.fromMe ? msg.key.remoteJidAlt : null,
-  ]
-
-  return identidades.filter(Boolean)
-}
 
 async function startSubBot() {
   if (socketActivo) return socketActivo
@@ -238,17 +227,9 @@ async function startSubBot() {
       console.log(`╭─ ⚡ SUBBOT ${numero}\n│ ${tipoChat}\n│ 👤 ${remitente}\n│ ▶️ ${configSubbot.PREFIXES[0] || ''}${parsed.commandName}${parsed.args.length ? ` ${parsed.args.join(' ')}` : ''}`)
 
       if (command.ownerOnly) {
-        const senderJids = [
-          key.participantAlt,
-          key.remoteJidAlt,
-          key.participant,
-          key.remoteJid,
-        ].filter(Boolean)
-
-        const identidadesPropias = obtenerIdentidadesPropias(sock, msg)
-        const candidatosPropietario = [...identidadesPropias, ...senderJids].filter(Boolean)
+        const candidatosPropietario = obtenerCandidatosPropietario(sock, msg)
         const esDueno = key.fromMe || esDuenoDeSubbot(numero, candidatosPropietario)
-        const esOwnerPrincipal = senderJids.some((senderJid) => isOwner(senderJid, config))
+        const esOwnerPrincipal = candidatosPropietario.some((senderJid) => isOwner(senderJid, config))
 
         if (!esOwnerPrincipal && !esDueno) {
           console.log(`⛔ [subbot ${numero}] ${parsed.commandName} → rechazado`)
