@@ -1,7 +1,6 @@
-// COMANDO PROFILEPIC PARA YUIBOT-MD
+//CÓDIGO ORIGINAL DE YUIBOT-MD
 module.exports = {
   name: 'profilepic',
-  aliases: ['pfp', 'foto', 'avatar'],
   description: 'Obtiene la foto de perfil de un usuario (mencionado, número o el otro participante en privado)',
   category: 'util',
 
@@ -25,7 +24,7 @@ module.exports = {
 
     if (!targetJid && isGroup) {
       return sock.sendMessage(remoteJid, {
-        text: '❌ Debes mencionar a un usuario o escribir su número.\nEjemplo: !pfp @usuario  o  !pfp 123456789'
+        text: '❌ Debes mencionar a un usuario o escribir su número.\nEjemplo: !profilepic @usuario  o  !profilepic 123456789'
       }, { quoted: msg })
     }
 
@@ -64,7 +63,6 @@ module.exports = {
 
     try {
       const url = await sock.profilePictureUrl(targetJid, 'image')
-
       const respImg = await fetch(url)
       if (!respImg.ok) {
         if (respImg.status === 404) {
@@ -74,14 +72,11 @@ module.exports = {
         }
         throw new Error(`HTTP ${respImg.status}`)
       }
-
       const buffer = Buffer.from(await respImg.arrayBuffer())
-
       await sock.sendMessage(remoteJid, {
         image: buffer,
         caption: `🖼️ *Foto de perfil de* ${targetJid.split('@')[0]}\n${isGroup ? `👥 Grupo: ${(await sock.groupMetadata(remoteJid)).subject}` : '💬 Chat privado'}`
       }, { quoted: msg })
-
     } catch (error) {
       console.error('[PROFILEPIC] Error al obtener foto:', error)
       return sock.sendMessage(remoteJid, {
