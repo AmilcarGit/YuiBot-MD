@@ -1,4 +1,4 @@
-//CÓDIGO ORIGINAL DE YUIBOT-MD
+//CÓDIGO ORIGINAL DE YUIBOT-MD (corregido)
 const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = require('@whiskeysockets/baileys')
 const { Boom } = require('@hapi/boom')
 const pino = require('pino')
@@ -39,7 +39,10 @@ async function seleccionarModo() {
 async function startBot() {
   const { state, saveCreds } = await useMultiFileAuthState('./sesion')
   const { commands, categories } = loadCommands()
-  const mode = await seleccionarModo()
+
+  // Si ya existe una sesión registrada, no preguntar nada: conectar directo.
+  const isRegistered = !!state.creds?.registered
+  const mode = isRegistered ? null : await seleccionarModo()
 
   const sock = makeWASocket({
     auth: state,
@@ -47,7 +50,7 @@ async function startBot() {
     printQRInTerminal: mode === 'qr'
   })
 
-  if (mode === 'code' && !state.creds.registered) {
+  if (!isRegistered && mode === 'code') {
     let phoneNumber = await preguntar('\n📱 Escribe tu número con código de país, sin + ni espacios: ')
     phoneNumber = phoneNumber.replace(/[^0-9]/g, '')
 
