@@ -1,5 +1,6 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
-const { numeroUsuario, saldo, apostar, pagar, apuestaDesdeArgs, formatoMonedas, panel } = require('../../lib/juegos')
+const { numeroUsuario, saldo, apostar, pagar, apuestaDesdeArgs, formatoMonedas } = require('../../lib/juegos')
+const { enviarJuego } = require('../../lib/juegosVisual')
 
 module.exports = {
   name: 'batalla',
@@ -8,32 +9,61 @@ module.exports = {
   category: 'juegos',
   async execute(sock, msg, args) {
     const numero = numeroUsuario(msg)
-    const mencionado = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid?.[0]
+    const mencionado = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid?.[0] || msg.message?.conversation ? msg.message?.extendedTextMessage?.contextInfo?.mentionedJid?.[0] : null
     const apuesta = apuestaDesdeArgs(args, 20)
     if (!mencionado || !apuesta) {
-      await sock.sendMessage(msg.key.remoteJid, { text: panel('⚔️ BATALLA', [`💰 Tu saldo: *${formatoMonedas(saldo(numero))}*`, '🎯 Usa: */batalla @usuario 100*', '🏆 El ganador recibe el pozo']) }, { quoted: msg })
+      await enviarJuego(sock, msg, {
+        icono: '⚔️',
+        titulo: 'Batalla',
+        subtitulo: 'Desafía a otro jugador por monedas',
+        datos: [`💰 Tu saldo: ${formatoMonedas(saldo(numero))}`, '🎯 Mínimo: 20 monedas', '🏆 El ganador se lleva el pozo'],
+        caption: '╭─ ✦ ⚔️ BATALLA ✦\n│ ▶️ Usa: */batalla @usuario 100*\n╰─ 🍃 YuiBot-MD',
+        botones: [{ id: '/menu', text: '🍃 MENÚ' }],
+      })
       return
     }
     const rival = mencionado.split('@')[0].split(':')[0]
     if (rival === numero) {
-      await sock.sendMessage(msg.key.remoteJid, { text: panel('⚔️ BATALLA', ['❌ No puedes desafiarte a ti mismo']) }, { quoted: msg })
+      await enviarJuego(sock, msg, {
+        icono: '⚔️', titulo: 'Batalla', subtitulo: 'Desafío no válido',
+        datos: ['❌ No puedes desafiarte a ti mismo', '👤 Menciona a otro jugador'],
+        caption: '⚠️ Elige un rival diferente',
+        botones: [{ id: '/menu', text: '🍃 MENÚ' }],
+      })
       return
     }
     const retiroJugador = apostar(numero, apuesta)
     if (!retiroJugador.ok) {
-      await sock.sendMessage(msg.key.remoteJid, { text: panel('⚔️ BATALLA', [`❌ No tienes suficientes monedas`, `💰 Disponible: *${formatoMonedas(retiroJugador.disponible)}*`]) }, { quoted: msg })
+      await enviarJuego(sock, msg, {
+        icono: '💸', titulo: 'Batalla', subtitulo: 'No tienes suficientes monedas',
+        datos: [`💰 Disponible: ${formatoMonedas(retiroJugador.disponible)}`, `🎯 Necesitas: ${formatoMonedas(apuesta)}`],
+        caption: '❌ Apuesta rechazada',
+        botones: [{ id: '/menu', text: '🍃 MENÚ' }],
+      })
       return
     }
     const retiroRival = apostar(rival, apuesta)
     if (!retiroRival.ok) {
       pagar(numero, apuesta)
-      await sock.sendMessage(msg.key.remoteJid, { text: panel('⚔️ BATALLA', [`❌ El rival no tiene *${formatoMonedas(apuesta)}* monedas`, '💰 Tu apuesta fue devuelta']) }, { quoted: msg })
+      await enviarJuego(sock, msg, {
+        icono: '↩️', titulo: 'Batalla', subtitulo: 'El rival no tiene suficiente saldo',
+        datos: [`👤 Rival: @${rival}`, `🎯 Apuesta: ${formatoMonedas(apuesta)}`, '💰 Tu apuesta fue devuelta'],
+        caption: '⚠️ La batalla fue cancelada',
+        botones: [{ id: '/menu', text: '🍃 MENÚ' }],
+      })
       return
     }
     const ganador = Math.random() < 0.5 ? numero : rival
     const premio = apuesta * 2
     pagar(ganador, premio)
     const nombreGanador = ganador === numero ? 'Tú' : `@${rival}`
-    await sock.sendMessage(msg.key.remoteJid, { text: panel('⚔️ BATALLA', [`👤 Jugador: *@${numero}*`, `⚔️ Rival: *@${rival}*`, `🏆 Ganador: *${nombreGanador}*`, `💰 Premio: *${formatoMonedas(premio)}*`]), mentions: [ganador === numero ? `${numero}@s.whatsapp.net` : mencionado] }, { quoted: msg })
+    await enviarJuego(sock, msg, {
+      icono: ganador === numero ? '🏆' : '⚔️',
+      titulo: 'Batalla',
+      subtitulo: `Ganador: ${nombreGanador}`,
+      datos: [`👤 Tú: @${numero}`, `⚔️ Rival: @${rival}`, `🏆 Premio: ${formatoMonedas(premio)}`, `💰 Saldo: ${formatoMonedas(saldo(numero))}`],
+      caption: ganador === numero ? '🎉 ¡Ganaste la batalla!' : '💥 El rival ganó esta vez',
+      botones: [{ id: '/menu', text: '🍃 MENÚ' }],
+    })
   },
 }
