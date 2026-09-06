@@ -1,5 +1,6 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
 const { obtenerUsuario } = require('../../lib/db')
+const { generarTarjetaPerfil } = require('../../lib/perfilCard')
 
 module.exports = {
   name: 'perfil',
@@ -20,38 +21,36 @@ module.exports = {
 
     const datos = obtenerUsuario(numero)
 
-    let texto = `⛧───「 Perfil 」───⛧\n\n`
-    texto += `  ❖ número: +${numero}\n`
-
-    if (datos) {
-      texto += `  ❖ nombre: ${datos.nombre}\n`
-      if (datos.genero) texto += `  ❖ género: ${datos.genero}\n`
-      texto += `  ❖ edad: ${datos.edad}\n`
-    } else {
-      texto += `  ❖ nombre: sin registrar\n`
-      texto += `\n_Usa ${prefijo}reg para registrarte._`
-    }
-
-    texto += `\n\n╰─➤ _${config.BOT_NAME}_ 🥀`
-
-    let fotoUrl = null
+    let avatar = 'https://i.imgur.com/8Km9tLL.png'
     try {
-      fotoUrl = await sock.profilePictureUrl(objetivoJid, 'image')
+      avatar = await sock.profilePictureUrl(objetivoJid, 'image')
     } catch {
-      fotoUrl = null
+      // sin foto de perfil pública, se usa la imagen de respaldo
     }
 
-    if (fotoUrl) {
-      try {
-        const resp = await fetch(fotoUrl)
-        const buffer = Buffer.from(await resp.arrayBuffer())
-        await sock.sendMessage(jid, { image: buffer, caption: texto }, { quoted: msg })
-        return
-      } catch (error) {
-        console.error('[PERFIL] No se pudo descargar la foto, se envía solo texto:', error)
-      }
-    }
+    try {
+      const imagen = await generarTarjetaPerfil({
+        numero,
+        nombre: datos?.nombre || 'Sin registrar',
+        genero: datos?.genero || null,
+        edad: datos?.edad || null,
+        avatar,
+        background: config.PROFILE_BACKGROUND,
+        botName: config.BOT_NAME,
+      })
 
-    await sock.sendMessage(jid, { text: texto + '\n\n_(sin foto de perfil pública)_' }, { quoted: msg })
+      const caption = datos
+        ? `⛧───「 Perfil 」───⛧\n\n_${prefijo}reg para actualizar tus datos_`
+        : `⛧───「 Perfil 」───⛧\n\n_Sin registrar — usa ${prefijo}reg para registrarte_`
+
+      await sock.sendMessage(jid, { image: imagen, caption }, { quoted: msg })
+    } catch (error) {
+      console.error('[PERFIL]', error)
+      await sock.sendMessage(
+        jid,
+        { text: `❌ No se pudo generar tu perfil.\n\n> ${error.message || 'Error desconocido'}` },
+        { quoted: msg }
+      )
+    }
   },
 }
