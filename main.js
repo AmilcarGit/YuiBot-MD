@@ -9,6 +9,8 @@ const { loadCommands } = require('./lib/cargador')
 
 config.IA_ENABLED = iaConfig.enabled
 
+let reconnectTimer = null
+
 async function startBot() {
   const { state, saveCreds } = await useMultiFileAuthState('./sesion')
   const { commands, categories } = loadCommands()
@@ -30,7 +32,13 @@ async function startBot() {
       const reason = new Boom(lastDisconnect?.error)?.output?.statusCode
       const shouldReconnect = reason !== DisconnectReason.loggedOut
       console.log(`❌ Conexión cerrada. Reconectar: ${shouldReconnect}`)
-      if (shouldReconnect) startBot()
+
+      if (shouldReconnect && !reconnectTimer) {
+        reconnectTimer = setTimeout(() => {
+          reconnectTimer = null
+          startBot().catch(console.error)
+        }, 3000)
+      }
     }
   })
 
