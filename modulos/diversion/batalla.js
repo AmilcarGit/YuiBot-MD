@@ -9,7 +9,8 @@ module.exports = {
   category: 'juegos',
   async execute(sock, msg, args) {
     const numero = numeroUsuario(msg)
-    const mencionado = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid?.[0] || msg.message?.conversation ? msg.message?.extendedTextMessage?.contextInfo?.mentionedJid?.[0] : null
+    const contexto = msg.message?.extendedTextMessage?.contextInfo || msg.message?.imageMessage?.contextInfo || msg.message?.videoMessage?.contextInfo || {}
+    const mencionado = contexto.mentionedJid?.[0]
     const apuesta = apuestaDesdeArgs(args, 20)
     if (!mencionado || !apuesta) {
       await enviarJuego(sock, msg, {
