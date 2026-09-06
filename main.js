@@ -36,6 +36,27 @@ async function seleccionarModo() {
   return connectionMode
 }
 
+function obtenerIdentidadesPropias(sock, msg) {
+  return [
+    sock.user?.id,
+    sock.user?.lid,
+    msg.key?.fromMe ? msg.key?.remoteJid : null,
+    msg.key?.fromMe ? msg.key?.remoteJidAlt : null,
+  ].filter(Boolean)
+}
+
+function obtenerCandidatosPropietario(sock, msg) {
+  const key = msg.key || {}
+  const senderJids = [
+    key.participantAlt,
+    key.remoteJidAlt,
+    key.participant,
+    key.remoteJid,
+  ].filter(Boolean)
+
+  return [...obtenerIdentidadesPropias(sock, msg), ...senderJids].filter(Boolean)
+}
+
 async function startBot() {
   const { state, saveCreds } = await useMultiFileAuthState('./sesion')
   const { commands, categories } = loadCommands()
@@ -111,14 +132,9 @@ async function startBot() {
     const command = commands.get(commandName)
     if (!command) return
 
-    const senderJids = [
-      msg.key.participant,
-      msg.key.participantAlt,
-      msg.key.remoteJid,
-      msg.key.remoteJidAlt,
-    ].filter(Boolean)
+    const candidatosPropietario = obtenerCandidatosPropietario(sock, msg)
 
-    if (command.ownerOnly && !senderJids.some((senderJid) => isOwner(senderJid, config))) {
+    if (command.ownerOnly && !candidatosPropietario.some((senderJid) => isOwner(senderJid, config))) {
       await sock.sendMessage(jid, { text: '❌ Este comando es solo para el propietario.' })
       return
     }
