@@ -14,6 +14,8 @@ const { loadCommands } = require('./lib/cargador')
 const { getMessageBody, parseCommand, isOwner, obtenerCandidatosPropietario } = require('./lib/handler')
 const { iniciarHeartbeat, puedeResponderSubbot } = require('./lib/red')
 const { esDuenoDeSubbot, obtenerPrefijo } = require('./lib/subbots')
+const { crearControladorReconexion } = require('./lib/reconexion')
+const resiliencia = require('./lib/resiliencia')
 const config = require('./defaults')
 
 const numero = process.argv[2]
@@ -32,8 +34,14 @@ fs.mkdirSync(sessionPath, { recursive: true })
 
 let detenerHeartbeatSubbot = null
 let socketActivo = null
-let reconexionProgramada = false
 let liberandoSocket = false
+
+// Controlador de reconexión (backoff exponencial + cooldown ante 405),
+// compartido con main.js vía lib/reconexion.js.
+const controladorReconexion = crearControladorReconexion({
+  etiqueta: `subbot ${numero}`,
+  reiniciar: () => startSubBot(),
+})
 
 function obtenerPidDelLock() {
   try {
@@ -121,7 +129,6 @@ async function startSubBot() {
   })
 
   socketActivo = sock
-  reconexionProgramada = false
 
   const { commands, categories } = loadCommands()
 
@@ -131,13 +138,30 @@ async function startSubBot() {
     setTimeout(async () => {
       if (socketActivo !== sock || state.creds.registered) return
 
+      const permiso = controladorReconexion.puedeIntentarPairing()
+      if (!permiso.permitido) {
+        const motivo = permiso.motivo === 'cooldown_405'
+          ? `405 reciente, espera ~${Math.ceil((permiso.esperaMs || 0) / 60000)} min`
+          : 'código pedido hace muy poco'
+        console.warn(`⏳ [subbot ${numero}] No pedí el código todavía (${motivo}).`)
+        return
+      }
+
+      controladorReconexion.marcarIntentoPairing()
+
       try {
         const code = await sock.requestPairingCode(numero.trim())
         if (socketActivo !== sock) return
         fs.writeFileSync(codeFilePath, code)
         console.log(`🔑 Código de vinculación para subbot ${numero}: ${code}`)
       } catch (err) {
-        console.error(`❌ [subbot ${numero}] No se pudo generar el código de vinculación:`, err)
+        const statusCode = Number(err?.output?.statusCode || err?.data?.statusCode || 0)
+        const mensaje = String(err?.message || err || '')
+        if (statusCode === 405 || /\b405\b|method not allowed/i.test(mensaje)) {
+          controladorReconexion.registrarPairing405()
+        } else {
+          console.error(`❌ [subbot ${numero}] No se pudo generar el código de vinculación:`, err)
+        }
       }
     }, 3000)
   }
@@ -153,17 +177,25 @@ async function startSubBot() {
       const statusCode = boom.output?.statusCode
       const errorMessage = error?.message || boom.message || 'Sin mensaje'
       const errorData = error?.data ? JSON.stringify(error.data) : 'Sin data'
-      const shouldReconnect = statusCode !== DisconnectReason.loggedOut
+      const esLoggedOut = statusCode === DisconnectReason.loggedOut || statusCode === 401
+      const esReemplazada = statusCode === DisconnectReason.connectionReplaced || statusCode === 440
 
-      console.error(`❌ [subbot ${numero}] Conexión cerrada | statusCode=${statusCode || 'N/A'} | message=${errorMessage} | data=${errorData} | shouldReconnect=${shouldReconnect}`)
-      console.error(`🔍 [subbot ${numero}] Error completo:`, error)
+      console.error(`❌ [subbot ${numero}] Conexión cerrada | statusCode=${statusCode || 'N/A'} | message=${errorMessage} | data=${errorData}`)
 
-      if (shouldReconnect && !reconexionProgramada) {
-        reconexionProgramada = true
-        setTimeout(() => startSubBot().catch((err) => console.error(`❌ [subbot ${numero}] Error reconectando:`, err)), 5000)
+      if (esLoggedOut) {
+        console.error(`❌ [subbot ${numero}] Sesión cerrada/inválida. No reconecto en bucle; hay que volver a vincular.`)
+        return
       }
+
+      if (esReemplazada) {
+        console.error(`⚠️ [subbot ${numero}] La sesión fue reemplazada por otro dispositivo. No reconecto automáticamente.`)
+        return
+      }
+
+      controladorReconexion.manejarCierre({ statusCode, mensaje: errorMessage })
     } else if (connection === 'open') {
       console.log(`✅ [subbot ${numero}] Conectado a WhatsApp. Identidad: ${sock.user?.id || 'desconocida'} | LID: ${sock.user?.lid || 'desconocido'}`)
+      controladorReconexion.conexionExitosa()
       if (fs.existsSync(codeFilePath)) fs.unlink(codeFilePath, () => {})
 
       if (detenerHeartbeatSubbot) detenerHeartbeatSubbot()
@@ -224,6 +256,13 @@ async function startSubBot() {
         continue
       }
 
+      const estadoResiliencia = resiliencia.estaBloqueado(parsed.commandName)
+      if (estadoResiliencia.bloqueado) {
+        const minutos = Math.max(1, Math.ceil((estadoResiliencia.restanteMs || 0) / 60000))
+        await sock.sendMessage(jid, { text: `⚠️ El comando *${parsed.commandName}* está temporalmente deshabilitado por fallos repetidos. Intenta en ~${minutos} min.` })
+        continue
+      }
+
       console.log(`╭─ ⚡ SUBBOT ${numero}\n│ ${tipoChat}\n│ 👤 ${remitente}\n│ ▶️ ${configSubbot.PREFIXES[0] || ''}${parsed.commandName}${parsed.args.length ? ` ${parsed.args.join(' ')}` : ''}`)
 
       if (command.ownerOnly) {
@@ -241,8 +280,10 @@ async function startSubBot() {
 
       try {
         await command.execute(sock, msg, parsed.args, { commands, categories, config: configSubbot, esSubBot: true, subbotNumero: numero })
+        resiliencia.registrarExito(parsed.commandName)
         console.log(`│ ✅ ${parsed.commandName} → ejecutado\n╰────────────────────`)
       } catch (err) {
+        resiliencia.registrarFallo(parsed.commandName, err)
         console.error(`❌ SUBBOT ${numero}\n   ${configSubbot.PREFIXES[0] || ''}${parsed.commandName} → error:`, err)
       }
     }
