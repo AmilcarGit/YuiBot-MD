@@ -4,6 +4,7 @@ const {
   useMultiFileAuthState,
   DisconnectReason,
   fetchLatestBaileysVersion,
+  fetchLatestWaWebVersion,
 } = require('@whiskeysockets/baileys')
 const { Boom } = require('@hapi/boom')
 const pino = require('pino')
@@ -15,6 +16,7 @@ const { getMessageBody, parseCommand, isOwner, obtenerCandidatosPropietario } = 
 const { iniciarHeartbeat, puedeResponderSubbot } = require('./lib/red')
 const { esDuenoDeSubbot, obtenerPrefijo } = require('./lib/subbots')
 const { crearControladorReconexion } = require('./lib/reconexion')
+const { resolverVersionWA } = require('./lib/versionWA')
 const resiliencia = require('./lib/resiliencia')
 const config = require('./defaults')
 
@@ -117,7 +119,7 @@ async function startSubBot() {
   if (socketActivo) return socketActivo
 
   const { state, saveCreds } = await useMultiFileAuthState(sessionPath)
-  const { version } = await fetchLatestBaileysVersion()
+  const version = await resolverVersionWA({ fetchLatestWaWebVersion, fetchLatestBaileysVersion })
 
   const yaVinculado = state.creds.registered
 
