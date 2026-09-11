@@ -1,6 +1,6 @@
 <div align="center">
 
-  <img src="https://raw.githubusercontent.com/AmilcarGit/YuiBot-MD/main/media/menu1.gif"
+  <img src="https://raw.githubusercontent.com/AmilcarGit/YuiBot-MD/main/media/menu1.mp4"
        alt="YuiBot-MD Preview"
        width="350"/>
 
