@@ -1,11 +1,7 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
-const {
-  default: makeWASocket,
-  useMultiFileAuthState,
-  DisconnectReason,
-  fetchLatestBaileysVersion,
-  fetchLatestWaWebVersion,
-} = require('@whiskeysockets/baileys')
+// Nota: @whiskeysockets/baileys ahora apunta a ultra-baileys (russellxz),
+// que es un paquete ESM puro ("type": "module"). Se carga con import()
+// dinámico dentro de startSubBot() (ver más abajo), no con require().
 const { Boom } = require('@hapi/boom')
 const pino = require('pino')
 const path = require('path')
@@ -117,6 +113,14 @@ process.once('SIGTERM', () => {
 
 async function startSubBot() {
   if (socketActivo) return socketActivo
+
+  const {
+    default: makeWASocket,
+    useMultiFileAuthState,
+    DisconnectReason,
+    fetchLatestBaileysVersion,
+    fetchLatestWaWebVersion,
+  } = await import('@whiskeysockets/baileys')
 
   const { state, saveCreds } = await useMultiFileAuthState(sessionPath)
   const version = await resolverVersionWA({ fetchLatestWaWebVersion, fetchLatestBaileysVersion })
