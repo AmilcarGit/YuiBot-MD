@@ -3,7 +3,8 @@ const { numeroUsuario, estado, enviarRpg } = require('../../lib/rpg')
 const { CATALOGO } = require('../../lib/tienda')
 
 module.exports = {
-  name: 'inventario',
+  name: 'inventariorpg',
+  aliases: ['mochila', 'mochilarpg'],
   description: 'Muestra tu inventario de YUI RPG',
   category: 'rpg',
   async execute(sock, msg) {
