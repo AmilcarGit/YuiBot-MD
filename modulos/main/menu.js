@@ -1,4 +1,4 @@
-// Menú Premium - YuiBot-MD (Diseño mejorado)
+// Menú Premium - YuiBot-MD (Versión corregida y estable)
 const fs = require('fs')
 
 const ORDEN_CATEGORIAS = ['main', 'usuario', 'grupo', 'download', 'media', 'diversion', 'utilidad', 'subbot', 'owner']
@@ -17,38 +17,32 @@ const CATEGORIAS = {
 
 function obtenerHoraPeru() {
   const ahora = new Date()
-  const opciones = {
+  const hora = ahora.toLocaleTimeString('es-PE', {
     timeZone: 'America/Lima',
     hour: '2-digit',
     minute: '2-digit',
     second: '2-digit',
     hour12: true
-  }
-  const fechaOpciones = {
+  })
+  const fecha = ahora.toLocaleDateString('es-PE', {
     timeZone: 'America/Lima',
     weekday: 'long',
     year: 'numeric',
     month: 'long',
     day: 'numeric'
+  })
+  return {
+    hora,
+    fecha: fecha.charAt(0).toUpperCase() + fecha.slice(1)
   }
-
-  const hora = ahora.toLocaleTimeString('es-PE', opciones)
-  const fecha = ahora.toLocaleDateString('es-PE', fechaOpciones)
-
-  // Capitalizar primera letra del día
-  const fechaBonita = fecha.charAt(0).toUpperCase() + fecha.slice(1)
-
-  return { hora, fecha: fechaBonita }
 }
 
 function obtenerSaludo() {
-  const hora = new Date().toLocaleString('en-US', {
+  const h = parseInt(new Date().toLocaleString('en-US', {
     timeZone: 'America/Lima',
     hour: 'numeric',
     hour12: false
-  })
-  const h = parseInt(hora)
-
+  }))
   if (h >= 5 && h < 12) return '☀️ Buenos días'
   if (h >= 12 && h < 19) return '🌤️ Buenas tardes'
   return '🌙 Buenas noches'
@@ -56,14 +50,14 @@ function obtenerSaludo() {
 
 function construirCategoria(info, comandos) {
   const unicos = [...new Set(comandos)]
-  let texto = `\n╭─「 ${info.emoji} ${info.titulo} 」\n`
+  let texto = '\n╭─「 ' + info.emoji + ' ' + info.titulo + ' 」\n'
 
   unicos.forEach((cmd, i) => {
     const esUltimo = i === unicos.length - 1
     const rama = esUltimo ? '╰' : '│'
-    texto += `\( {rama}  ❯ * \){cmd.name}*\n`
+    texto += rama + '  ❯ *' + cmd.name + '*\n'
     if (cmd.description) {
-      texto += `\( {esUltimo ? ' ' : '│'}     _ \){cmd.description}_\n`
+      texto += (esUltimo ? ' ' : '│') + '     _' + cmd.description + '_\n'
     }
   })
 
@@ -81,26 +75,26 @@ module.exports = {
     const nombreUsuario = msg.pushName || 'Usuario'
     const totalComandos = [...new Set(commands.values())].length
     const tipoBot = esSubBot ? '🔗 𝗦𝘂𝗯𝗕𝗼𝘁' : '🌸 𝗕𝗼𝘁 𝗣𝗿𝗶𝗻𝗰𝗶𝗽𝗮𝗹'
-    const prefijo = config.PREFIXES?.[0] || '.'
+    const prefijo = (config.PREFIXES && config.PREFIXES[0]) || '.'
 
     const { hora, fecha } = obtenerHoraPeru()
     const saludo = obtenerSaludo()
 
     // ========== HEADER ==========
-    let texto = `╭━━━━━━━━━━━━━━━━━━━━╮\n`
-    texto += `┃  🌸 *𝗬𝘂𝗶𝗕𝗼𝘁-𝗠𝗗* 🌸  ┃\n`
-    texto += `╰━━━━━━━━━━━━━━━━━━━━╯\n\n`
+    let texto = '╭━━━━━━━━━━━━━━━━━━━━╮\n'
+    texto += '┃  🌸 *𝗬𝘂𝗶𝗕𝗼𝘁-𝗠𝗗* 🌸  ┃\n'
+    texto += '╰━━━━━━━━━━━━━━━━━━━━╯\n\n'
 
-    texto += `\( {saludo}, * \){nombreUsuario}* ✨\n\n`
+    texto += saludo + ', *' + nombreUsuario + '* ✨\n\n'
 
-    texto += `╭─「 📌 𝗜𝗡𝗙𝗢𝗥𝗠𝗔𝗖𝗜𝗢́𝗡 」\n`
-    texto += `│ 🤖 Tipo: ${tipoBot}\n`
-    texto += `│ 👤 Usuario: *${nombreUsuario}*\n`
-    texto += `│ ⚡ Prefijo: *${prefijo}*\n`
-    texto += `│ 📦 Comandos: *${totalComandos}*\n`
-    texto += `│ 🕐 Hora Perú: *${hora}*\n`
-    texto += `│ 📅 Fecha: *${fecha}*\n`
-    texto += `╰────────────────────\n`
+    texto += '╭─「 📌 𝗜𝗡𝗙𝗢𝗥𝗠𝗔𝗖𝗜𝗢́𝗡 」\n'
+    texto += '│ 🤖 Tipo: ' + tipoBot + '\n'
+    texto += '│ 👤 Usuario: *' + nombreUsuario + '*\n'
+    texto += '│ ⚡ Prefijo: *' + prefijo + '*\n'
+    texto += '│ 📦 Comandos: *' + totalComandos + '*\n'
+    texto += '│ 🕐 Hora Perú: *' + hora + '*\n'
+    texto += '│ 📅 Fecha: *' + fecha + '*\n'
+    texto += '╰────────────────────\n'
 
     // ========== CATEGORÍAS ==========
     for (const clave of ORDEN_CATEGORIAS) {
@@ -116,10 +110,10 @@ module.exports = {
     }
 
     // ========== FOOTER ==========
-    texto += `\n╭────────────────────╮\n`
-    texto += `│ 🌸 *${config.BOT_NAME || 'YuiBot-MD'}*\n`
-    texto += `│ 💡 Usa *${prefijo}comando*\n`
-    texto += `╰────────────────────╯`
+    texto += '\n╭────────────────────╮\n'
+    texto += '│ 🌸 *' + (config.BOT_NAME || 'YuiBot-MD') + '*\n'
+    texto += '│ 💡 Usa *' + prefijo + 'comando*\n'
+    texto += '╰────────────────────╯'
 
     // Enviar con imagen/gif si existe
     const medios = config.MENU_IMAGES || []
@@ -128,18 +122,10 @@ module.exports = {
     if (elegido) {
       try {
         const buffer = fs.readFileSync(elegido.ruta)
-
         if (elegido.animado) {
-          await sock.sendMessage(jid, {
-            video: buffer,
-            caption: texto,
-            gifPlayback: true
-          })
+          await sock.sendMessage(jid, { video: buffer, caption: texto, gifPlayback: true })
         } else {
-          await sock.sendMessage(jid, {
-            image: buffer,
-            caption: texto
-          })
+          await sock.sendMessage(jid, { image: buffer, caption: texto })
         }
         return
       } catch (error) {
