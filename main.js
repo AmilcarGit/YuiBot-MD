@@ -1,11 +1,8 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
-const {
-  default: makeWASocket,
-  useMultiFileAuthState,
-  DisconnectReason,
-  fetchLatestBaileysVersion,
-  fetchLatestWaWebVersion,
-} = require('@whiskeysockets/baileys');
+// Nota: @whiskeysockets/baileys ahora apunta a ultra-baileys (russellxz),
+// que es un paquete ESM puro ("type": "module"). No se puede hacer
+// require() de un paquete ESM desde un proyecto CommonJS, así que se
+// carga con import() dinámico dentro de startBot() (ver más abajo).
 const { Boom } = require('@hapi/boom');
 const qrcode = require('qrcode-terminal');
 const pino = require('pino');
@@ -120,6 +117,14 @@ async function elegirMetodoDeVinculacion() {
 }
 
 async function startBot() {
+  const {
+    default: makeWASocket,
+    useMultiFileAuthState,
+    DisconnectReason,
+    fetchLatestBaileysVersion,
+    fetchLatestWaWebVersion,
+  } = await import('@whiskeysockets/baileys');
+
   const { state, saveCreds } = await useMultiFileAuthState(
     path.join(__dirname, 'session')
   );
