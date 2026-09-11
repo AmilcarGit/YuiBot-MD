@@ -19,6 +19,8 @@ const { contieneLink, detectarFlood, esAdminDeGrupo } = require('./lib/moderacio
 const { obtenerRangoExacto } = require('./lib/roles');
 const { limpiarPreKeysAntiguas, respaldarSesion } = require('./lib/mantenimiento');
 const { iniciarHeartbeat, actualizarGruposPrincipal, ID_PRINCIPAL } = require('./lib/red');
+const { crearControladorReconexion } = require('./lib/reconexion');
+const resiliencia = require('./lib/resiliencia');
 const config = require('./defaults');
 const iaConfig = require('./config/ia.json');
 
@@ -50,6 +52,13 @@ let metodoElegido = null;
 let mantenimientoIniciado = false;
 let detenerHeartbeatPrincipal = null;
 let intervaloGruposPrincipal = null;
+
+// Controlador de reconexión (backoff exponencial + cooldown ante 405).
+// Vive fuera de startBot() para que sus contadores sobrevivan entre reconexiones.
+const controladorReconexion = crearControladorReconexion({
+  etiqueta: 'bot principal',
+  reiniciar: () => startBot(),
+});
 
 function iniciarMantenimiento() {
   if (mantenimientoIniciado) return;
@@ -137,12 +146,29 @@ async function startBot() {
     const phoneNumber = config.PHONE_NUMBER || (await askQuestion('📞 Escribe tu número con código de país, sin "+" ni espacios (ej: 5218110000000): '));
 
     setTimeout(async () => {
+      const permiso = controladorReconexion.puedeIntentarPairing();
+      if (!permiso.permitido) {
+        const motivo = permiso.motivo === 'cooldown_405'
+          ? `WhatsApp devolvió 405 hace poco. Espera ~${Math.ceil((permiso.esperaMs || 0) / 60000)} min antes de reintentar.`
+          : 'Se pidió un código hace muy poco, espera unos segundos.';
+        console.warn(`⏳ No pedí el código de vinculación todavía: ${motivo}`);
+        return;
+      }
+
+      controladorReconexion.marcarIntentoPairing();
+
       try {
         const code = await sock.requestPairingCode(phoneNumber.trim());
         console.log(`🔑 Tu código de vinculación de ${config.BOT_NAME} es: ${code}`);
         console.log('📱 Ve a WhatsApp > Dispositivos vinculados > Vincular con número de teléfono, e ingresa ese código.');
       } catch (err) {
-        console.error('❌ No se pudo generar el código de vinculación:', err);
+        const statusCode = Number(err?.output?.statusCode || err?.data?.statusCode || 0);
+        const mensaje = String(err?.message || err || '');
+        if (statusCode === 405 || /\b405\b|method not allowed/i.test(mensaje)) {
+          controladorReconexion.registrarPairing405();
+        } else {
+          console.error('❌ No se pudo generar el código de vinculación:', err);
+        }
       }
     }, 3000);
   }
@@ -157,12 +183,27 @@ async function startBot() {
 
     if (connection === 'close') {
       const statusCode = new Boom(lastDisconnect?.error)?.output?.statusCode;
-      const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
-      console.log(`${col.rosa}❌ Conexión cerrada.${col.reset}`, shouldReconnect ? `${col.amarillo}Reconectando...${col.reset}` : `${col.rosa}Sesión cerrada, borra /session y vuelve a escanear.${col.reset}`);
-      if (!shouldReconnect) metodoElegido = null;
-      if (shouldReconnect) startBot();
+      const mensajeError = String(lastDisconnect?.error?.message || lastDisconnect?.error || '').trim();
+      const esLoggedOut = statusCode === DisconnectReason.loggedOut || statusCode === 401;
+      const esReemplazada = statusCode === DisconnectReason.connectionReplaced || statusCode === 440;
+
+      console.log(`${col.rosa}❌ Conexión cerrada.${col.reset} Código: ${statusCode || 'sin_codigo'}. ${mensajeError || 'sin_detalle'}`);
+
+      if (esLoggedOut) {
+        console.log(`${col.rosa}Sesión cerrada, borra /session y vuelve a escanear.${col.reset}`);
+        metodoElegido = null;
+        return;
+      }
+
+      if (esReemplazada) {
+        console.log(`${col.amarillo}La sesión fue reemplazada por otro dispositivo. No reconecto automáticamente para no pelear la sesión.${col.reset}`);
+        return;
+      }
+
+      controladorReconexion.manejarCierre({ statusCode, mensaje: mensajeError });
     } else if (connection === 'open') {
       console.log(`${col.verde}${col.bold}✅ ${config.BOT_NAME} conectado a WhatsApp.${col.reset}`);
+      controladorReconexion.conexionExitosa();
 
       if (detenerHeartbeatPrincipal) detenerHeartbeatPrincipal();
       detenerHeartbeatPrincipal = iniciarHeartbeat(ID_PRINCIPAL);
@@ -390,6 +431,15 @@ async function startBot() {
     const command = commands.get(parsed.commandName);
     if (!command) return;
 
+    const estadoResiliencia = resiliencia.estaBloqueado(parsed.commandName);
+    if (estadoResiliencia.bloqueado) {
+      const minutos = Math.max(1, Math.ceil((estadoResiliencia.restanteMs || 0) / 60000));
+      await sock.sendMessage(jid, {
+        text: `⚠️ El comando *${parsed.commandName}* está temporalmente deshabilitado por fallos repetidos. Intenta de nuevo en ~${minutos} min.`,
+      });
+      return;
+    }
+
     if (command.ownerOnly) {
       const candidatosPropietario = obtenerCandidatosPropietario(sock, msg);
 
@@ -401,8 +451,10 @@ async function startBot() {
 
     try {
       await command.execute(sock, msg, parsed.args, { commands, categories, config });
+      resiliencia.registrarExito(parsed.commandName);
     } catch (err) {
       console.error(`Error ejecutando "${parsed.commandName}":`, err);
+      resiliencia.registrarFallo(parsed.commandName, err);
       await sock.sendMessage(jid, {
         text: '⚠️ Ocurrió un error ejecutando ese comando.',
       });
