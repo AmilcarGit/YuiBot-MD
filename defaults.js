@@ -11,7 +11,7 @@ module.exports = {
   ],
   BOT_VERSION: '1.0.0',
   USE_PAIRING_CODE: true,
-  PHONE_NUMBER: '51925679896',
+  PHONE_NUMBER: '',
   PM2_PROCESS_NAME: 'YuiBot-MD',
   WELCOME_ENABLED: true,
   WELCOME_BACKGROUND: 'https://files.catbox.moe/vajp5d.jpeg',
