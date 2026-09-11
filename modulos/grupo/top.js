@@ -3,7 +3,7 @@ const { obtenerUsuario } = require('../../lib/db')
 
 module.exports = {
   name: 'top',
-  aliases: ['ranking', 'xptop'],
+  aliases: ['xptop', 'rankinggrupo'],
   description: 'Muestra el ranking de XP del grupo',
   category: 'grupo',
 
