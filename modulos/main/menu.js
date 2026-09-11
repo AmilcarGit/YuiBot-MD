@@ -1,4 +1,4 @@
-//CÓDIGO ORIGINAL DE YUIBOT-MD
+//CÓDIGO MEJORADO - Menú Minimalista Premium
 const fs = require('fs')
 
 const ORDEN_CATEGORIAS = ['main', 'usuario', 'grupo', 'download', 'media', 'diversion', 'utilidad', 'subbot', 'owner']
@@ -15,16 +15,18 @@ const CATEGORIAS = {
   owner: { emoji: '👑', titulo: 'OWNER' },
 }
 
-function construirCaja(info, comandos, texto) {
+function construirCategoria(info, comandos) {
   const unicos = [...new Set(comandos)]
+  let texto = `\n┌─ \( {info.emoji} * \){info.titulo}*\n`
 
-  texto += `\n╭━━━〔 ${info.emoji} ${info.titulo} 〕━━━╮\n`
   unicos.forEach((cmd, i) => {
-    texto += `┃ ❯ *${cmd.name}*\n`
-    texto += `┃    _${cmd.description}_\n`
-    if (i < unicos.length - 1) texto += `┃\n`
+    const esUltimo = i === unicos.length - 1
+    const simbolo = esUltimo ? '└' : '│'
+    texto += `\( {simbolo}  • * \){cmd.name}*\n`
+    if (cmd.description) {
+      texto += `\( {esUltimo ? ' ' : '│'}    _ \){cmd.description}_\n`
+    }
   })
-  texto += `╰${'━'.repeat(info.titulo.length + 10)}╯\n`
 
   return texto
 }
@@ -39,27 +41,33 @@ module.exports = {
     const jid = msg.key.remoteJid
     const nombreUsuario = msg.pushName || 'Usuario'
     const totalComandos = [...new Set(commands.values())].length
-    const tipoBot = esSubBot ? '🔗 SUBBOT' : '🌸 BOT PRINCIPAL'
+    const tipoBot = esSubBot ? '🔗 SubBot' : '🌸 Bot Principal'
+    const prefijo = config.PREFIXES?.[0] || '.'
 
-    let texto = `🌸 *YUIBOT-MD*\n\n`
-    texto += `${tipoBot}\n`
-    texto += `👤 Usuario: ${nombreUsuario}\n`
-    texto += `⚡ Prefijo: ${config.PREFIXES[0]}\n`
-    texto += `📦 Comandos: ${totalComandos}\n`
+    let texto = `🌸 ═══ *YuiBot-MD* ═══ 🌸\n\n`
+    texto += `✦ *Tipo:* ${tipoBot}\n`
+    texto += `✦ *Usuario:* ${nombreUsuario}\n`
+    texto += `✦ *Prefijo:* ${prefijo}\n`
+    texto += `✦ *Comandos:* ${totalComandos}\n`
+    texto += `────────────────────`
 
+    // Categorías en orden
     for (const clave of ORDEN_CATEGORIAS) {
       const cmds = categories.get(clave)
       if (!cmds || !cmds.length) continue
-      texto = construirCaja(CATEGORIAS[clave], cmds, texto)
+      texto += construirCategoria(CATEGORIAS[clave], cmds)
     }
 
+    // Categorías que no estén en el orden predefinido
     for (const [clave, cmds] of categories) {
       if (ORDEN_CATEGORIAS.includes(clave) || !cmds.length) continue
-      texto = construirCaja({ emoji: '📂', titulo: clave.toUpperCase() }, cmds, texto)
+      texto += construirCategoria({ emoji: '📂', titulo: clave.toUpperCase() }, cmds)
     }
 
-    texto += `\n🌸 _${config.BOT_NAME}_`
+    texto += `\n🌸 _${config.BOT_NAME || 'YuiBot-MD'}_`
+    texto += `\n💡 Usa *${prefijo}comando* para ejecutarlo`
 
+    // Enviar con imagen/gif si existe
     const medios = config.MENU_IMAGES || []
     const elegido = medios.length ? medios[Math.floor(Math.random() * medios.length)] : null
 
@@ -74,7 +82,7 @@ module.exports = {
         }
         return
       } catch (error) {
-        console.error('[MENU] No se pudo leer el archivo de MENU_IMAGES, se envía solo texto:', error.message)
+        console.error('[MENU] Error al cargar imagen:', error.message)
       }
     }
 
