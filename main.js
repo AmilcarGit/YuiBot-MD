@@ -4,6 +4,7 @@ const {
   useMultiFileAuthState,
   DisconnectReason,
   fetchLatestBaileysVersion,
+  fetchLatestWaWebVersion,
 } = require('@whiskeysockets/baileys');
 const { Boom } = require('@hapi/boom');
 const qrcode = require('qrcode-terminal');
@@ -20,6 +21,7 @@ const { obtenerRangoExacto } = require('./lib/roles');
 const { limpiarPreKeysAntiguas, respaldarSesion } = require('./lib/mantenimiento');
 const { iniciarHeartbeat, actualizarGruposPrincipal, ID_PRINCIPAL } = require('./lib/red');
 const { crearControladorReconexion } = require('./lib/reconexion');
+const { resolverVersionWA } = require('./lib/versionWA');
 const resiliencia = require('./lib/resiliencia');
 const config = require('./defaults');
 const iaConfig = require('./config/ia.json');
@@ -121,7 +123,7 @@ async function startBot() {
   const { state, saveCreds } = await useMultiFileAuthState(
     path.join(__dirname, 'session')
   );
-  const { version } = await fetchLatestBaileysVersion();
+  const version = await resolverVersionWA({ fetchLatestWaWebVersion, fetchLatestBaileysVersion });
 
   const yaVinculado = state.creds.registered;
 
