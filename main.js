@@ -225,6 +225,10 @@ async function startBot() {
   sock.ev.on('group-participants.update', async (update) => {
     console.log('[WELCOME] Evento group-participants.update recibido:', JSON.stringify(update));
 
+    // Hooks de moderación (antiraid, antifake, futuros) — se ejecutan
+    // siempre, independientemente de si la bienvenida está activada.
+    await ejecutarHooks(hooks.onGroupUpdate, sock, update);
+
     const esAlta = update.action === 'add';
     const esBaja = update.action === 'remove';
 
