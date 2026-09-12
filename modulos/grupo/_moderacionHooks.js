@@ -12,6 +12,7 @@
 const { isOwner } = require('../../lib/handler')
 const { contieneLink, detectarFlood, esAdminDeGrupo } = require('../../lib/moderacion')
 const { registrarAvisoAntilink, reiniciarAvisosAntilink } = require('../../lib/db')
+const { estaEnWhitelist } = require('../../lib/whitelist')
 
 module.exports = {
   /**
@@ -28,7 +29,7 @@ module.exports = {
 
     try {
       const esOwnerBot = isOwner(remitente, config)
-      if (esOwnerBot) return
+      if (esOwnerBot || estaEnWhitelist(jid, numeroRemitente)) return
 
       let metadata = null
 
