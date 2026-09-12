@@ -37,13 +37,13 @@ const col = {
 
 function printBanner({ totalComandos }) {
   const linea = '─'.repeat(42);
-  console.log(`\n${col.morado}┌${linea}┐${col.reset}`);
-  console.log(`${col.morado}│${col.reset}  ${col.bold}${col.rosa}🌸 ${config.BOT_NAME}${col.reset}  ${col.gris}v${config.BOT_VERSION}${col.reset}`);
-  console.log(`${col.morado}│${col.reset}  ${col.cian}Prefijos:${col.reset} ${config.PREFIXES.join(' ')} ${config.ALLOW_NO_PREFIX ? '(o sin prefijo)' : ''}`);
-  console.log(`${col.morado}│${col.reset}  ${col.cian}Comandos:${col.reset} ${totalComandos}`);
-  console.log(`${col.morado}│${col.reset}  ${col.cian}IA:${col.reset} ${config.IA_ENABLED ? 'activada' : 'desactivada'}`);
-  console.log(`${col.morado}│${col.reset}  ${col.cian}Node:${col.reset} ${process.version}`);
-  console.log(`${col.morado}└${linea}┘${col.reset}\n`);
+  console.log(`\n\( {col.morado}┌ \){linea}┐${col.reset}`);
+  console.log(`\( {col.morado}│ \){col.reset}  \( {col.bold} \){col.rosa}🌸 \( {config.BOT_NAME} \){col.reset}  \( {col.gris}v \){config.BOT_VERSION}${col.reset}`);
+  console.log(`\( {col.morado}│ \){col.reset}  \( {col.cian}Prefijos: \){col.reset} ${config.PREFIXES.join(' ')} ${config.ALLOW_NO_PREFIX ? '(o sin prefijo)' : ''}`);
+  console.log(`\( {col.morado}│ \){col.reset}  \( {col.cian}Comandos: \){col.reset} ${totalComandos}`);
+  console.log(`\( {col.morado}│ \){col.reset}  \( {col.cian}IA: \){col.reset} ${config.IA_ENABLED ? 'activada' : 'desactivada'}`);
+  console.log(`\( {col.morado}│ \){col.reset}  \( {col.cian}Node: \){col.reset} ${process.version}`);
+  console.log(`\( {col.morado}└ \){linea}┘${col.reset}\n`);
 }
 
 let metodoElegido = null;
@@ -70,7 +70,7 @@ function iniciarMantenimiento() {
     try {
       const { eliminados } = limpiarPreKeysAntiguas(rutaSession, cfg.PREKEYS_DIAS_ANTIGUEDAD ?? 3);
       if (eliminados > 0) {
-        console.log(`${col.cian}🧹 Limpieza de sesión: ${eliminados} pre-key(s) antigua(s) eliminada(s).${col.reset}`);
+        console.log(`${col.cian}🧹 Limpieza de sesión: \( {eliminados} pre-key(s) antigua(s) eliminada(s). \){col.reset}`);
       }
     } catch (error) {
       console.error('[MANTENIMIENTO] Error limpiando pre-keys:', error);
@@ -81,7 +81,7 @@ function iniciarMantenimiento() {
     try {
       const destino = respaldarSesion(rutaSession, rutaBackups, cfg.BACKUP_MAX ?? 5);
       if (destino) {
-        console.log(`${col.cian}💾 Backup de sesión creado: ${destino}${col.reset}`);
+        console.log(`${col.cian}💾 Backup de sesión creado: \( {destino} \){col.reset}`);
       }
     } catch (error) {
       console.error('[MANTENIMIENTO] Error respaldando sesión:', error);
@@ -155,7 +155,7 @@ async function startBot() {
       const permiso = controladorReconexion.puedeIntentarPairing();
       if (!permiso.permitido) {
         const motivo = permiso.motivo === 'cooldown_405'
-          ? `WhatsApp devolvió 405 hace poco. Espera ~${Math.ceil((permiso.esperaMs || 0) / 60000)} min antes de reintentar.`
+          ? `WhatsApp devolvió 405 hace poco. Espera \~${Math.ceil((permiso.esperaMs || 0) / 60000)} min antes de reintentar.`
           : 'Se pidió un código hace muy poco, espera unos segundos.';
         console.warn(`⏳ No pedí el código de vinculación todavía: ${motivo}`);
         return;
@@ -193,22 +193,22 @@ async function startBot() {
       const esLoggedOut = statusCode === DisconnectReason.loggedOut || statusCode === 401;
       const esReemplazada = statusCode === DisconnectReason.connectionReplaced || statusCode === 440;
 
-      console.log(`${col.rosa}❌ Conexión cerrada.${col.reset} Código: ${statusCode || 'sin_codigo'}. ${mensajeError || 'sin_detalle'}`);
+      console.log(`\( {col.rosa}❌ Conexión cerrada. \){col.reset} Código: ${statusCode || 'sin_codigo'}. ${mensajeError || 'sin_detalle'}`);
 
       if (esLoggedOut) {
-        console.log(`${col.rosa}Sesión cerrada, borra /session y vuelve a escanear.${col.reset}`);
+        console.log(`\( {col.rosa}Sesión cerrada, borra /session y vuelve a escanear. \){col.reset}`);
         metodoElegido = null;
         return;
       }
 
       if (esReemplazada) {
-        console.log(`${col.amarillo}La sesión fue reemplazada por otro dispositivo. No reconecto automáticamente para no pelear la sesión.${col.reset}`);
+        console.log(`\( {col.amarillo}La sesión fue reemplazada por otro dispositivo. No reconecto automáticamente para no pelear la sesión. \){col.reset}`);
         return;
       }
 
       controladorReconexion.manejarCierre({ statusCode, mensaje: mensajeError });
     } else if (connection === 'open') {
-      console.log(`${col.verde}${col.bold}✅ ${config.BOT_NAME} conectado a WhatsApp.${col.reset}`);
+      console.log(`\( {col.verde} \){col.bold}✅ \( {config.BOT_NAME} conectado a WhatsApp. \){col.reset}`);
       controladorReconexion.conexionExitosa();
 
       if (detenerHeartbeatPrincipal) detenerHeartbeatPrincipal();
@@ -311,7 +311,7 @@ async function startBot() {
           mentions: [jidReal],
         });
 
-        console.log(`[WELCOME] ${esBaja ? 'Despedida' : 'Bienvenida'} enviada a ${numero} en "${metadata.subject}".`);
+        console.log(`[WELCOME] ${esBaja ? 'Despedida' : 'Bienvenida'} enviada a \( {numero} en " \){metadata.subject}".`);
       } catch (error) {
         console.error('[WELCOME] Error procesando a un participante, se continúa con los demás:', error);
       }
@@ -326,9 +326,7 @@ async function startBot() {
 
     const jid = msg.key.remoteJid;
 
-    if (!msg.key.fromMe) {
-      sock.readMessages([msg.key]).catch(() => {});
-    }
+    // Auto-read desactivado (ya no se envían los ✓✓ azules)
 
     const body = getMessageBody(msg);
     const esGrupo = jid.endsWith('@g.us');
@@ -338,7 +336,7 @@ async function startBot() {
     const hora = new Date().toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
     console.log(
-      `[${hora}] ${esGrupo ? '👥' : '👤'} ${nombre} (${numeroRemitente})${esGrupo ? ` en grupo` : ''}: ${body || '[sin texto / multimedia]'}`
+      `[${hora}] ${esGrupo ? '👥' : '👤'} \( {nombre} ( \){numeroRemitente})${esGrupo ? ` en grupo` : ''}: ${body || '[sin texto / multimedia]'}`
     );
 
     if (esGrupo && !msg.key.fromMe) {
@@ -347,14 +345,14 @@ async function startBot() {
         if (resultadoXp?.subioDeNivel) {
           console.log(`[XP] ${numeroRemitente} subió a nivel ${resultadoXp.nivel}.`);
           await sock.sendMessage(jid, {
-            text: `🎉 @${numeroRemitente} subió al *nivel ${resultadoXp.nivel}*! (${resultadoXp.xp} XP total)`,
+            text: `🎉 @${numeroRemitente} subió al *nivel \( {resultadoXp.nivel}*! ( \){resultadoXp.xp} XP total)`,
             mentions: [remitente],
           });
 
           const rangoNuevo = obtenerRangoExacto(resultadoXp.nivel);
           if (rangoNuevo) {
             await sock.sendMessage(jid, {
-              text: `🏅 @${numeroRemitente} desbloqueó el rango *"${rangoNuevo.nombre}"* al llegar a nivel ${rangoNuevo.nivel}.`,
+              text: `🏅 @\( {numeroRemitente} desbloqueó el rango *" \){rangoNuevo.nombre}"* al llegar a nivel ${rangoNuevo.nivel}.`,
               mentions: [remitente],
             });
           }
@@ -381,7 +379,7 @@ async function startBot() {
     if (estadoResiliencia.bloqueado) {
       const minutos = Math.max(1, Math.ceil((estadoResiliencia.restanteMs || 0) / 60000));
       await sock.sendMessage(jid, {
-        text: `⚠️ El comando *${parsed.commandName}* está temporalmente deshabilitado por fallos repetidos. Intenta de nuevo en ~${minutos} min.`,
+        text: `⚠️ El comando *\( {parsed.commandName}* está temporalmente deshabilitado por fallos repetidos. Intenta de nuevo en \~ \){minutos} min.`,
       });
       return;
     }
@@ -408,18 +406,18 @@ async function startBot() {
   });
 
   process.once('SIGINT', () => {
-    console.log(`\n${col.amarillo}👋 Cerrando ${config.BOT_NAME}...${col.reset}`);
+    console.log(`\n${col.amarillo}👋 Cerrando \( {config.BOT_NAME}... \){col.reset}`);
     sock.end(undefined);
     process.exit(0);
   });
 }
 
 process.on('unhandledRejection', (reason) => {
-  console.error(`${col.rosa}⚠️ Promesa no manejada:${col.reset}`, reason);
+  console.error(`\( {col.rosa}⚠️ Promesa no manejada: \){col.reset}`, reason);
 });
 
 process.on('uncaughtException', (err) => {
-  console.error(`${col.rosa}⚠️ Excepción no capturada:${col.reset}`, err);
+  console.error(`\( {col.rosa}⚠️ Excepción no capturada: \){col.reset}`, err);
 });
 
 startBot().catch((err) => console.error(`Error al iniciar ${config.BOT_NAME}:`, err));
