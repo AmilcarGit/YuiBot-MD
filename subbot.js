@@ -7,7 +7,7 @@ const pino = require('pino')
 const path = require('path')
 const fs = require('fs')
 
-const { loadCommands } = require('./lib/cargador')
+const { loadCommands, ejecutarHooks } = require('./lib/cargador')
 const { getMessageBody, parseCommand, isOwner, obtenerCandidatosPropietario } = require('./lib/handler')
 const { iniciarHeartbeat, puedeResponderSubbot } = require('./lib/red')
 const { esDuenoDeSubbot, obtenerPrefijo } = require('./lib/subbots')
@@ -136,7 +136,7 @@ async function startSubBot() {
 
   socketActivo = sock
 
-  const { commands, categories } = loadCommands()
+  const { commands, categories, hooks } = loadCommands()
 
   console.log(`🤖 [subbot ${numero}] Inicializado. Identidad: ${sock.user?.id || 'pendiente'} | LID: ${sock.user?.lid || 'pendiente'}`)
 
@@ -211,6 +211,12 @@ async function startSubBot() {
 
   sock.ev.on('creds.update', saveCreds)
 
+  // Hooks de moderación (antiraid, antifake, futuros) — antes los subbots
+  // no reaccionaban en absoluto a entradas/salidas de grupo.
+  sock.ev.on('group-participants.update', async (update) => {
+    await ejecutarHooks(hooks.onGroupUpdate, sock, update)
+  })
+
   sock.ev.on('messages.upsert', async ({ messages, type }) => {
     if (!messages?.length || type !== 'notify') return
 
@@ -237,6 +243,8 @@ async function startSubBot() {
       const esGrupo = jid.endsWith('@g.us')
       const tipoChat = esGrupo ? '👥 GRUPO' : '🔒 PRIVADO'
       const remitente = (key.participantAlt || key.participant || key.remoteJidAlt || key.remoteJid || '').split('@')[0]
+      const remitenteJid = key.participantAlt || key.participant || key.remoteJidAlt || key.remoteJid || jid
+      const numeroRemitente = remitenteJid.split('@')[0].split(':')[0]
 
       if (esGrupo) {
         const puedeResponder = puedeResponderSubbot(numero, jid)
@@ -247,6 +255,13 @@ async function startSubBot() {
       const configSubbot = prefijoPersonalizado
         ? { ...config, PREFIXES: [prefijoPersonalizado, ...config.PREFIXES.filter((p) => p !== prefijoPersonalizado)] }
         : config
+
+      // Hooks de moderación (antilink, antiflood, antiraid, antifake...)
+      // — antes los subbots no aplicaban ninguno.
+      await ejecutarHooks(hooks.onMessage, sock, msg, {
+        jid, body: cuerpo, esGrupo, remitente: remitenteJid, numeroRemitente, config: configSubbot,
+      })
+
       const parsed = parseCommand(cuerpo, configSubbot)
 
       if (!parsed) {
