@@ -13,7 +13,7 @@ const PREGUNTAS = [
 
 module.exports = {
   name: 'trivia',
-  aliases: ['pregunta', 'quiz'],
+  aliases: ['quiz'],
   description: 'Responde una pregunta de trivia y gana monedas',
   category: 'diversion',
 
