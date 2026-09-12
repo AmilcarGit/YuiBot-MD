@@ -47,6 +47,13 @@ module.exports = {
       VENTANA_MS: 7000,
     },
   },
+  // Canal oficial de WhatsApp. Déjalo ENABLED: false hasta que tengas la
+  // URL real (WhatsApp > tu canal > ⋮ > Compartir > Copiar enlace).
+  NEWSLETTER: {
+    ENABLED: false,
+    NOMBRE: 'Canal oficial de YuiBot-MD',
+    URL: '',
+  },
   APIS: {
     LEMPI_KEY: 'lem_dc158e5ad3f4f6ee2de2905a222bfb68f61dd754',
     LEMPI_KEY_2: 'lem_10b02e6bcce68b82f51252de9d9ec71125528d02',
