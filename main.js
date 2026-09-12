@@ -9,11 +9,10 @@ const pino = require('pino');
 const path = require('path');
 const readline = require('readline');
 
-const { loadCommands } = require('./lib/cargador');
+const { loadCommands, ejecutarHooks } = require('./lib/cargador');
 const { getMessageBody, parseCommand, isOwner, obtenerCandidatosPropietario } = require('./lib/handler');
 const { generarImagenBienvenida } = require('./lib/welcome');
-const { agregarXpConCooldown, obtenerGrupo, registrarAvisoAntilink, reiniciarAvisosAntilink } = require('./lib/db');
-const { contieneLink, detectarFlood, esAdminDeGrupo } = require('./lib/moderacion');
+const { agregarXpConCooldown, obtenerGrupo } = require('./lib/db');
 const { obtenerRangoExacto } = require('./lib/roles');
 const { limpiarPreKeysAntiguas, respaldarSesion } = require('./lib/mantenimiento');
 const { iniciarHeartbeat, actualizarGruposPrincipal, ID_PRINCIPAL } = require('./lib/red');
@@ -145,7 +144,7 @@ async function startBot() {
     printQRInTerminal: false,
   });
 
-  const { commands, categories } = loadCommands();
+  const { commands, categories, hooks } = loadCommands();
   printBanner({ totalComandos: [...new Set(commands.values())].length });
   iniciarMantenimiento();
 
@@ -359,78 +358,14 @@ async function startBot() {
       } catch (error) {
         console.error('[XP] Error actualizando experiencia:', error);
       }
-
-      const antilinkActivo = config.MODERACION?.ANTILINK?.ENABLED;
-      const antifloodActivo = config.MODERACION?.ANTIFLOOD?.ENABLED;
-
-      if (antilinkActivo || antifloodActivo) {
-        try {
-          const esOwnerBot = isOwner(remitente, config);
-
-          if (!esOwnerBot) {
-            let metadata = null;
-
-            if (antilinkActivo && contieneLink(body)) {
-              metadata = metadata || await sock.groupMetadata(jid);
-              if (!esAdminDeGrupo(metadata, numeroRemitente)) {
-                console.log(`[MODERACION] Link detectado de ${numeroRemitente}, se elimina el mensaje.`);
-                await sock.sendMessage(jid, { delete: msg.key });
-
-                const autoKick = config.MODERACION.ANTILINK.AUTO_KICK;
-                const maxAvisos = config.MODERACION.ANTILINK.MAX_AVISOS || 3;
-
-                if (autoKick) {
-                  const avisos = registrarAvisoAntilink(numeroRemitente);
-
-                  if (avisos >= maxAvisos) {
-                    reiniciarAvisosAntilink(numeroRemitente);
-                    try {
-                      await sock.groupParticipantsUpdate(jid, [remitente], 'remove');
-                      await sock.sendMessage(jid, {
-                        text: `🚫 @${numeroRemitente} fue expulsado por enviar enlaces prohibidos ${maxAvisos} veces.`,
-                        mentions: [remitente],
-                      });
-                    } catch (error) {
-                      console.error('[MODERACION] No se pudo expulsar (¿el bot es admin?):', error);
-                      await sock.sendMessage(jid, {
-                        text: `🚫 @${numeroRemitente} superó el límite de avisos, pero no pude expulsarlo. ¿Soy administrador del grupo?`,
-                        mentions: [remitente],
-                      });
-                    }
-                    return;
-                  }
-
-                  await sock.sendMessage(jid, {
-                    text: `🚫 @${numeroRemitente}, no se permiten enlaces en este grupo. Aviso ${avisos}/${maxAvisos}.`,
-                    mentions: [remitente],
-                  });
-                  return;
-                }
-
-                await sock.sendMessage(jid, {
-                  text: `🚫 @${numeroRemitente}, no se permiten enlaces en este grupo.`,
-                  mentions: [remitente],
-                });
-                return;
-              }
-            }
-
-            if (antifloodActivo) {
-              metadata = metadata || await sock.groupMetadata(jid);
-              if (!esAdminDeGrupo(metadata, numeroRemitente) && detectarFlood(numeroRemitente, config.MODERACION.ANTIFLOOD)) {
-                console.log(`[MODERACION] Flood detectado de ${numeroRemitente}.`);
-                await sock.sendMessage(jid, {
-                  text: `⚠️ @${numeroRemitente}, estás enviando mensajes muy rápido. Tranquilo un momento.`,
-                  mentions: [remitente],
-                });
-              }
-            }
-          }
-        } catch (error) {
-          console.error('[MODERACION] Error al procesar antilink/antiflood:', error);
-        }
-      }
     }
+
+    // Antilink/antiflood ahora vive como hook en modulos/grupo/_moderacionHooks.js
+    // (mismo comportamiento de antes, solo cambió dónde está el código).
+    // Se ejecuta para TODO mensaje (no solo de grupo): cada hook decide
+    // internamente si le corresponde actuar o no.
+    // A futuro, cualquier módulo anti-* nuevo se agrega igual, sin tocar main.js.
+    await ejecutarHooks(hooks.onMessage, sock, msg, { jid, body, esGrupo, remitente, numeroRemitente, config });
 
     const parsed = parseCommand(body, config);
     if (!parsed) return;
