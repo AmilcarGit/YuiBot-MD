@@ -259,7 +259,7 @@ async function startSubBot() {
       // Hooks de moderación (antilink, antiflood, antiraid, antifake...)
       // — antes los subbots no aplicaban ninguno.
       await ejecutarHooks(hooks.onMessage, sock, msg, {
-        jid, body: cuerpo, esGrupo, remitente: remitenteJid, numeroRemitente, config: configSubbot,
+        jid, body: cuerpo, esGrupo, remitente: remitenteJid, numeroRemitente, config: configSubbot, commands,
       })
 
       const parsed = parseCommand(cuerpo, configSubbot)
