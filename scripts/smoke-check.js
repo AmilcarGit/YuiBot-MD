@@ -2,7 +2,8 @@
 // npm run smoke
 // Arranque "headless": carga todos los módulos de comandos (sin conectar
 // a WhatsApp) y valida que:
-//   1) cada módulo tenga { name, execute } válidos (igual que hace cargador.js)
+//   1) cada módulo tenga { name, execute } válidos (igual que hace cargador.js),
+//      o al menos un hook (onMessage/onGroupUpdate/onMessageDelete)
 //   2) ningún name/alias esté duplicado entre dos módulos distintos
 //      (si pasa, el segundo pisa silenciosamente al primero al cargar)
 // Pensado para correr después de portar/agregar comandos, antes de reiniciar
@@ -58,6 +59,16 @@ function main() {
     }
 
     if (!mod?.name || typeof mod.execute !== 'function') {
+      const tieneHooks = ['onMessage', 'onGroupUpdate', 'onMessageDelete'].some(
+        (hookName) => typeof mod?.[hookName] === 'function'
+      )
+      if (tieneHooks) {
+        // Módulo de solo-hook (sin comando de chat asociado): válido,
+        // igual que lo acepta lib/cargador.js.
+        modulosValidos += 1
+        continue
+      }
+
       modulosInvalidos += 1
       huboError = true
       console.error(`❌ Módulo inválido en ${relativo}: falta "name" o "execute" no es función.`)
