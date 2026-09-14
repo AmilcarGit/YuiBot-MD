@@ -235,6 +235,14 @@ async function startSubBot() {
         continue
       }
 
+      // Antes esto dependía de lib/marcar-leido.js (un parche a require()
+      // que dejó de funcionar al cambiar a ultra-baileys, que es ESM puro
+      // y se carga con import() dinámico). Ahora se hace directo acá,
+      // igual que en main.js, y respeta el mismo toggle de defaults.js.
+      if (!key.fromMe && config.MARCAR_LEIDO) {
+        sock.readMessages([key]).catch(() => {})
+      }
+
       if (key.fromMe) {
         console.log(`↩️ [subbot ${numero}] BOT → mensaje enviado`)
         continue
