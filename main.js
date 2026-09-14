@@ -326,7 +326,7 @@ async function startBot() {
 
     const jid = msg.key.remoteJid;
 
-    if (!msg.key.fromMe) {
+    if (!msg.key.fromMe && config.MARCAR_LEIDO) {
       sock.readMessages([msg.key]).catch(() => {});
     }
 
