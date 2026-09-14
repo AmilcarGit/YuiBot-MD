@@ -16,6 +16,10 @@ module.exports = {
   WELCOME_ENABLED: true,
   WELCOME_BACKGROUND: 'https://files.catbox.moe/vajp5d.jpeg',
   PROFILE_BACKGROUND: 'https://files.catbox.moe/9fqfuv.png',
+  // Si es true, el bot marca los mensajes entrantes como leídos (✓✓ azul)
+  // automáticamente. Ponlo en false si prefieres que WhatsApp muestre que
+  // el mensaje llegó pero no fue "leído".
+  MARCAR_LEIDO: true,
   MANTENIMIENTO: {
     LIMPIEZA_PREKEYS_HORAS: 6,
     PREKEYS_DIAS_ANTIGUEDAD: 3,
