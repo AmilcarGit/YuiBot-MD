@@ -18,6 +18,7 @@ const { limpiarPreKeysAntiguas, respaldarSesion } = require('./lib/mantenimiento
 const { iniciarHeartbeat, actualizarGruposPrincipal, ID_PRINCIPAL } = require('./lib/red');
 const { crearControladorReconexion } = require('./lib/reconexion');
 const { resolverVersionWA } = require('./lib/versionWA');
+const { verificarYAplicar: verificarHorarios } = require('./lib/horariogrupo');
 const resiliencia = require('./lib/resiliencia');
 const config = require('./defaults');
 const iaConfig = require('./config/ia.json');
@@ -50,6 +51,7 @@ let metodoElegido = null;
 let mantenimientoIniciado = false;
 let detenerHeartbeatPrincipal = null;
 let intervaloGruposPrincipal = null;
+let intervaloHorarios = null;
 
 // Controlador de reconexión (backoff exponencial + cooldown ante 405).
 // Vive fuera de startBot() para que sus contadores sobrevivan entre reconexiones.
@@ -217,6 +219,12 @@ async function startBot() {
       if (intervaloGruposPrincipal) clearInterval(intervaloGruposPrincipal);
       actualizarGruposPrincipal(sock);
       intervaloGruposPrincipal = setInterval(() => actualizarGruposPrincipal(sock), 120000);
+
+      if (intervaloHorarios) clearInterval(intervaloHorarios);
+      verificarHorarios(sock).catch((error) => console.error('[HORARIOGRUPO] Error en la primera verificación:', error));
+      intervaloHorarios = setInterval(() => {
+        verificarHorarios(sock).catch((error) => console.error('[HORARIOGRUPO] Error verificando horarios:', error));
+      }, 5 * 60 * 1000);
     }
   });
 
@@ -369,7 +377,8 @@ async function startBot() {
     // Se ejecuta para TODO mensaje (no solo de grupo): cada hook decide
     // internamente si le corresponde actuar o no.
     // A futuro, cualquier módulo anti-* nuevo se agrega igual, sin tocar main.js.
-    await ejecutarHooks(hooks.onMessage, sock, msg, { jid, body, esGrupo, remitente, numeroRemitente, config, commands });
+    const detenido = await ejecutarHooks(hooks.onMessage, sock, msg, { jid, body, esGrupo, remitente, numeroRemitente, config, commands });
+    if (detenido) return; // un hook (ej. modoadmi, botgrupo) pidió no seguir con el comando
 
     const parsed = parseCommand(body, config);
     if (!parsed) return;
@@ -396,7 +405,7 @@ async function startBot() {
     }
 
     try {
-      await command.execute(sock, msg, parsed.args, { commands, categories, config });
+      await command.execute(sock, msg, parsed.args, { commands, categories, config, commandName: parsed.commandName });
       resiliencia.registrarExito(parsed.commandName);
     } catch (err) {
       console.error(`Error ejecutando "${parsed.commandName}":`, err);
