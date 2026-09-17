@@ -13,6 +13,7 @@ const { iniciarHeartbeat, puedeResponderSubbot } = require('./lib/red')
 const { esDuenoDeSubbot, obtenerPrefijo } = require('./lib/subbots')
 const { crearControladorReconexion } = require('./lib/reconexion')
 const { resolverVersionWA } = require('./lib/versionWA')
+const { verificarYAplicar: verificarHorarios } = require('./lib/horariogrupo')
 const resiliencia = require('./lib/resiliencia')
 const config = require('./defaults')
 
@@ -33,6 +34,7 @@ fs.mkdirSync(sessionPath, { recursive: true })
 let detenerHeartbeatSubbot = null
 let socketActivo = null
 let liberandoSocket = false
+let intervaloHorariosSubbot = null
 
 // Controlador de reconexión (backoff exponencial + cooldown ante 405),
 // compartido con main.js vía lib/reconexion.js.
@@ -206,6 +208,12 @@ async function startSubBot() {
 
       if (detenerHeartbeatSubbot) detenerHeartbeatSubbot()
       detenerHeartbeatSubbot = iniciarHeartbeat(numero)
+
+      if (intervaloHorariosSubbot) clearInterval(intervaloHorariosSubbot)
+      verificarHorarios(sock).catch((error) => console.error(`[HORARIOGRUPO] [subbot ${numero}] Error en la primera verificación:`, error))
+      intervaloHorariosSubbot = setInterval(() => {
+        verificarHorarios(sock).catch((error) => console.error(`[HORARIOGRUPO] [subbot ${numero}] Error verificando horarios:`, error))
+      }, 5 * 60 * 1000)
     }
   })
 
@@ -266,9 +274,10 @@ async function startSubBot() {
 
       // Hooks de moderación (antilink, antiflood, antiraid, antifake...)
       // — antes los subbots no aplicaban ninguno.
-      await ejecutarHooks(hooks.onMessage, sock, msg, {
+      const detenido = await ejecutarHooks(hooks.onMessage, sock, msg, {
         jid, body: cuerpo, esGrupo, remitente: remitenteJid, numeroRemitente, config: configSubbot, commands,
       })
+      if (detenido) continue // un hook (ej. modoadmi, botgrupo) pidió no seguir con el comando
 
       const parsed = parseCommand(cuerpo, configSubbot)
 
@@ -308,7 +317,7 @@ async function startSubBot() {
       }
 
       try {
-        await command.execute(sock, msg, parsed.args, { commands, categories, config: configSubbot, esSubBot: true, subbotNumero: numero })
+        await command.execute(sock, msg, parsed.args, { commands, categories, config: configSubbot, esSubBot: true, subbotNumero: numero, commandName: parsed.commandName })
         resiliencia.registrarExito(parsed.commandName)
         console.log(`│ ✅ ${parsed.commandName} → ejecutado\n╰────────────────────`)
       } catch (err) {
