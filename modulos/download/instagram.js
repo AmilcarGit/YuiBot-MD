@@ -1,7 +1,6 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
-const { APIS } = require('../../defaults')
+const { descargarInstagram } = require('../../lib/instagram')
 
-const API_URL = 'https://dv-yer-api.online/instagram'
 const LIMITE_VIDEO_MB = 64
 
 module.exports = {
@@ -34,16 +33,7 @@ module.exports = {
     try {
       await sock.sendMessage(jid, { text: `⏳ Descargando de Instagram...\n\n🔗 ${link}` }, { quoted: msg })
 
-      const url = `${API_URL}?mode=link&url=${encodeURIComponent(link)}&pick=1&lang=es&apikey=${encodeURIComponent(APIS.DVYER_KEY)}`
-      const resp = await fetch(url)
-      if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
-
-      const data = await resp.json()
-
-      if (!data?.ok || !data?.selected?.download_url) {
-        throw new Error(data?.message || 'No se pudo obtener el video')
-      }
-
+      const data = await descargarInstagram(link)
       const { selected, title, username } = data
 
       const respArchivo = await fetch(selected.download_url)
