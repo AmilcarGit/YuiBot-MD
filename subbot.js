@@ -14,6 +14,7 @@ const { esDuenoDeSubbot, obtenerPrefijo } = require('./lib/subbots')
 const { crearControladorReconexion } = require('./lib/reconexion')
 const { resolverVersionWA } = require('./lib/versionWA')
 const { verificarYAplicar: verificarHorarios } = require('./lib/horariogrupo')
+const estadisticas = require('./lib/estadisticas')
 const resiliencia = require('./lib/resiliencia')
 const config = require('./defaults')
 
@@ -251,6 +252,8 @@ async function startSubBot() {
         sock.readMessages([key]).catch(() => {})
       }
 
+      estadisticas.registrarMensaje()
+
       if (key.fromMe) {
         console.log(`↩️ [subbot ${numero}] BOT → mensaje enviado`)
         continue
@@ -319,6 +322,7 @@ async function startSubBot() {
       try {
         await command.execute(sock, msg, parsed.args, { commands, categories, config: configSubbot, esSubBot: true, subbotNumero: numero, commandName: parsed.commandName })
         resiliencia.registrarExito(parsed.commandName)
+        estadisticas.registrarComando(parsed.commandName)
         console.log(`│ ✅ ${parsed.commandName} → ejecutado\n╰────────────────────`)
       } catch (err) {
         resiliencia.registrarFallo(parsed.commandName, err)
