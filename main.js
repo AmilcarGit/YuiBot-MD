@@ -19,6 +19,7 @@ const { iniciarHeartbeat, actualizarGruposPrincipal, ID_PRINCIPAL } = require('.
 const { crearControladorReconexion } = require('./lib/reconexion');
 const { resolverVersionWA } = require('./lib/versionWA');
 const { verificarYAplicar: verificarHorarios } = require('./lib/horariogrupo');
+const estadisticas = require('./lib/estadisticas');
 const resiliencia = require('./lib/resiliencia');
 const config = require('./defaults');
 const iaConfig = require('./config/ia.json');
@@ -338,6 +339,8 @@ async function startBot() {
       sock.readMessages([msg.key]).catch(() => {});
     }
 
+    estadisticas.registrarMensaje();
+
     const body = getMessageBody(msg);
     const esGrupo = jid.endsWith('@g.us');
     const nombre = msg.pushName || 'Desconocido';
@@ -407,6 +410,7 @@ async function startBot() {
     try {
       await command.execute(sock, msg, parsed.args, { commands, categories, config, commandName: parsed.commandName });
       resiliencia.registrarExito(parsed.commandName);
+      estadisticas.registrarComando(parsed.commandName);
     } catch (err) {
       console.error(`Error ejecutando "${parsed.commandName}":`, err);
       resiliencia.registrarFallo(parsed.commandName, err);
