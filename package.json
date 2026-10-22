@@ -19,7 +19,7 @@
     "qrcode-terminal": "^0.12.0",
     "pino": "^9.4.0",
     "node-webpmux": "^3.1.0",
-    "canvas": "^2.11.2",
+    "canvas": "^3.2.3",
     "jsqr": "^1.4.0"
   },
   "devDependencies": {
