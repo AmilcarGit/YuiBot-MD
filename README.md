@@ -20,7 +20,7 @@
 
   <br>
 
-  [![GitHub Stars](https://img.shields.io/github/stars/AmilcarGit/YuiBot-MD?style=for-the-badge&logo=github&logoColor=white)](https://github.com/AmilcarGit/YuiBot-MD/stargazers)
+  [![GitHub Stars](https://img.shields.io/github/stars/AmilcarGit/YuiBot-MD?style=for-the-badge&logo=github&logoColor=white)](https://github.com/AmilcarGit/YuiBot-MD)
   [![GitHub Forks](https://img.shields.io/github/forks/AmilcarGit/YuiBot-MD?style=for-the-badge&logo=github&logoColor=white)](https://github.com/AmilcarGit/YuiBot-MD/network/members)
   [![Node.js](https://img.shields.io/badge/Node.js-18+-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
   [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
@@ -313,7 +313,7 @@ Este proyecto está bajo la licencia **MIT**. Ver archivo [LICENSE](LICENSE) par
 
 ¿Necesitas ayuda? 
 - 📋 Abre un [Issue](https://github.com/AmilcarGit/YuiBot-MD/issues)
-- 💬 Revisa las [Discussions](https://github.com/AmilcarGit/YuiBot-MD/discussions)
+- 💬 Revisa las [Issues](https://github.com/AmilcarGit/YuiBot-MD/issues)
 - ⭐ Si te gusta, dale una estrella al repositorio
 
 ---
