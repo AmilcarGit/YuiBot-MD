@@ -7,7 +7,7 @@ module.exports = {
   aliases: ['grupos'],
   description: 'Muestra los grupos donde tu subbot tiene el liderazgo activo',
   category: 'subbot',
-  ownerOnly: true,
+  subbotOwnerOnly: true,
 
   async execute(sock, msg, args, { esSubBot, subbotNumero }) {
     const jid = msg.key.remoteJid

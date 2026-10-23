@@ -8,9 +8,10 @@ const path = require('path')
 const fs = require('fs')
 
 const { loadCommands, ejecutarHooks } = require('./lib/cargador')
-const { getMessageBody, parseCommand, isOwner, obtenerCandidatosPropietario } = require('./lib/handler')
+const { getMessageBody, parseCommand } = require('./lib/handler')
+const { evaluarPermiso, mensajeDenegado } = require('./lib/permisos')
 const { iniciarHeartbeat, puedeResponderSubbot } = require('./lib/red')
-const { esDuenoDeSubbot, obtenerPrefijo } = require('./lib/subbots')
+const { obtenerPrefijo } = require('./lib/subbots')
 const { crearControladorReconexion } = require('./lib/reconexion')
 const { resolverVersionWA } = require('./lib/versionWA')
 const { verificarYAplicar: verificarHorarios } = require('./lib/horariogrupo')
@@ -306,17 +307,13 @@ async function startSubBot() {
 
       console.log(`╭─ ⚡ SUBBOT ${numero}\n│ ${tipoChat}\n│ 👤 ${remitente}\n│ ▶️ ${configSubbot.PREFIXES[0] || ''}${parsed.commandName}${parsed.args.length ? ` ${parsed.args.join(' ')}` : ''}`)
 
-      if (command.ownerOnly) {
-        const candidatosPropietario = obtenerCandidatosPropietario(sock, msg)
-        const esDueno = key.fromMe || esDuenoDeSubbot(numero, candidatosPropietario)
-        const esOwnerPrincipal = candidatosPropietario.some((senderJid) => isOwner(senderJid, config))
-
-        if (!esOwnerPrincipal && !esDueno) {
-          console.log(`⛔ [subbot ${numero}] ${parsed.commandName} → rechazado`)
-          console.log(`🔧 [subbot ${numero}] DEBUG | messages.upsert=${type} | remoteJid=${key.remoteJid || '-'} | participant=${key.participant || '-'} | fromMe=${!!key.fromMe} | puedeResponder=${esGrupo ? 'true' : 'N/A'} | ownerOnly=true`)
-          await sock.sendMessage(jid, { text: '⛔ Este comando es solo para el dueño de este subbot.' })
-          continue
-        }
+      // ownerOnly → solo owners del bot principal; subbotOwnerOnly → owners
+      // del principal o el dueño de este subbot (ver lib/permisos.js).
+      const permiso = evaluarPermiso(command, { sock, msg, config, esSubBot: true, subbotNumero: numero })
+      if (!permiso.permitido) {
+        console.log(`⛔ [subbot ${numero}] ${parsed.commandName} → rechazado (${permiso.motivo})`)
+        await sock.sendMessage(jid, { text: mensajeDenegado(permiso.motivo) })
+        continue
       }
 
       try {

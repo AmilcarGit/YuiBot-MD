@@ -7,8 +7,15 @@ module.exports = {
   category: 'owner',
   ownerOnly: true,
 
-  async execute(sock, msg, args) {
+  async execute(sock, msg, args, { esSubBot } = {}) {
     const jid = msg.key.remoteJid
+
+    // Defensa en profundidad: ejecución de código arbitrario solo desde el
+    // bot principal, nunca dentro de un subbot (aunque quien lo pida sea owner).
+    if (esSubBot) {
+      return sock.sendMessage(jid, { text: '⛔ eval solo está disponible en el bot principal.' }, { quoted: msg })
+    }
+
     const codigo = args.join(' ').trim()
     if (!codigo) {
       return sock.sendMessage(jid, { text: '🧪 Usa: *eval código*' }, { quoted: msg })

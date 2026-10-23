@@ -8,8 +8,15 @@ module.exports = {
   category: 'owner',
   ownerOnly: true,
 
-  async execute(sock, msg, args) {
+  async execute(sock, msg, args, { esSubBot } = {}) {
     const jid = msg.key.remoteJid
+
+    // Defensa en profundidad: comandos de sistema solo desde el bot
+    // principal, nunca dentro de un subbot (aunque quien lo pida sea owner).
+    if (esSubBot) {
+      return sock.sendMessage(jid, { text: '⛔ exec solo está disponible en el bot principal.' }, { quoted: msg })
+    }
+
     const comando = args.join(' ').trim()
     if (!comando) {
       return sock.sendMessage(jid, { text: '💻 Usa: *exec comando*' }, { quoted: msg })

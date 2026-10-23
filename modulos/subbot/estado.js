@@ -14,7 +14,7 @@ module.exports = {
   aliases: ['statusbot', 'subbotstatus'],
   description: 'Muestra el estado de tu subbot premium',
   category: 'subbot',
-  ownerOnly: true,
+  subbotOwnerOnly: true,
 
   async execute(sock, msg, args, { config, esSubBot, subbotNumero }) {
     const jid = msg.key.remoteJid

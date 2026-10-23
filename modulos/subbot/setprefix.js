@@ -6,7 +6,7 @@ module.exports = {
   aliases: ['setprefijo'],
   description: 'Cambia el prefijo de tu subbot premium',
   category: 'subbot',
-  ownerOnly: true,
+  subbotOwnerOnly: true,
 
   async execute(sock, msg, args, { config, esSubBot, subbotNumero }) {
     const jid = msg.key.remoteJid

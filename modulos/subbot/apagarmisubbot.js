@@ -8,7 +8,7 @@ module.exports = {
   aliases: ['delmisubbot', 'stopmysubbot'],
   description: 'Apaga y elimina tu propio subbot',
   category: 'subbot',
-  ownerOnly: true,
+  subbotOwnerOnly: true,
 
   async execute(sock, msg, args, { esSubBot, subbotNumero }) {
     const jid = msg.key.remoteJid

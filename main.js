@@ -10,7 +10,8 @@ const path = require('path');
 const readline = require('readline');
 
 const { loadCommands, ejecutarHooks } = require('./lib/cargador');
-const { getMessageBody, parseCommand, isOwner, obtenerCandidatosPropietario } = require('./lib/handler');
+const { getMessageBody, parseCommand } = require('./lib/handler');
+const { evaluarPermiso, mensajeDenegado } = require('./lib/permisos');
 const { generarImagenBienvenida } = require('./lib/welcome');
 const { agregarXpConCooldown, obtenerGrupo } = require('./lib/db');
 const { obtenerRangoExacto } = require('./lib/roles');
@@ -398,13 +399,10 @@ async function startBot() {
       return;
     }
 
-    if (command.ownerOnly) {
-      const candidatosPropietario = obtenerCandidatosPropietario(sock, msg);
-
-      if (!candidatosPropietario.some((senderJid) => isOwner(senderJid, config))) {
-        await sock.sendMessage(jid, { text: '⛔ Este comando es solo para el owner del bot.' });
-        return;
-      }
+    const permiso = evaluarPermiso(command, { sock, msg, config });
+    if (!permiso.permitido) {
+      await sock.sendMessage(jid, { text: mensajeDenegado(permiso.motivo) });
+      return;
     }
 
     try {

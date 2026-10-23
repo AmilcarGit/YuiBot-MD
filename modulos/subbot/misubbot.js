@@ -14,7 +14,7 @@ module.exports = {
   aliases: ['subbotinfo'],
   description: 'Muestra información de tu propio subbot',
   category: 'subbot',
-  ownerOnly: true,
+  subbotOwnerOnly: true,
 
   async execute(sock, msg, args, { config, esSubBot, subbotNumero }) {
     const jid = msg.key.remoteJid

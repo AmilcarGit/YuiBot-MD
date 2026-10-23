@@ -2,6 +2,9 @@
 const { exec } = require('child_process')
 const fs = require('fs')
 const path = require('path')
+const { obtenerCandidatosPropietario } = require('../../lib/handler')
+const { esOwnerPrincipal } = require('../../lib/permisos')
+const { esDuenoDeSubbot } = require('../../lib/subbots')
 
 function ejecutar(comando, cwd) {
   return new Promise((resolve) => {
@@ -25,6 +28,16 @@ module.exports = {
 
     if (!numero) {
       return sock.sendMessage(jid, { text: `❌ Escribe el número del subbot a eliminar.\n📌 Ejemplo: ${prefijo}delsubbot 5218112345678` }, { quoted: msg })
+    }
+
+    // Solo el owner del bot principal o el dueño registrado de ESE subbot
+    // pueden eliminarlo (antes cualquiera podía borrar el subbot de otro).
+    const puedeEliminar =
+      esOwnerPrincipal(sock, msg, config) ||
+      esDuenoDeSubbot(numero, obtenerCandidatosPropietario(sock, msg))
+
+    if (!puedeEliminar) {
+      return sock.sendMessage(jid, { text: '⛔ Solo el owner del bot o el dueño de ese subbot pueden eliminarlo.' }, { quoted: msg })
     }
 
     const raiz = path.join(__dirname, '..', '..')

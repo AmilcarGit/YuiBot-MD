@@ -6,7 +6,7 @@ module.exports = {
   aliases: ['botperfil'],
   description: 'Muestra el perfil de tu subbot premium',
   category: 'subbot',
-  ownerOnly: true,
+  subbotOwnerOnly: true,
 
   async execute(sock, msg, args, { config, esSubBot, subbotNumero }) {
     const jid = msg.key.remoteJid

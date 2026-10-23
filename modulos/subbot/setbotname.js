@@ -6,7 +6,7 @@ module.exports = {
   aliases: ['setnombre'],
   description: 'Cambia el nombre visible de tu subbot (solo premium)',
   category: 'subbot',
-  ownerOnly: true,
+  subbotOwnerOnly: true,
 
   async execute(sock, msg, args, { config, esSubBot, subbotNumero }) {
     const jid = msg.key.remoteJid

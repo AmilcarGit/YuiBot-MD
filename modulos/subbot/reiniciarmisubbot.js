@@ -6,7 +6,7 @@ module.exports = {
   aliases: ['restartmysubbot'],
   description: 'Reinicia tu propio subbot',
   category: 'subbot',
-  ownerOnly: true,
+  subbotOwnerOnly: true,
 
   async execute(sock, msg, args, { esSubBot, subbotNumero }) {
     const jid = msg.key.remoteJid
