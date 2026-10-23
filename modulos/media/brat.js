@@ -1,5 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
-const { createCanvas } = require('canvas')
+const { createCanvas } = require('../../lib/canvas')
 const { crearStickerWebp } = require('../../lib/stickers')
 
 const TAMANO = 512

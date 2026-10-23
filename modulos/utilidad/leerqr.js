@@ -1,6 +1,6 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
 const { downloadContentFromMessage } = require('@whiskeysockets/baileys')
-const { loadImage, createCanvas } = require('canvas')
+const { loadImage, createCanvas } = require('../../lib/canvas')
 const jsQR = require('jsqr')
 
 async function descargarMedia(mensaje, tipo) {
