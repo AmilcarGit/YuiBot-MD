@@ -1,11 +1,11 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
 const fetch = require('../../lib/http').fetchSeguro // timeout por defecto (ver lib/http.js)
-const { pedirVideo, pedirBusqueda } = require('../../lib/youtube')
+const { pedirVideo, pedirBusqueda, conFuentes, descargarLocal } = require('../../lib/youtube')
 const LIMITE_VIDEO_MB = 3000
 
 module.exports = {
   name: 'ytv',
-  aliases: ['ytvideo'],
+  aliases: ['ytvideo', 'video'],
   description: 'Descarga un video de YouTube por enlace o nombre',
   category: 'download',
 
@@ -105,41 +105,29 @@ module.exports = {
         { quoted: msg }
       )
 
-      // Pedir el video a la API
-      const data = await pedirVideo(youtubeUrl)
+      // yt-dlp local primero (gratis); la API de antes queda como respaldo
+      const data = await conFuentes({
+        local: async () => {
+          const r = await descargarLocal(youtubeUrl, 'video')
+          return {
+            titulo: r.titulo, canal: r.canal, duracion: r.duracion,
+            datos: { calidad: r.calidad, archivo: `${r.titulo.replace(/[\\/:*?"<>|]/g, '_')}.mp4` },
+            buffer: r.buffer,
+          }
+        },
+        api: async () => {
+          const respuesta = await pedirVideo(youtubeUrl)
+          if (!respuesta?.datos?.url) throw new Error('La API no devolvió una URL válida para el video.')
+          const archivoResp = await fetch(respuesta.datos.url)
+          if (!archivoResp.ok) throw new Error(`No se pudo descargar el archivo del video (HTTP ${archivoResp.status})`)
+          return { ...respuesta, buffer: Buffer.from(await archivoResp.arrayBuffer()) }
+        },
+      })
 
-      if (!data?.datos?.url) {
-        throw new Error('La API no devolvió una URL válida para el video.')
-      }
-
-      const videoUrl = data.datos.url
-
-      const filename =
-        data.datos.archivo ||
-        `${data.titulo || resultadoBusqueda?.title || 'youtube'}.mp4`
-
-      console.log(
-        `[YTV] Descargando archivo real desde: ${videoUrl}`
-      )
-
-      const fileResponse = await fetch(videoUrl)
-
-      if (!fileResponse.ok) {
-        throw new Error(
-          `No se pudo descargar el archivo del video (HTTP ${fileResponse.status})`
-        )
-      }
-
-      const buffer = Buffer.from(
-        await fileResponse.arrayBuffer()
-      )
-
-      const pesoMB =
-        buffer.length / (1024 * 1024)
-
-      console.log(
-        `[YTV] Peso real descargado: ${pesoMB.toFixed(2)} MB`
-      )
+      const buffer = data.buffer
+      const filename = data.datos.archivo || `${data.titulo || resultadoBusqueda?.title || 'youtube'}.mp4`
+      const pesoMB = buffer.length / (1024 * 1024)
+      console.log(`[YTV] Peso real descargado: ${pesoMB.toFixed(2)} MB`)
 
       const caption =
         `╭━━━〔 🎬 YOUTUBE VIDEO 〕━━━╮\n` +

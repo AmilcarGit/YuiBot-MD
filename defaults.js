@@ -64,6 +64,10 @@ module.exports = {
     NOMBRE: 'Canal oficial de YuiBot-MD',
     URL: '',
   },
+  // Descarga de YouTube (.play, .ytv, .video). Instala yt-dlp en Termux:
+  //   pkg install yt-dlp ffmpeg
+  // MODO: 'auto' = yt-dlp primero y la API como respaldo | 'local' = solo yt-dlp | 'api' = solo API
+  YOUTUBE: { MODO: 'auto', BIN: 'yt-dlp', MAX_MB: 100, ALTURA: 720 },
   APIS: {
     LEMPI_KEY: 'lem_dc158e5ad3f4f6ee2de2905a222bfb68f61dd754',
     LEMPI_KEY_2: 'lem_10b02e6bcce68b82f51252de9d9ec71125528d02',

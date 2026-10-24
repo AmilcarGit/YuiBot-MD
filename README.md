@@ -138,6 +138,7 @@ flowchart LR
 | **Node.js** | **20 o superior** |
 | **Git** | Para clonar y actualizar |
 | **ffmpeg** | Necesario para stickers, audio y descargas (incluye `ffprobe`) |
+| **yt-dlp** | Recomendado: `.play`, `.ytv` y `.video` descargan de YouTube sin APIs externas (si falta, usan la API de respaldo) |
 | **WhatsApp** | Un número disponible para vincular el bot |
 
 ### Pasos
@@ -161,7 +162,7 @@ La sesión se guarda en `session/` y no vuelve a pedirte nada al reiniciar.
 
 ```bash
 pkg update && pkg upgrade
-pkg install nodejs git ffmpeg
+pkg install nodejs git ffmpeg yt-dlp
 git clone https://github.com/AmilcarGit/YuiBot-MD.git
 cd YuiBot-MD
 npm install
@@ -176,7 +177,7 @@ No necesitas compilar nada: el soporte de imágenes usa `@napi-rs/canvas`, que y
 <summary><b>🖥️ Instalar en un VPS (Ubuntu/Debian)</b></summary>
 
 ```bash
-sudo apt update && sudo apt install -y git ffmpeg
+sudo apt update && sudo apt install -y git ffmpeg && pip install -U yt-dlp
 curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
 sudo apt install -y nodejs
 git clone https://github.com/AmilcarGit/YuiBot-MD.git

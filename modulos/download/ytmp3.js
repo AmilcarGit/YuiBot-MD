@@ -1,6 +1,6 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
 const fetch = require('../../lib/http').fetchSeguro // timeout por defecto (ver lib/http.js)
-const { pedirAudio, pedirBusqueda } = require('../../lib/youtube')
+const { pedirAudio, pedirBusqueda, conFuentes, descargarLocal } = require('../../lib/youtube')
 const fs = require('fs')
 const os = require('os')
 const path = require('path')
@@ -83,13 +83,23 @@ async function obtenerAudioDescargable(url, intentos = 3) {
 
   for (let intento = 1; intento <= intentos; intento++) {
     try {
-      const data = await pedirAudio(url)
-      const audioUrl = data?.datos?.url
-      if (!audioUrl) throw new Error('La API no devolvió una URL válida para el audio')
-
-      const buffer = await descargarBuffer(audioUrl, 2)
-      const audioNormalizado = await normalizarAudio(buffer)
-      return { data, buffer: audioNormalizado }
+      // yt-dlp local primero (gratis); la API de antes queda como respaldo
+      return await conFuentes({
+        local: async () => {
+          const r = await descargarLocal(url, 'audio')
+          return {
+            data: { titulo: r.titulo, canal: r.canal, duracion: r.duracion, datos: { calidad: r.calidad } },
+            buffer: await normalizarAudio(r.buffer),
+          }
+        },
+        api: async () => {
+          const data = await pedirAudio(url)
+          const audioUrl = data?.datos?.url
+          if (!audioUrl) throw new Error('La API no devolvió una URL válida para el audio')
+          const buffer = await descargarBuffer(audioUrl, 2)
+          return { data, buffer: await normalizarAudio(buffer) }
+        },
+      })
     } catch (error) {
       ultimoError = error
       if (intento < intentos) await new Promise((resolve) => setTimeout(resolve, 2000 * intento))
