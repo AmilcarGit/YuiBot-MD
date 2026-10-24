@@ -209,7 +209,7 @@ function obtenerPerfil(msg) {
   }
 }
 
-function construirPortada({ msg, config, esSubBot, visibles, totalComandos, prefijo }) {
+function construirPortada({ msg, config, esSubBot, visibles, totalComandos, prefijo, conIndice = true }) {
   const nombreUsuario = msg.pushName || 'Usuario'
   const { hora, fecha } = obtenerHoraPeru()
   const perfil = obtenerPerfil(msg)
@@ -229,6 +229,12 @@ function construirPortada({ msg, config, esSubBot, visibles, totalComandos, pref
   t += `│ 🕐 ${negrita('Perú')} » *${hora}* · ${fecha}\n`
   if (perfil) t += `│ 🏅 ${negrita('Tú')} » Nv. *${perfil.nivel}* ${perfil.rango} · 💰 *${perfil.monedas}*\n`
   t += '╰────────────────────────╯\n\n'
+
+  if (!conIndice) {
+    t += `👇 Toca *📂 Abrir menú*, elige un comando y se ejecuta solo.\n`
+    t += `🔍 *${prefijo}menu <palabra>* para buscar`
+    return t
+  }
 
   t += `╭─❖ 「 🗂️ ${negrita('CATEGORÍAS')} 」 ❖─╮\n`
   for (const [clave, lista] of visibles) {
@@ -327,6 +333,23 @@ function construirResultados(termino, resultados, prefijo) {
 
 // ───────────────────────── envío ─────────────────────────
 
+/** Una sección por categoría y una fila por comando; al tocarla se ejecuta ese comando. */
+function construirSecciones(visibles, prefijo) {
+  const secciones = []
+  for (const [clave, lista] of visibles) {
+    const info = infoCategoria(clave)
+    secciones.push({
+      title: recortar(`${info.emoji} ${info.titulo}`, 24),
+      rows: lista.map((cmd) => ({
+        title: recortar(`${prefijo}${cmd.name}`, 24),
+        description: recortar(cmd.description || info.descripcion, 72),
+        id: `${prefijo}${cmd.name}`,
+      })),
+    })
+  }
+  return secciones
+}
+
 const cacheMedios = new Map() // ruta → { mtimeMs, buffer }
 
 function leerMedio(ruta) {
@@ -350,47 +373,56 @@ function botonesRapidos(esGrupo, visibles, prefijo) {
 }
 
 /**
- * Portada con imagen/gif y botones. Cada paso tiene respaldo: si los botones o
- * el medio fallan, se envía igual el mismo texto de la forma más simple posible.
+ * Portada en UN solo mensaje: imagen/gif + una cajita desplegable con todos los
+ * comandos (single_select). Si algo falla, baja de nivel: botones rápidos →
+ * medio + texto → solo texto, siempre con el índice de categorías.
  */
-async function enviarPortada(sock, jid, msg, texto, botones, config) {
+async function enviarPortada(sock, jid, msg, datos, config) {
+  const { visibles, prefijo, esGrupo } = datos
   const opciones = { quoted: msg }
-  const pie = `${config.BOT_NAME || 'YuiBot-MD'} • ${config.PREFIXES?.[0] || '.'}menu <categoría>`
-  const usarBotones = config.MENU_BOTONES !== false && botones.length > 0
+  const pie = `${config.BOT_NAME || 'YuiBot-MD'} • ${prefijo}menu <categoría>`
+  const textoCorto = construirPortada({ ...datos, conIndice: false })
+  const textoLargo = construirPortada({ ...datos, conIndice: true })
+
+  const botonLista = config.MENU_LISTA !== false
+    ? [{ text: '📂 Abrir menú', sections: construirSecciones(visibles, prefijo) }]
+    : null
+  const botonesRapidos_ = config.MENU_BOTONES !== false ? botonesRapidos(esGrupo, visibles, prefijo) : []
 
   const medios = config.MENU_IMAGES || []
   const elegido = medios.length ? medios[Math.floor(Math.random() * medios.length)] : null
-
+  let base = null
   if (elegido) {
     try {
-      const base = elegido.animado ? { video: leerMedio(elegido.ruta), gifPlayback: true } : { image: leerMedio(elegido.ruta) }
-
-      if (usarBotones) {
-        try {
-          await sock.sendMessage(jid, { ...base, caption: texto, footer: pie, buttons: botones, headerType: elegido.animado ? 5 : 4 }, opciones)
-          return
-        } catch (error) {
-          console.error('[MENU] No se pudieron enviar los botones, se envía sin ellos:', error.message)
-        }
-      }
-
-      await sock.sendMessage(jid, { ...base, caption: texto }, opciones)
-      return
+      base = elegido.animado ? { video: leerMedio(elegido.ruta), gifPlayback: true } : { image: leerMedio(elegido.ruta) }
     } catch (error) {
-      console.error('[MENU] Error enviando el medio, se envía solo texto:', error.message)
+      console.error('[MENU] No se pudo leer el medio:', error.message)
     }
   }
 
-  if (usarBotones) {
+  const intentos = []
+  if (botonLista) {
+    if (base) intentos.push(['lista con medio', { ...base, caption: textoCorto, footer: pie, buttons: botonLista }])
+    intentos.push(['lista', { text: textoCorto, footer: pie, buttons: botonLista }])
+  }
+  if (botonesRapidos_.length) {
+    if (base) intentos.push(['botones con medio', { ...base, caption: textoLargo, footer: pie, buttons: botonesRapidos_, headerType: elegido.animado ? 5 : 4 }])
+    intentos.push(['botones', { text: textoLargo, footer: pie, buttons: botonesRapidos_, headerType: 1 }])
+  }
+  if (base) intentos.push(['medio', { ...base, caption: textoLargo }])
+  intentos.push(['texto', { text: textoLargo }])
+
+  let ultimoError
+  for (const [nombre, contenido] of intentos) {
     try {
-      await sock.sendMessage(jid, { text: texto, footer: pie, buttons: botones, headerType: 1 }, opciones)
+      await sock.sendMessage(jid, contenido, opciones)
       return
     } catch (error) {
-      console.error('[MENU] No se pudieron enviar los botones de texto:', error.message)
+      ultimoError = error
+      console.error(`[MENU] Falló el envío (${nombre}), probando una opción más simple:`, error.message)
     }
   }
-
-  await sock.sendMessage(jid, { text: texto }, opciones)
+  throw ultimoError
 }
 
 async function enviarTextos(sock, jid, msg, textos) {
@@ -416,8 +448,7 @@ module.exports = {
     // ── .menu (portada)
     if (!termino) {
       const totalComandos = [...new Set(commands.values())].length
-      const texto = construirPortada({ msg, config, esSubBot, visibles, totalComandos, prefijo })
-      return enviarPortada(sock, jid, msg, texto, botonesRapidos(esGrupo, visibles, prefijo), config)
+      return enviarPortada(sock, jid, msg, { msg, config, esSubBot, visibles, totalComandos, prefijo, esGrupo }, config)
     }
 
     // ── .menu todo
@@ -455,5 +486,5 @@ module.exports = {
   },
 
   // Funciones internas expuestas solo para las pruebas.
-  _internos: { negrita, normalizar, recortar, distancia, partirBloques, resolverCategoria, ordenarCategorias, CATEGORIAS, ORDEN_CATEGORIAS },
+  _internos: { negrita, normalizar, recortar, distancia, partirBloques, resolverCategoria, ordenarCategorias, construirSecciones, CATEGORIAS, ORDEN_CATEGORIAS },
 }

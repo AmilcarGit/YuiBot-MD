@@ -76,6 +76,9 @@ module.exports = {
   // Botones de acceso rápido en el menú (📋 Menú completo + 2 categorías).
   // Si tu WhatsApp no los muestra, ponlo en false: el menú funciona igual con texto.
   MENU_BOTONES: true,
+  // El menú sale en UN mensaje con una cajita desplegable "📂 Abrir menú" que
+  // contiene todos los comandos por categoría (tocar uno lo ejecuta). false = menú clásico.
+  MENU_LISTA: true,
   MENU_IMAGES: [
     { ruta: path.join(__dirname, 'media', 'menu1.mp4'), animado: true },
     { ruta: path.join(__dirname, 'media', 'menu2.jpg'), animado: false },

@@ -92,17 +92,53 @@ test('partirBloques no supera el límite ni parte un bloque', () => {
   assert.equal(partes.join('').replace(/\s/g, '').length, bloques.join('').replace(/\s/g, '').length)
 })
 
-test('la portada oculta comandos de owner a usuarios normales', async () => {
-  const [envio] = await ejecutar([], DESCONOCIDO, crearSock(), { MENU_IMAGES: [], MENU_BOTONES: false })
+const clásico = { MENU_IMAGES: [], MENU_BOTONES: false, MENU_LISTA: false }
+const filasDe = (envio) => envio.contenido.buttons[0].sections.flatMap((sec) => sec.rows)
+const titulosDe = (envio) => envio.contenido.buttons[0].sections.map((sec) => sec.title).join('|')
+
+test('portada clásica: oculta comandos de owner a usuarios normales', async () => {
+  const [envio] = await ejecutar([], DESCONOCIDO, crearSock(), clásico)
   const t = textoDe(envio)
   assert.ok(t.includes('GRUPO'))
   assert.ok(!t.includes('OWNER'))
   assert.ok(!t.includes('SUBBOTS'))
 })
 
-test('la portada muestra owner al owner', async () => {
-  const [envio] = await ejecutar([], OWNER, crearSock(), { MENU_IMAGES: [], MENU_BOTONES: false })
+test('portada clásica: muestra owner al owner', async () => {
+  const [envio] = await ejecutar([], OWNER, crearSock(), clásico)
   assert.ok(textoDe(envio).includes('OWNER'))
+})
+
+test('portada en UN mensaje con lista desplegable con todos los comandos', async () => {
+  const envios = await ejecutar([], DESCONOCIDO, crearSock(), { MENU_IMAGES: [] })
+  assert.equal(envios.length, 1)
+  const btn = envios[0].contenido.buttons[0]
+  assert.ok(btn.text && Array.isArray(btn.sections))
+  const ids = filasDe(envios[0]).map((r) => r.id)
+  assert.deepEqual(ids.sort(), [P + 'kick', P + 'menu', P + 'ping', P + 'sticker'].sort())
+  for (const sec of btn.sections) assert.ok(sec.title.length <= 24)
+  for (const fila of filasDe(envios[0])) assert.ok(fila.title.length <= 24 && fila.description.length <= 72)
+})
+
+test('la lista oculta owner a usuarios normales y lo muestra al owner', async () => {
+  const [normal] = await ejecutar([], DESCONOCIDO, crearSock(), { MENU_IMAGES: [] })
+  assert.ok(!titulosDe(normal).includes('OWNER'))
+  assert.ok(!filasDe(normal).some((r) => r.id === P + 'eval'))
+  const [owner] = await ejecutar([], OWNER, crearSock(), { MENU_IMAGES: [] })
+  assert.ok(filasDe(owner).some((r) => r.id === P + 'eval'))
+})
+
+test('si la lista falla, cae a botones rápidos y luego a texto', async () => {
+  const sock = crearSock()
+  const original = sock.sendMessage.bind(sock)
+  sock.sendMessage = async (jid, contenido, op) => {
+    if (contenido.buttons) throw new Error('sin botones')
+    return original(jid, contenido, op)
+  }
+  const envios = await ejecutar([], DESCONOCIDO, sock, { MENU_IMAGES: [] })
+  assert.equal(envios.length, 1)
+  assert.ok(!envios[0].contenido.buttons)
+  assert.ok(textoDe(envios[0]).includes(negrita('CATEGORÍAS')))
 })
 
 test('.menu <categoría> lista sus comandos', async () => {
@@ -143,21 +179,8 @@ test('.menu todo devuelve la lista completa visible', async () => {
   assert.ok(!t.includes(P + 'eval'))
 })
 
-test('portada: si los botones fallan, reenvía sin ellos', async () => {
-  const sock = crearSock()
-  const original = sock.sendMessage.bind(sock)
-  sock.sendMessage = async (jid, contenido, op) => {
-    if (contenido.buttons) throw new Error('sin botones')
-    return original(jid, contenido, op)
-  }
-  const envios = await ejecutar([], DESCONOCIDO, sock, { MENU_IMAGES: [], MENU_BOTONES: true })
-  assert.equal(envios.length, 1)
-  assert.ok(!envios[0].contenido.buttons)
-  assert.ok(textoDe(envios[0]).includes(negrita('INFORMACIÓN')))
-})
-
-test('portada con botones usa ids con el prefijo', async () => {
-  const [envio] = await ejecutar([], DESCONOCIDO, crearSock(), { MENU_IMAGES: [], MENU_BOTONES: true })
+test('con MENU_LISTA desactivado usa botones rápidos con el prefijo', async () => {
+  const [envio] = await ejecutar([], DESCONOCIDO, crearSock(), { MENU_IMAGES: [], MENU_LISTA: false, MENU_BOTONES: true })
   assert.ok(envio.contenido.buttons.length <= 3)
-  assert.ok(envio.contenido.buttons.every((b) => b.buttonId.startsWith(config.PREFIXES[0] + 'menu')))
+  assert.ok(envio.contenido.buttons.every((b) => b.buttonId.startsWith(P + 'menu')))
 })

@@ -6,6 +6,7 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 ## [Sin publicar]
 
 ### Añadido
+- **Menú en un solo mensaje**: `.menu` envía imagen/gif y una cajita desplegable «📂 Abrir menú» con todos los comandos por categoría; al tocar uno se ejecuta. Opción `MENU_LISTA` (false = menú clásico). Si la lista falla, baja a botones y luego a texto.
 - **Menú Plus** (`.menu`): portada compacta con perfil (nivel, rango, monedas), estado del bot e índice de las 16 categorías; botones de acceso rápido; `.menu <categoría>` (acepta alias como `juegos` o `descargas`), `.menu <palabra>` para buscar, `.menu <comando>` para ver su ficha, y `.menu todo` repartido en varios mensajes. Solo muestra los comandos que puedes usar, sugiere "¿quisiste decir…?" y cae a texto simple si fallan los botones o el medio. Opción `MENU_BOTONES` en `defaults.js`.
 - **Pruebas automáticas** (`npm test`): 60 pruebas con `node:test` (permisos, subbots/PM2, base de datos, red, HTTP, canvas y handler). No necesitan instalar dependencias.
 - **CI**: GitHub Actions ejecuta ahora las pruebas, además del chequeo de sintaxis, en Node 20 y 22.
