@@ -352,7 +352,7 @@ async function startBot() {
 
     // Los estados (status@broadcast) llegan como mensajes "sin texto" de cada
     // contacto y solo ensucian la consola; se siguen marcando como leídos arriba.
-    if (jid !== 'status@broadcast') {
+    if (jid !== 'status@broadcast' && config.LOG_MENSAJES !== false) {
       console.log(
         `[${hora}] ${esGrupo ? '👥' : '👤'} ${nombre} (${numeroRemitente})${esGrupo ? ` en grupo` : ''}: ${body || '[sin texto / multimedia]'}`
       );
@@ -436,11 +436,14 @@ async function startBot() {
     }
   });
 
-  process.once('SIGINT', () => {
+  // SIGINT (Ctrl+C) y SIGTERM (pm2 stop / kill / reinicio del sistema).
+  const cerrarLimpio = () => {
     console.log(`\n${col.amarillo}👋 Cerrando ${config.BOT_NAME}...${col.reset}`);
-    sock.end(undefined);
+    try { sock.end(undefined); } catch {}
     process.exit(0);
-  });
+  };
+  process.once('SIGINT', cerrarLimpio);
+  process.once('SIGTERM', cerrarLimpio);
 }
 
 process.on('unhandledRejection', (reason) => {

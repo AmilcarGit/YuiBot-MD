@@ -1,4 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const fetch = require('../../lib/http').fetchSeguro // timeout por defecto (ver lib/http.js)
 const { loadImage, descargarImagenMensaje, crearLienzo, dibujarCirculo } = require('../../lib/imagenes')
 
 module.exports = {

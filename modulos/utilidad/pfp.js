@@ -1,4 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const fetch = require('../../lib/http').fetchSeguro // timeout por defecto (ver lib/http.js)
 module.exports = {
   name: 'profilepic',
   description: 'Obtiene la foto de perfil de un usuario (mencionado, número o el otro participante en privado)',

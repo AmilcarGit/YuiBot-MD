@@ -286,15 +286,15 @@ async function startSubBot() {
       const parsed = parseCommand(cuerpo, configSubbot)
 
       if (!parsed) {
-        console.log(`💬 [subbot ${numero}] ${tipoChat}\n   👤 ${remitente}\n   📝 ${cuerpo}\n   ℹ️ No se detectó comando`)
-        console.log(`🔧 [subbot ${numero}] DEBUG | messages.upsert=${type} | remoteJid=${key.remoteJid || '-'} | participant=${key.participant || '-'} | fromMe=${!!key.fromMe} | puedeResponder=${esGrupo ? 'true' : 'N/A'} | ownerOnly=false`)
+        if (config.LOG_MENSAJES !== false) console.log(`💬 [subbot ${numero}] ${tipoChat}\n   👤 ${remitente}\n   📝 ${cuerpo}\n   ℹ️ No se detectó comando`)
+        if (config.LOG_DEBUG) console.log(`🔧 [subbot ${numero}] DEBUG | messages.upsert=${type} | remoteJid=${key.remoteJid || '-'} | participant=${key.participant || '-'} | fromMe=${!!key.fromMe} | puedeResponder=${esGrupo ? 'true' : 'N/A'} | ownerOnly=false`)
         continue
       }
 
       const command = commands.get(parsed.commandName)
       if (!command) {
-        console.log(`⚡ [subbot ${numero}] ${tipoChat}\n   👤 ${remitente}\n   ❓ Comando no encontrado: ${parsed.commandName}`)
-        console.log(`🔧 [subbot ${numero}] DEBUG | messages.upsert=${type} | remoteJid=${key.remoteJid || '-'} | participant=${key.participant || '-'} | fromMe=${!!key.fromMe} | puedeResponder=${esGrupo ? 'true' : 'N/A'} | ownerOnly=false`)
+        if (config.LOG_MENSAJES !== false) console.log(`⚡ [subbot ${numero}] ${tipoChat}\n   👤 ${remitente}\n   ❓ Comando no encontrado: ${parsed.commandName}`)
+        if (config.LOG_DEBUG) console.log(`🔧 [subbot ${numero}] DEBUG | messages.upsert=${type} | remoteJid=${key.remoteJid || '-'} | participant=${key.participant || '-'} | fromMe=${!!key.fromMe} | puedeResponder=${esGrupo ? 'true' : 'N/A'} | ownerOnly=false`)
         continue
       }
 

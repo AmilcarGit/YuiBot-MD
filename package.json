@@ -14,7 +14,7 @@
     "pm2:logs": "pm2 logs"
   },
   "dependencies": {
-    "@whiskeysockets/baileys": "github:russellxz/ultra-baileys#master",
+    "@whiskeysockets/baileys": "github:russellxz/ultra-baileys#2f1f2a4738e5ee54327900a4404ea5d685f84111",
     "@hapi/boom": "^10.0.1",
     "qrcode-terminal": "^0.12.0",
     "pino": "^9.4.0",

@@ -1,4 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const fetch = require('../../lib/http').fetchSeguro // timeout por defecto (ver lib/http.js)
 const { pedirAudio, pedirBusqueda } = require('../../lib/youtube')
 const fs = require('fs')
 const os = require('os')

@@ -1,4 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const fetch = require('../../lib/http').fetchSeguro // timeout por defecto (ver lib/http.js)
 const { pedirVideo, pedirBusqueda } = require('../../lib/youtube')
 const LIMITE_VIDEO_MB = 3000
 

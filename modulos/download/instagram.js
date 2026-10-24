@@ -1,4 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const fetch = require('../../lib/http').fetchSeguro // timeout por defecto (ver lib/http.js)
 const { descargarInstagram } = require('../../lib/instagram')
 
 const LIMITE_VIDEO_MB = 64

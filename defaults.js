@@ -20,6 +20,12 @@ module.exports = {
   // automáticamente. Ponlo en false si prefieres que WhatsApp muestre que
   // el mensaje llegó pero no fue "leído".
   MARCAR_LEIDO: false,
+  // Logs de consola. LOG_MENSAJES imprime el texto de cada mensaje que recibe
+  // el bot (útil para depurar, pero ruidoso y guarda conversaciones en los
+  // logs de PM2); ponlo en false para registrar solo eventos del bot.
+  // LOG_DEBUG imprime líneas técnicas extra de los subbots.
+  LOG_MENSAJES: true,
+  LOG_DEBUG: false,
   MANTENIMIENTO: {
     LIMPIEZA_PREKEYS_HORAS: 6,
     PREKEYS_DIAS_ANTIGUEDAD: 3,
