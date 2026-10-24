@@ -4,6 +4,7 @@
 
 <br/>
 
+[![CI](https://img.shields.io/github/actions/workflow/status/AmilcarGit/YuiBot-MD/ci.yml?branch=main&style=for-the-badge&logo=githubactions&logoColor=white&label=CI)](https://github.com/AmilcarGit/YuiBot-MD/actions/workflows/ci.yml)
 [![Node.js](https://img.shields.io/badge/Node.js-%E2%89%A5%2020-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
 [![WhatsApp](https://img.shields.io/badge/WhatsApp-Multi--Device-25D366?style=for-the-badge&logo=whatsapp&logoColor=white)](https://www.whatsapp.com/)
 [![Comandos](https://img.shields.io/badge/Comandos-145-ff69b4?style=for-the-badge)](#-comandos)
@@ -345,7 +346,8 @@ YuiBot-MD/
 ├── lib/                     # Núcleo: cargador, permisos, reconexión, resiliencia,
 │                            #   red de subbots, base de datos, moderación, imágenes…
 ├── modulos/                 # Comandos y hooks, una carpeta por categoría
-├── scripts/                 # check-sintaxis.js · smoke-check.js
+├── scripts/                 # check-sintaxis.js · smoke-check.js · test.js
+├── tests/                   # Pruebas automáticas (node:test)
 ├── media/                   # Banner, menú y recursos
 ├── data/                    # (se crea sola) datos del bot
 ├── session/                 # (se crea sola) sesión de WhatsApp
@@ -359,6 +361,7 @@ YuiBot-MD/
 | `npm start` | Inicia el bot |
 | `npm run dev` | Modo desarrollo con auto-recarga (nodemon) |
 | `npm run check` | Revisa la sintaxis de todos los archivos |
+| `npm test` | Ejecuta las pruebas automáticas (no necesita dependencias) |
 | `npm run smoke` | Carga todos los módulos y detecta nombres/alias duplicados |
 | `npm run pm2:start` · `pm2:restart` · `pm2:logs` | Gestión con PM2 |
 
@@ -426,7 +429,7 @@ Revisa que no esté activo `modoadmi` (solo admins pueden usar comandos), que el
 
 ## 🤝 Contribuir
 
-Las contribuciones son bienvenidas. Lee la [guía de contribución](CONTRIBUTING.md), abre un *Issue* para cambios grandes y ejecuta `npm run check` y `npm run smoke` antes de enviar tu *Pull Request*.
+Las contribuciones son bienvenidas. Lee la [guía de contribución](CONTRIBUTING.md), abre un *Issue* para cambios grandes y ejecuta `npm run check`, `npm test` y `npm run smoke` antes de enviar tu *Pull Request*. El historial de cambios está en el [CHANGELOG](CHANGELOG.md).
 
 ---
 

@@ -24,3 +24,5 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - name: Run repository syntax checker
         run: npm run check
+      - name: Run automated tests
+        run: npm test

@@ -1,13 +1,36 @@
 {
   "name": "yuibot-md",
   "version": "1.0.0",
-  "description": "YuiBot-MD — Bot de WhatsApp con sistema de comandos extensible (Baileys)",
+  "description": "YuiBot-MD — Bot de WhatsApp Multi-Device con subbots, moderación de grupos, economía/RPG y sistema de comandos extensible (Baileys)",
+  "keywords": [
+    "whatsapp",
+    "whatsapp-bot",
+    "whatsapp-multi-device",
+    "baileys",
+    "bot",
+    "nodejs",
+    "subbots",
+    "moderation",
+    "rpg",
+    "pm2"
+  ],
+  "homepage": "https://github.com/AmilcarGit/YuiBot-MD#readme",
+  "bugs": {
+    "url": "https://github.com/AmilcarGit/YuiBot-MD/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AmilcarGit/YuiBot-MD.git"
+  },
+  "license": "MIT",
+  "author": "AmilcarGit (https://github.com/AmilcarGit)",
   "main": "main.js",
   "type": "commonjs",
   "scripts": {
     "start": "node main.js",
     "dev": "nodemon main.js",
     "check": "node scripts/check-sintaxis.js",
+    "test": "node scripts/test.js",
     "smoke": "node scripts/smoke-check.js",
     "pm2:start": "pm2 start ecosystem.config.cjs",
     "pm2:restart": "pm2 restart ecosystem.config.cjs",

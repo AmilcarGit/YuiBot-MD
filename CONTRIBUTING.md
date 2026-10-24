@@ -18,7 +18,7 @@ Gracias por ayudar a mejorar este proyecto.
 
 ## Pruebas
 
-Ejecuta los scripts definidos en `package.json` y las comprobaciones disponibles. En el PR, indica exactamente qué ejecutaste y si pasó. No declares pruebas que no hayas realizado.
+Ejecuta `npm run check` (sintaxis), `npm test` (pruebas automáticas) y, con las dependencias instaladas, `npm run smoke` (carga de módulos y nombres duplicados). Si corriges un bug o añades lógica en `lib/`, añade una prueba en `tests/` que falle sin tu cambio. En el PR, indica exactamente qué ejecutaste y si pasó. No declares pruebas que no hayas realizado.
 
 ## Pull requests
 
