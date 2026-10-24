@@ -73,6 +73,9 @@ module.exports = {
     OCR_KEY: 'K83794019188957',
     ORBIT_KEY: 'ORBIT-4096939993',
   },
+  // Botones de acceso rápido en el menú (📋 Menú completo + 2 categorías).
+  // Si tu WhatsApp no los muestra, ponlo en false: el menú funciona igual con texto.
+  MENU_BOTONES: true,
   MENU_IMAGES: [
     { ruta: path.join(__dirname, 'media', 'menu1.mp4'), animado: true },
     { ruta: path.join(__dirname, 'media', 'menu2.jpg'), animado: false },

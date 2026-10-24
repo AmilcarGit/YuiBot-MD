@@ -231,7 +231,7 @@ Cualquier persona puede tener su propio bot usando tu servidor:
 
 ## 📜 Comandos
 
-El bot trae **145 comandos** organizados por categoría. Usa `.menu` para verlos todos desde WhatsApp.
+El bot trae **145 comandos** organizados por categoría. Usa `.menu` para ver las categorías, `.menu <categoría>` (ej. `.menu juegos`) para sus comandos, `.menu <palabra>` para buscar y `.menu todo` para la lista completa. Solo ves los comandos que puedes usar.
 
 | Categoría | Ejemplos |
 |---|---|
