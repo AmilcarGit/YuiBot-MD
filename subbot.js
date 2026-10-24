@@ -324,6 +324,8 @@ async function startSubBot() {
       } catch (err) {
         resiliencia.registrarFallo(parsed.commandName, err)
         console.error(`❌ SUBBOT ${numero}\n   ${configSubbot.PREFIXES[0] || ''}${parsed.commandName} → error:`, err)
+        // Igual que el bot principal: avisar al usuario en vez de dejarlo sin respuesta.
+        await sock.sendMessage(jid, { text: '⚠️ Ocurrió un error ejecutando ese comando.' }).catch(() => {})
       }
     }
   })

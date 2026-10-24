@@ -43,10 +43,10 @@ module.exports = {
           const maxAvisos = config.MODERACION.ANTILINK.MAX_AVISOS || 3
 
           if (autoKick) {
-            const avisos = registrarAvisoAntilink(numeroRemitente)
+            const avisos = registrarAvisoAntilink(numeroRemitente, jid)
 
             if (avisos >= maxAvisos) {
-              reiniciarAvisosAntilink(numeroRemitente)
+              reiniciarAvisosAntilink(numeroRemitente, jid)
               try {
                 await sock.groupParticipantsUpdate(jid, [remitente], 'remove')
                 await sock.sendMessage(jid, {

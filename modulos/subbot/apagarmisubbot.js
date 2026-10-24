@@ -2,6 +2,7 @@
 const { exec } = require('child_process')
 const fs = require('fs')
 const path = require('path')
+const { nombreProcesoActual, correEnPm2 } = require('../../lib/pm2')
 
 module.exports = {
   name: 'apagarmisubbot',
@@ -28,15 +29,26 @@ module.exports = {
     await sock.sendMessage(jid, { text: '👋 Apagando y eliminando este subbot...' }, { quoted: msg })
 
     const raiz = path.join(__dirname, '..', '..')
-    const nombreProceso = `subbot-${subbotNumero}`
+    // Nombre real del proceso en PM2 (lo creó .code o ecosystem.config.cjs).
+    const nombreProceso = nombreProcesoActual(`subbot-${subbotNumero}`)
     const carpetaSubbot = path.join(raiz, 'subbots', subbotNumero)
 
+    const borrarCarpeta = () => {
+      if (fs.existsSync(carpetaSubbot)) {
+        fs.rmSync(carpetaSubbot, { recursive: true, force: true })
+      }
+    }
+
     setTimeout(() => {
+      // Sin PM2 no hay "pm2 delete" que valga: se borra la sesión y se cierra el proceso.
+      if (!correEnPm2()) {
+        borrarCarpeta()
+        process.exit(0)
+      }
+
       exec(`pm2 delete ${nombreProceso} && pm2 save`, { cwd: raiz }, (error) => {
         if (error) console.error('[APAGARMISUBBOT] Error deteniendo proceso:', error.message)
-        if (fs.existsSync(carpetaSubbot)) {
-          fs.rmSync(carpetaSubbot, { recursive: true, force: true })
-        }
+        borrarCarpeta()
       })
     }, 1500)
   },

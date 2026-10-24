@@ -1,6 +1,7 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
 const { exec } = require('child_process')
 const path = require('path')
+const { nombreProcesoActual, correEnPm2 } = require('../../lib/pm2')
 
 function ejecutar(comando, cwd) {
   return new Promise((resolve) => {
@@ -47,7 +48,20 @@ module.exports = {
       return sock.sendMessage(jid, { text: texto }, { quoted: msg })
     }
 
-    if (!config.PM2_PROCESS_NAME) {
+    // Si el pull tocó las dependencias, el reinicio solo no basta: hay que instalar.
+    if (/package(-lock)?\.json/.test(salida)) {
+      texto += '\n\n📦 Cambiaron las dependencias (package.json). Ejecuta *npm install* en el servidor antes de reiniciar.'
+    }
+
+    // Sin PM2 (ej. `npm start` en Termux) no hay quien reinicie el proceso.
+    if (!correEnPm2()) {
+      texto += '\n\n⚠️ Hay cambios nuevos. Este bot no corre bajo PM2: reinícialo manualmente (npm start).'
+      return sock.sendMessage(jid, { text: texto }, { quoted: msg })
+    }
+
+    // Nombre real del proceso en PM2 (puede diferir de config.PM2_PROCESS_NAME).
+    const nombreProceso = nombreProcesoActual(config.PM2_PROCESS_NAME)
+    if (!nombreProceso) {
       texto += '\n\n⚠️ Hay cambios nuevos. Reinicia manualmente con `pm2 restart <nombre>`.'
       return sock.sendMessage(jid, { text: texto }, { quoted: msg })
     }
@@ -58,7 +72,7 @@ module.exports = {
       { quoted: msg }
     )
 
-    exec(`pm2 restart ${config.PM2_PROCESS_NAME}`, { cwd: raiz }, (error) => {
+    exec(`pm2 restart ${nombreProceso}`, { cwd: raiz }, (error) => {
       if (error) {
         console.error('[UPDATE] Error al reiniciar con PM2:', error)
       }

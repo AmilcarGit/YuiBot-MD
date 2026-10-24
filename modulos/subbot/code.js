@@ -68,7 +68,8 @@ module.exports = {
     await sock.sendMessage(jid, { text: `⏳ Iniciando subbot para +${numero}, esto puede tardar hasta 30 segundos...` }, { quoted: msg })
 
     const nombreProceso = `subbot-${numero}`
-    const resultado = await ejecutar(`pm2 delete ${nombreProceso} 2>/dev/null; pm2 start subbot.js --name ${nombreProceso} -- ${numero}`, raiz)
+    // Si existiera un proceso viejo del ecosystem (yuibot-subbot-N), se elimina para no duplicar el subbot.
+    const resultado = await ejecutar(`pm2 delete yuibot-subbot-${numero} 2>/dev/null; pm2 delete ${nombreProceso} 2>/dev/null; pm2 start subbot.js --name ${nombreProceso} -- ${numero}`, raiz)
 
     if (resultado.error) {
       return sock.sendMessage(

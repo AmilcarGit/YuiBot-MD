@@ -1,5 +1,6 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
 const { exec } = require('child_process')
+const { esProcesoSubbot } = require('../../lib/pm2')
 
 function ejecutar(comando) {
   return new Promise((resolve) => {
@@ -31,7 +32,7 @@ module.exports = {
       return sock.sendMessage(jid, { text: '❌ No se pudo leer la lista de subbots.' }, { quoted: msg })
     }
 
-    const subbots = procesos.filter((p) => p.name?.startsWith('subbot-') && p.pm2_env?.status === 'online')
+    const subbots = procesos.filter((p) => esProcesoSubbot(p.name) && p.pm2_env?.status === 'online')
 
     if (!subbots.length) {
       return sock.sendMessage(jid, { text: '📭 No hay subbots activos para actualizar.' }, { quoted: msg })

@@ -328,11 +328,12 @@ async function startBot() {
     }
   });
 
-  sock.ev.on('messages.upsert', async ({ messages, type }) => {
-    if (type !== 'notify') return;
-
-    const msg = messages[0];
-    if (!msg.message) return;
+  // Procesa UN mensaje. Antes el manejador solo atendía messages[0] y, si
+  // WhatsApp entregaba varios juntos en el mismo lote, el resto se perdía
+  // (subbot.js ya recorría todos). Ahora messages.upsert llama a esta función
+  // por cada mensaje del lote (ver más abajo).
+  const procesarMensaje = async (msg) => {
+    if (!msg?.message) return;
 
     const jid = msg.key.remoteJid;
 
@@ -349,9 +350,13 @@ async function startBot() {
     const numeroRemitente = remitente.split('@')[0].split(':')[0];
     const hora = new Date().toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
-    console.log(
-      `[${hora}] ${esGrupo ? '👥' : '👤'} ${nombre} (${numeroRemitente})${esGrupo ? ` en grupo` : ''}: ${body || '[sin texto / multimedia]'}`
-    );
+    // Los estados (status@broadcast) llegan como mensajes "sin texto" de cada
+    // contacto y solo ensucian la consola; se siguen marcando como leídos arriba.
+    if (jid !== 'status@broadcast') {
+      console.log(
+        `[${hora}] ${esGrupo ? '👥' : '👤'} ${nombre} (${numeroRemitente})${esGrupo ? ` en grupo` : ''}: ${body || '[sin texto / multimedia]'}`
+      );
+    }
 
     if (esGrupo && !msg.key.fromMe) {
       try {
@@ -415,6 +420,19 @@ async function startBot() {
       await sock.sendMessage(jid, {
         text: '⚠️ Ocurrió un error ejecutando ese comando.',
       });
+    }
+  };
+
+  sock.ev.on('messages.upsert', async ({ messages, type }) => {
+    if (type !== 'notify' || !messages?.length) return;
+
+    for (const msg of messages) {
+      // Un mensaje que falla no debe impedir que se procesen los demás del lote.
+      try {
+        await procesarMensaje(msg);
+      } catch (error) {
+        console.error('[MENSAJES] Error procesando un mensaje, se continúa con el siguiente:', error);
+      }
     }
   });
 

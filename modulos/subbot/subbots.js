@@ -2,6 +2,7 @@
 const { exec } = require('child_process')
 const { esPremium, obtenerNombrePersonalizado } = require('../../lib/subbots')
 const { gruposLiderados } = require('../../lib/red')
+const { esProcesoSubbot, numeroDeProcesoSubbot } = require('../../lib/pm2')
 
 function ejecutar(comando) {
   return new Promise((resolve) => {
@@ -40,7 +41,7 @@ module.exports = {
       return sock.sendMessage(jid, { text: '❌ No se pudo leer la lista de procesos.' }, { quoted: msg })
     }
 
-    const subbots = procesos.filter((p) => p.name?.startsWith('subbot-'))
+    const subbots = procesos.filter((p) => esProcesoSubbot(p.name))
 
     if (subbots.length === 0) {
       return sock.sendMessage(jid, { text: `📭 No hay subbots activos.\nUsa ${config.PREFIXES[0]}code <número> para crear uno.` }, { quoted: msg })
@@ -48,7 +49,7 @@ module.exports = {
 
     let texto = `⛧───「 Subbots activos 」───⛧\n\n`
     for (const p of subbots) {
-      const numero = p.name.replace('subbot-', '')
+      const numero = numeroDeProcesoSubbot(p.name)
       const estado = p.pm2_env?.status || 'desconocido'
       const nombre = obtenerNombrePersonalizado(numero)
       const premium = esPremium(numero) ? ' ⭐' : ''

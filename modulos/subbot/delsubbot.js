@@ -5,6 +5,7 @@ const path = require('path')
 const { obtenerCandidatosPropietario } = require('../../lib/handler')
 const { esOwnerPrincipal } = require('../../lib/permisos')
 const { esDuenoDeSubbot } = require('../../lib/subbots')
+const { nombresProcesoSubbot } = require('../../lib/pm2')
 
 function ejecutar(comando, cwd) {
   return new Promise((resolve) => {
@@ -41,10 +42,13 @@ module.exports = {
     }
 
     const raiz = path.join(__dirname, '..', '..')
-    const nombreProceso = `subbot-${numero}`
     const carpetaSubbot = path.join(raiz, 'subbots', numero)
 
-    await ejecutar(`pm2 delete ${nombreProceso}`, raiz)
+    // Se intentan los dos nombres posibles (.code → subbot-N, ecosystem → yuibot-subbot-N);
+    // si uno no existe, pm2 devuelve error y simplemente se ignora.
+    for (const nombreProceso of nombresProcesoSubbot(numero)) {
+      await ejecutar(`pm2 delete ${nombreProceso}`, raiz)
+    }
     await ejecutar('pm2 save', raiz)
 
     if (fs.existsSync(carpetaSubbot)) {
