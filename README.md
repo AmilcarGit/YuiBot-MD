@@ -1,327 +1,456 @@
 <div align="center">
 
-  <img src="https://raw.githubusercontent.com/AmilcarGit/YuiBot-MD/main/media/menu1.gif"
-       alt="YuiBot-MD Preview"
-       width="350"/>
+<img src="media/banner.svg" alt="YuiBot-MD — Bot de WhatsApp Multi-Device" width="100%"/>
 
-  <h1>🌸 YuiBot-MD</h1>
+<br/>
 
-  <p>
-    <b>Un bot de WhatsApp Multi-Device moderno, escalable y fácil de personalizar</b>
-  </p>
+[![Node.js](https://img.shields.io/badge/Node.js-%E2%89%A5%2020-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
+[![WhatsApp](https://img.shields.io/badge/WhatsApp-Multi--Device-25D366?style=for-the-badge&logo=whatsapp&logoColor=white)](https://www.whatsapp.com/)
+[![Comandos](https://img.shields.io/badge/Comandos-145-ff69b4?style=for-the-badge)](#-comandos)
+[![PM2](https://img.shields.io/badge/PM2-ready-2B037A?style=for-the-badge&logo=pm2&logoColor=white)](#-producción-con-pm2)
+[![Licencia](https://img.shields.io/badge/Licencia-MIT-blue?style=for-the-badge)](LICENSE)
 
-  <p>
-    <a href="#-características">Características</a> •
-    <a href="#-instalación">Instalación</a> •
-    <a href="#-uso">Uso</a> •
-    <a href="#-comandos">Comandos</a> •
-    <a href="#-contribuir">Contribuir</a>
-  </p>
+[![Stars](https://img.shields.io/github/stars/AmilcarGit/YuiBot-MD?style=flat-square&logo=github&color=yellow)](https://github.com/AmilcarGit/YuiBot-MD/stargazers)
+[![Forks](https://img.shields.io/github/forks/AmilcarGit/YuiBot-MD?style=flat-square&logo=github)](https://github.com/AmilcarGit/YuiBot-MD/network/members)
+[![Último commit](https://img.shields.io/github/last-commit/AmilcarGit/YuiBot-MD?style=flat-square&color=success)](https://github.com/AmilcarGit/YuiBot-MD/commits/main)
+[![Issues](https://img.shields.io/github/issues/AmilcarGit/YuiBot-MD?style=flat-square)](https://github.com/AmilcarGit/YuiBot-MD/issues)
 
-  <br>
+**[Características](#-características) · [Instalación](#-instalación) · [Subbots](#-subbots) · [Comandos](#-comandos) · [Configuración](#-configuración) · [Crear comandos](#-crea-tu-propio-comando) · [Ayuda](#-solución-de-problemas)**
 
-  [![GitHub Stars](https://img.shields.io/github/stars/AmilcarGit/YuiBot-MD?style=for-the-badge&logo=github&logoColor=white)](https://github.com/AmilcarGit/YuiBot-MD)
-  [![GitHub Forks](https://img.shields.io/github/forks/AmilcarGit/YuiBot-MD?style=for-the-badge&logo=github&logoColor=white)](https://github.com/AmilcarGit/YuiBot-MD/network/members)
-  [![Node.js](https://img.shields.io/badge/Node.js-18+-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
-  [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
+<br/>
+
+<img src="media/menu1.gif" alt="Vista previa del menú de YuiBot-MD" width="320"/>
 
 </div>
 
 ---
 
-## 📌 Descripción
+## 🌸 ¿Qué es YuiBot-MD?
 
-**YuiBot-MD** es un bot de WhatsApp desarrollado con **Node.js** y **Baileys** que utiliza la conexión Multi-Device para máxima compatibilidad y estabilidad. 
+**YuiBot-MD** es un bot de WhatsApp hecho con **Node.js** sobre [ultra-baileys](https://github.com/russellxz/ultra-baileys), pensado para grupos y comunidades: moderación completa, economía y RPG, descargas, stickers, utilidades y un sistema de **subbots** para que otras personas tengan su propio bot sin duplicar el servidor.
 
-El proyecto está diseñado con una arquitectura **modular, escalable y de fácil personalización**, permitiendo que tanto principiantes como desarrolladores experimentados puedan crear y gestionar sus propios comandos sin complicaciones.
+Está diseñado para ser **modular** (cada comando es un archivo), **resistente** (reconexión inteligente y circuit breaker por comando) y **fácil de mantener**.
 
-> 🚀 **Estado del Proyecto:** En desarrollo activo
-> 
-> Estamos mejorando continuamente el bot con nuevos comandos, herramientas y funcionalidades.
+> 🚧 **Proyecto en desarrollo activo.** Se corrigen y añaden funciones constantemente.
 
 ---
 
-## ✨ Características Principales
+## ✨ Características
 
 <table>
-  <tr>
-    <td>📱 <b>Multi-Device</b></td>
-    <td>Conexión nativa de WhatsApp Multi-Device para máxima compatibilidad</td>
-  </tr>
-  <tr>
-    <td>🔗 <b>Autenticación QR</b></td>
-    <td>Escanea un código QR para conectar de forma segura</td>
-  </tr>
-  <tr>
-    <td>💾 <b>Sesión Persistente</b></td>
-    <td>Guarda la sesión automáticamente para reconexiones rápidas</td>
-  </tr>
-  <tr>
-    <td>🧩 <b>Sistema Modular</b></td>
-    <td>Estructura de comandos organizada y fácil de extender</td>
-  </tr>
-  <tr>
-    <td>⚙️ <b>Configurable</b></td>
-    <td>Personaliza prefijos, nombres de usuario y más</td>
-  </tr>
-  <tr>
-    <td>🔄 <b>Reconexión Automática</b></td>
-    <td>Manejo inteligente de desconexiones</td>
-  </tr>
-  <tr>
-    <td>🏷️ <b>Aliases de Comandos</b></td>
-    <td>Define múltiples formas de ejecutar el mismo comando</td>
-  </tr>
-  <tr>
-    <td>🚀 <b>Fácil de Expandir</b></td>
-    <td>Crea nuevos comandos en minutos sin modificar el core</td>
-  </tr>
+<tr>
+<td width="50%" valign="top">
+
+### 🛡️ Moderación de grupos
+- **Antilink** y **antiflood** (con avisos y expulsión automática), **antiinsultos**
+- **Antiraid**, **antifake**, **antibot**
+- Filtros por tipo: audio, documento, imagen, sticker y video
+- Whitelist por grupo y **modo admin**
+- Horario automático de apertura/cierre
+- Panel de estado con `gpanel`
+- Bienvenida y despedida con imagen personalizada
+
+</td>
+<td width="50%" valign="top">
+
+### 🤖 Subbots
+- Vincula otro número con un **código de emparejamiento**
+- Cada subbot corre en su propio proceso
+- **Liderazgo por grupo**: si hay varios bots, solo uno responde
+- Prefijo y nombre propios (subbots premium)
+- Permisos separados: dueño del subbot ≠ owner del bot
+
+</td>
+</tr>
+<tr>
+<td valign="top">
+
+### 🎮 Economía y RPG
+- Monedas, `daily`, tienda e inventario
+- XP y niveles por actividad en el grupo
+- Duelos, jefes, misiones y loot
+- Juegos: blackjack, minas, carrera, tragamonedas…
+- Rankings por grupo y globales
+
+</td>
+<td valign="top">
+
+### 📥 Multimedia y utilidades
+- Descargas de YouTube, TikTok e Instagram
+- Stickers, `brat`, `emojimix`, búsqueda de stickers
+- Generador de imágenes: logo, tweet, wanted, quote…
+- OCR, QR, traductor, clima, TTS, Wikipedia
+- Herramientas dev: DNS, WHOIS, hash, base64, JSON
+
+</td>
+</tr>
+<tr>
+<td valign="top">
+
+### 🔁 Resiliencia
+- Reconexión con **backoff exponencial**
+- Cooldown automático ante el error **405** de WhatsApp
+- **Circuit breaker**: un comando que falla repetido se desactiva solo
+- Timeout en las peticiones a APIs externas
+- Escritura atómica de datos (sin archivos corruptos)
+
+</td>
+<td valign="top">
+
+### 🧩 Arquitectura limpia
+- **Hooks** (`onMessage`, `onGroupUpdate`) para añadir moderación sin tocar el núcleo
+- Permisos centralizados (`ownerOnly` / `subbotOwnerOnly`)
+- Gestor de **proveedores de API** con on/off en caliente
+- Recarga de módulos sin reiniciar (`reload`)
+- Generador de comandos incluido
+
+</td>
+</tr>
 </table>
 
 ---
 
-## 🛠️ Tecnologías Utilizadas
+## 🏗️ Arquitectura
 
-<div align="center">
-
-[![Node.js](https://img.shields.io/badge/Node.js-18+-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
-[![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)](https://www.javascript.com/)
-[![Baileys](https://img.shields.io/badge/Baileys-25D366?style=for-the-badge&logo=whatsapp&logoColor=white)](https://github.com/WhiskeySockets/Baileys)
-
-</div>
-
----
-
-## 📋 Requisitos Previos
-
-Antes de instalar YuiBot-MD, asegúrate de tener:
-
-- **Node.js 18 o superior** ([Descargar](https://nodejs.org/))
-- **npm** (incluido con Node.js)
-- **Git** ([Descargar](https://git-scm.com/))
-- Una cuenta de **WhatsApp activa**
-
-### Verificar instalación
-
-```bash
-node -v      # Debe mostrar v18.0.0 o superior
-npm -v       # Debe mostrar 8.0.0 o superior
-git --version
+```mermaid
+flowchart LR
+    WA([WhatsApp]) <--> B[ultra-baileys]
+    B --> M[main.js<br/>bot principal]
+    B --> S[subbot.js<br/>un proceso por subbot]
+    M --> H[Hooks onMessage<br/>antilink · antiflood · antibot<br/>antiinsultos · modoadmi]
+    S --> H
+    H --> P{Permisos<br/>lib/permisos.js}
+    P --> R[Circuit breaker<br/>lib/resiliencia.js]
+    R --> C[(Comandos<br/>modulos/**)]
+    S -. liderazgo por grupo .- N[(data/red<br/>heartbeats + locks)]
+    M -. presencia .- N
 ```
 
 ---
 
-## 🚀 Instalación Rápida
+## 🚀 Instalación
 
-### 1. Clonar el repositorio
+### Requisitos
+
+| Requisito | Detalle |
+|---|---|
+| **Node.js** | **20 o superior** |
+| **Git** | Para clonar y actualizar |
+| **ffmpeg** | Necesario para stickers, audio y descargas (incluye `ffprobe`) |
+| **WhatsApp** | Un número disponible para vincular el bot |
+
+### Pasos
 
 ```bash
 git clone https://github.com/AmilcarGit/YuiBot-MD.git
 cd YuiBot-MD
-```
-
-### 2. Instalar dependencias
-
-```bash
 npm install
-```
-
-### 3. Ejecutar el bot
-
-```bash
 npm start
 ```
 
-### 4. Escanear el código QR
+Al iniciar, el bot te pregunta cómo vincularlo:
 
-El bot mostrará un código QR en la terminal. Escanéalo con tu celular usando WhatsApp para autenticar.
+- **`Enter`** → código **QR** en la terminal.
+- **`1`** → **código de emparejamiento**: escribe tu número con código de país (sin `+`) y, en WhatsApp, entra a *Dispositivos vinculados → Vincular con número de teléfono* e ingresa el código.
 
-> 💡 **Consejo:** Utiliza `npm run dev` para ejecutar en modo desarrollo con auto-recarga.
+La sesión se guarda en `session/` y no vuelve a pedirte nada al reiniciar.
+
+<details>
+<summary><b>📱 Instalar en Termux (Android)</b></summary>
+
+```bash
+pkg update && pkg upgrade
+pkg install nodejs git ffmpeg
+git clone https://github.com/AmilcarGit/YuiBot-MD.git
+cd YuiBot-MD
+npm install
+npm start
+```
+
+No necesitas compilar nada: el soporte de imágenes usa `@napi-rs/canvas`, que ya trae binarios para Android.
+
+</details>
+
+<details>
+<summary><b>🖥️ Instalar en un VPS (Ubuntu/Debian)</b></summary>
+
+```bash
+sudo apt update && sudo apt install -y git ffmpeg
+curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
+sudo apt install -y nodejs
+git clone https://github.com/AmilcarGit/YuiBot-MD.git
+cd YuiBot-MD && npm install
+```
+
+Luego sigue la sección de [PM2](#-producción-con-pm2) para dejarlo corriendo 24/7.
+
+</details>
 
 ---
 
-## 📖 Uso Básico
+## 🧰 Producción con PM2
 
-Una vez que el bot esté corriendo y autenticado:
+El repositorio incluye `ecosystem.config.cjs`, que levanta el bot principal y **detecta automáticamente los subbots ya vinculados**.
 
-1. Envía un mensaje a un chat (privado, grupo, etc.)
-2. Usa el prefijo configurado (por defecto: `.`) seguido del nombre del comando
-3. El bot responderá con la acción correspondiente
-
-**Ejemplo:**
+```bash
+npm install -g pm2
+npm run pm2:start      # inicia bot + subbots vinculados
+npm run pm2:logs       # logs en vivo
+npm run pm2:restart    # reinicia todo
+pm2 save && pm2 startup   # arrancar con el sistema
 ```
-Usuario: .ping
-Bot: 🏓 Pong!
-```
+
+> 💡 Con PM2 también funcionan `update` (hace `git pull` y reinicia), `reconectar` y `reloadsubbots`.
 
 ---
 
-## 📂 Estructura del Proyecto
+## 🤖 Subbots
 
+Cualquier persona puede tener su propio bot usando tu servidor:
+
+```text
+.code 51999999999            → genera el código de vinculación para ese número
+.code 51999999999 TOKEN      → igual, pero como subbot premium
 ```
-YuiBot-MD/
-├── main.js                 # Archivo principal
-├── package.json           # Dependencias y scripts
-├── media/                 # Recursos multimedia
-│   └── menu1.gif         # Preview del bot
-├── commands/             # 📂 Comandos del bot
-│   ├── general/          # Comandos generales
-│   ├── admin/            # Comandos de administrador
-│   └── fun/              # Comandos de diversión
-├── utils/                # Funciones auxiliares
-└── config/               # Configuración global
-```
+
+| Comando | ¿Quién lo usa? | Qué hace |
+|---|---|---|
+| `.code <número>` | Cualquiera | Crea un subbot y devuelve el código para vincularlo |
+| `.misubbot` · `.estado` · `.perfilbot` | Dueño del subbot | Información y estado de su subbot |
+| `.setprefix` · `.setbotname` | Dueño (premium) | Personaliza prefijo y nombre |
+| `.reiniciarmisubbot` · `.apagarmisubbot` | Dueño del subbot | Reinicia o elimina su propio subbot |
+| `.delsubbot <número>` | Owner o dueño de ese subbot | Elimina un subbot y su sesión |
+| `.subbots` · `.topsubbots` · `.reloadsubbots` · `.token` | Owner | Administración global |
+
+**Liderazgo por grupo:** si el bot principal está en un grupo, los subbots se quedan en espera; entre subbots, el primero que toma el *lock* del grupo es el único que responde. Así nunca se duplican las respuestas.
+
+> 🔐 `eval` y `exec` **solo funcionan en el bot principal** y únicamente para los owners.
 
 ---
 
-## 💡 Crear tu Primer Comando
+## 📜 Comandos
 
-### Estructura básica de un comando:
+El bot trae **145 comandos** organizados por categoría. Usa `.menu` para verlos todos desde WhatsApp.
 
-```javascript
-// commands/general/saludo.js
+| Categoría | Ejemplos |
+|---|---|
+| 🛡️ **grupo** | `kick` `promote` `demote` `tagall` `antiraid` `antifake` `antibot` `antiinsultos` `whitelist` `modoadmi` `horariogrupo` `gpanel` `welcome` `reglas` `sorteo` `votacion` `top` |
+| 🎮 **diversion** | `daily` `monedas` `tienda` `comprar` `inventario` `blackjack` `minas` `carrera` `tragamonedas` `dados` `trivia` `batalla` |
+| ⚔️ **rpg** | `perfilrpg` `nivel` `misiones` `duelo` `boss` `loot` `ranking` `inventariorpg` |
+| 📥 **download** | `ytmp3` `ytv` `yts` `tiktok` `tiktoksearch` `instagram` `instagramreels` `apk` `pelicula` |
+| 🖼️ **media** | `sticker` `brat` `emojimix` `stickerly` `pinterest` `bing` `orbitsticker` |
+| 🎨 **imagenes** | `logo` `tweet` `wanted` `trigger` `quote` `avatar` `wallpaper` |
+| 🔧 **utilidad** | `clima` `traducir` `tts` `ocr` `codigoqr` `leerqr` `wiki` `calc` `shorturl` `calendario` `hora` `jid` |
+| 🧪 **herramientas** | `dns` `whois` `ip` `hash` `base64` `json` `uuid` `urlinfo` `device` |
+| 🎧 **audio** | `velocidad` `volumen` `audioinfo` |
+| 🤖 **ia** | `ia` |
+| 🤝 **subbot** | `code` `misubbot` `setprefix` `setbotname` `delsubbot` `subbots` `token` |
+| 👑 **owner** | `update` `reload` `broadcast` `block` `unblock` `logs` `apimanager` `resiliencia` `reconectar` |
+| 📊 **sistema** | `dashboard` `healthbot` `mantenimiento` `report` `ticket` |
+| 🏠 **main / usuario** | `menu` `ping` `infobot` `owner` `canal` `perfil` `reg` |
 
-module.exports = {
-  name: 'saludo',
-  alias: ['hola', 'hi'],
-  description: 'Saluda al usuario',
-  
-  async execute(socket, msg, args) {
-    await msg.reply('¡Hola! 👋 Bienvenido a YuiBot-MD');
-  }
-};
-```
-
-### Parámetros disponibles:
-- **socket**: Instancia del bot
-- **msg**: Objeto del mensaje recibido
-- **args**: Argumentos pasados al comando
-
----
-
-## 📜 Comandos Disponibles
-
-| Comando | Descripción | Uso |
-|---------|-------------|-----|
-| `.ping` | Verifica si el bot está activo | `.ping` |
-| `.menu` | Muestra el menú principal | `.menu` |
-| `.info` | Información del bot y sistema | `.info` |
-| `.help` | Ayuda sobre comandos disponibles | `.help [comando]` |
-
-*Más comandos están siendo desarrollados...*
+> Los prefijos por defecto son `!` `.` `/` `#`, y el bot también acepta comandos **sin prefijo**. Todo es configurable.
 
 ---
 
 ## ⚙️ Configuración
 
-### Variables de Entorno
+Casi todo se controla desde **`defaults.js`**:
 
-Crea un archivo `.env` en la raíz del proyecto:
+| Opción | Qué hace |
+|---|---|
+| `BOT_NAME` | Nombre del bot |
+| `PREFIXES` · `ALLOW_NO_PREFIX` | Prefijos válidos y si se aceptan comandos sin prefijo |
+| `OWNERS` | Lista de owners (`numero`, `nombre`, `rango`) |
+| `PHONE_NUMBER` | Número para el código de emparejamiento (vacío = te lo pregunta) |
+| `MARCAR_LEIDO` | Marca los mensajes como leídos (✓✓ azul) |
+| `LOG_MENSAJES` · `LOG_DEBUG` | Controla cuánto se imprime en consola |
+| `WELCOME_ENABLED` | Bienvenida con imagen. Para la despedida añade también `BYE_ENABLED: true` (no viene definida) |
+| `MODERACION` | Antilink y antiflood (avisos, expulsión automática, límites) |
+| `XP` · `ECONOMIA` | Ritmo de XP y recompensas |
+| `MANTENIMIENTO` | Limpieza de pre-keys y copias de seguridad de la sesión |
+| `NEWSLETTER` | Canal oficial de WhatsApp del bot |
 
-```env
-# Configuración del Bot
-BOT_NAME=YuiBot-MD
-BOT_PREFIX=.
-OWNER_NUMBER=51987654321
-
-# Otras configuraciones
-NODE_ENV=production
-```
-
-### Archivo de Configuración
-
-Edita `config/config.js`:
-
-```javascript
-module.exports = {
-  prefix: '.',
-  botName: 'YuiBot-MD',
-  ownerNumber: '51987654321',
-  autoRead: true,
-  presence: 'available'
-};
-```
+Las **APIs externas** se administran en caliente con `.apimanager` (activar o desactivar proveedores sin tocar el código). **Yui, la IA conversacional** (`.ia`) responde solo en chats **privados** del bot principal. Con `"enabled": true` en `config/ia.json`, también contesta a cualquier mensaje privado que no sea un comando.
 
 ---
 
-## 🐛 Solución de Problemas
+## 🧩 Crea tu propio comando
 
-### El QR no aparece
+La forma más rápida:
+
 ```bash
-# Asegúrate de que tienes Node.js 18+
-node -v
-
-# Intenta borrar la carpeta de sesión
-rm -rf sessions/
-npm start
+node crear-comando.js
 ```
 
-### Error: "No se puede conectar a WhatsApp"
-- Verifica tu conexión a internet
-- Asegúrate de que tu cuenta de WhatsApp no esté bloqueada
-- Intenta escanear el QR nuevamente
+O crea un archivo en `modulos/<categoría>/`:
 
-### Módulo no encontrado
+```javascript
+// modulos/utilidad/saludo.js
+module.exports = {
+  name: 'saludo',
+  aliases: ['hola', 'hi'],
+  description: 'Saluda al usuario',
+  category: 'utilidad',
+
+  // ownerOnly: true,        → solo los owners del bot principal
+  // subbotOwnerOnly: true,  → owners o el dueño de ese subbot
+
+  async execute(sock, msg, args, { config, commands, esSubBot }) {
+    const jid = msg.key.remoteJid
+    await sock.sendMessage(jid, { text: `¡Hola! 👋 Soy ${config.BOT_NAME}` }, { quoted: msg })
+  },
+}
+```
+
+Reinicia o usa `.reload` y ya está disponible. 🎉
+
+<details>
+<summary><b>🪝 Hooks: reaccionar a cada mensaje o evento del grupo</b></summary>
+
+Un módulo puede ser un comando, un **hook puro** o ambos. Si devuelve `true` desde `onMessage`, se detiene el procesamiento del comando.
+
+```javascript
+// modulos/grupo/miFiltro.js
+module.exports = {
+  async onMessage(sock, msg, { jid, body, esGrupo, config }) {
+    if (esGrupo && body?.includes('spam')) {
+      await sock.sendMessage(jid, { delete: msg.key })
+      return true // no seguir con el comando
+    }
+  },
+
+  async onGroupUpdate(sock, update) {
+    // entradas, salidas, promociones…
+  },
+}
+```
+
+Los hooks se ejecutan igual en el bot principal y en los subbots, y un error en uno no afecta a los demás.
+
+</details>
+
+---
+
+## 📂 Estructura del proyecto
+
+```text
+YuiBot-MD/
+├── main.js                  # Bot principal
+├── subbot.js                # Proceso de cada subbot (node subbot.js <número>)
+├── defaults.js              # Configuración global
+├── ecosystem.config.cjs     # PM2: bot + subbots vinculados
+├── crear-comando.js         # Generador de comandos
+├── config/                  # Ajustes (IA)
+├── lib/                     # Núcleo: cargador, permisos, reconexión, resiliencia,
+│                            #   red de subbots, base de datos, moderación, imágenes…
+├── modulos/                 # Comandos y hooks, una carpeta por categoría
+├── scripts/                 # check-sintaxis.js · smoke-check.js
+├── media/                   # Banner, menú y recursos
+├── data/                    # (se crea sola) datos del bot
+├── session/                 # (se crea sola) sesión de WhatsApp
+└── subbots/                 # (se crea sola) sesiones y datos de cada subbot
+```
+
+### Scripts útiles
+
+| Script | Qué hace |
+|---|---|
+| `npm start` | Inicia el bot |
+| `npm run dev` | Modo desarrollo con auto-recarga (nodemon) |
+| `npm run check` | Revisa la sintaxis de todos los archivos |
+| `npm run smoke` | Carga todos los módulos y detecta nombres/alias duplicados |
+| `npm run pm2:start` · `pm2:restart` · `pm2:logs` | Gestión con PM2 |
+
+---
+
+## 🩺 Solución de problemas
+
+<details>
+<summary><b>❌ <code>Cannot find module '../build/Release/canvas.node'</code></b></summary>
+
+Es del paquete antiguo `canvas`. Actualiza y reinstala:
+
 ```bash
-# Reinstala las dependencias
-rm -rf node_modules package-lock.json
+git pull
+npm uninstall canvas
 npm install
 ```
+
+</details>
+
+<details>
+<summary><b>⏳ El código de vinculación no llega / error 405</b></summary>
+
+WhatsApp bloquea temporalmente los pedidos repetidos de código. El bot espera **40 minutos** solo; no insistas. Mientras tanto, no reinicies el proceso en bucle.
+
+</details>
+
+<details>
+<summary><b>🔁 "Stream Errored (restart required)" · código 515</b></summary>
+
+Es normal justo después de vincular: WhatsApp pide reiniciar la conexión y el bot reconecta solo en segundos.
+
+</details>
+
+<details>
+<summary><b>🚪 "Sesión cerrada" (401)</b></summary>
+
+Se cerró el dispositivo desde WhatsApp. Borra la carpeta `session/` y vuelve a vincular.
+
+</details>
+
+<details>
+<summary><b>🎞️ Los stickers o las descargas fallan</b></summary>
+
+Comprueba que `ffmpeg` y `ffprobe` estén instalados: `ffmpeg -version`.
+
+</details>
+
+<details>
+<summary><b>🧱 El bot no responde en un grupo</b></summary>
+
+Revisa que no esté activo `modoadmi` (solo admins pueden usar comandos), que el bot no esté en modo `mantenimiento` y que no haya otro bot líder del grupo (el principal u otro subbot).
+
+</details>
+
+---
+
+## 🔐 Seguridad
+
+- Los comandos peligrosos (`eval`, `exec`, `update`…) son **solo para owners** y no se ejecutan dentro de subbots.
+- No subas nunca tu carpeta `session/`, `subbots/` ni claves privadas.
+- ¿Encontraste una vulnerabilidad? Lee la [política de seguridad](SECURITY.md) y repórtala en privado.
 
 ---
 
 ## 🤝 Contribuir
 
-¡Las contribuciones son bienvenidas! Por favor:
-
-1. **Fork** el repositorio
-2. **Crea una rama** para tu feature (`git checkout -b feature/nueva-caracteristica`)
-3. **Commit** tus cambios (`git commit -m 'Agregar nueva característica'`)
-4. **Push** a la rama (`git push origin feature/nueva-caracteristica`)
-5. **Abre un Pull Request**
-
-### Directrices de Contribución
-- Sigue el estilo de código existente
-- Documenta tu código con comentarios claros
-- Prueba tu código antes de enviar el PR
-- Actualiza el README si es necesario
+Las contribuciones son bienvenidas. Lee la [guía de contribución](CONTRIBUTING.md), abre un *Issue* para cambios grandes y ejecuta `npm run check` y `npm run smoke` antes de enviar tu *Pull Request*.
 
 ---
 
-## 📝 Licencia
+## 🙏 Créditos
 
-Este proyecto está bajo la licencia **MIT**. Ver archivo [LICENSE](LICENSE) para más detalles.
-
----
-
-## 👤 Autor
-
-**Amilcar Git**
-- GitHub: [@AmilcarGit](https://github.com/AmilcarGit)
-- Email: [Contacto]
+- **[ultra-baileys](https://github.com/russellxz/ultra-baileys)** de russellxz y **[Baileys](https://github.com/WhiskeySockets/Baileys)** — la base de la conexión con WhatsApp.
+- **fsociety-bot** — proyecto de referencia que inspiró varias funciones, adaptadas a la arquitectura de YuiBot-MD.
+- **[AmilcarGit](https://github.com/AmilcarGit)** — creador y mantenedor · **Leo** — colaborador.
+- A todas las personas que prueban, reportan errores y ayudan a mejorar el bot. 💖
 
 ---
 
-## 🙏 Agradecimientos
+## ⚠️ Aviso
 
-- [Baileys](https://github.com/WhiskeySockets/Baileys) - Por la librería de WhatsApp
-- Todos los contribuidores y usuarios que ayudan a mejorar el proyecto
-
----
-
-## 📞 Soporte
-
-¿Necesitas ayuda? 
-- 📋 Abre un [Issue](https://github.com/AmilcarGit/YuiBot-MD/issues)
-- 💬 Revisa las [Issues](https://github.com/AmilcarGit/YuiBot-MD/issues)
-- ⭐ Si te gusta, dale una estrella al repositorio
+YuiBot-MD **no está afiliado, asociado ni respaldado por WhatsApp o Meta**. Usar bots en WhatsApp puede incumplir sus términos y provocar el bloqueo de la cuenta; úsalo bajo tu propia responsabilidad y, de preferencia, con un número secundario.
 
 ---
 
 <div align="center">
 
-**Hecho con ❤️ por Amilcar Git**
+**Hecho con 💖 por [AmilcarGit](https://github.com/AmilcarGit)**
 
-⬆ [Volver arriba](#-yuibot-md)
+Si te gusta el proyecto, ¡regálale una ⭐ al repositorio!
+
+[⬆ Volver arriba](#-qué-es-yuibot-md)
 
 </div>

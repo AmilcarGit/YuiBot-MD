@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="320" viewBox="0 0 1280 320" role="img" aria-labelledby="t d">
+  <title id="t">YuiBot-MD</title>
+  <desc id="d">Bot de WhatsApp Multi-Device modular con subbots, moderación, economía y RPG</desc>
+  <defs>
+    <linearGradient id="fondo" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1b0b3a"/>
+      <stop offset="0.55" stop-color="#4a1670"/>
+      <stop offset="1" stop-color="#b3245f"/>
+    </linearGradient>
+    <linearGradient id="titulo" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#ffc2e0"/>
+    </linearGradient>
+    <linearGradient id="linea" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#ff7ac6" stop-opacity="0"/>
+      <stop offset="0.5" stop-color="#ff7ac6"/>
+      <stop offset="1" stop-color="#ff7ac6" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="difuso" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="38"/>
+    </filter>
+    <clipPath id="redondeado"><rect width="1280" height="320" rx="22"/></clipPath>
+  </defs>
+
+  <g clip-path="url(#redondeado)">
+    <rect width="1280" height="320" fill="url(#fondo)"/>
+
+    <!-- luces difusas -->
+    <circle cx="150" cy="40" r="120" fill="#ff5fb0" opacity="0.45" filter="url(#difuso)"/>
+    <circle cx="1130" cy="290" r="150" fill="#7a5cff" opacity="0.50" filter="url(#difuso)"/>
+    <circle cx="700" cy="-20" r="110" fill="#ff9ad5" opacity="0.28" filter="url(#difuso)"/>
+
+    <!-- pétalos decorativos -->
+    <g fill="#ffd1ea" opacity="0.75">
+      <ellipse cx="1040" cy="78" rx="9" ry="5" transform="rotate(-28 1040 78)"/>
+      <ellipse cx="1112" cy="132" rx="7" ry="4" transform="rotate(20 1112 132)"/>
+      <ellipse cx="1190" cy="70" rx="6" ry="3.5" transform="rotate(-50 1190 70)"/>
+      <ellipse cx="96" cy="236" rx="8" ry="4.5" transform="rotate(35 96 236)"/>
+      <ellipse cx="190" cy="274" rx="6" ry="3.5" transform="rotate(-15 190 274)"/>
+      <ellipse cx="1226" cy="214" rx="7" ry="4" transform="rotate(40 1226 214)"/>
+    </g>
+
+    <!-- puntos tipo "red" -->
+    <g fill="#ffffff" opacity="0.18">
+      <circle cx="930" cy="250" r="3"/><circle cx="978" cy="226" r="3"/><circle cx="1022" cy="262" r="3"/>
+      <circle cx="1072" cy="236" r="3"/><circle cx="1118" cy="268" r="3"/>
+    </g>
+    <g stroke="#ffffff" stroke-opacity="0.14" stroke-width="1.2" fill="none">
+      <path d="M930 250 L978 226 L1022 262 L1072 236 L1118 268"/>
+    </g>
+
+    <!-- texto -->
+    <text x="640" y="150" text-anchor="middle" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="92" font-weight="800" letter-spacing="2" fill="url(#titulo)">🌸 YuiBot-MD</text>
+    <rect x="360" y="178" width="560" height="3" rx="1.5" fill="url(#linea)"/>
+    <text x="640" y="226" text-anchor="middle" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="29" fill="#ffffff" fill-opacity="0.92">Bot de WhatsApp Multi-Device · Modular · Subbots · Moderación · RPG</text>
+    <text x="640" y="272" text-anchor="middle" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="19" letter-spacing="4" fill="#ffc2e0" fill-opacity="0.85">NODE.JS  ·  ULTRA-BAILEYS  ·  PM2</text>
+  </g>
+</svg>
