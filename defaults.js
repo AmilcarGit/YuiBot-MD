@@ -19,7 +19,7 @@ module.exports = {
   // Si es true, el bot marca los mensajes entrantes como leídos (✓✓ azul)
   // automáticamente. Ponlo en false si prefieres que WhatsApp muestre que
   // el mensaje llegó pero no fue "leído".
-  MARCAR_LEIDO: true,
+  MARCAR_LEIDO: false,
   MANTENIMIENTO: {
     LIMPIEZA_PREKEYS_HORAS: 6,
     PREKEYS_DIAS_ANTIGUEDAD: 3,
