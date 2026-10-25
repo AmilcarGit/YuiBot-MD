@@ -1,11 +1,13 @@
-const { descargarLocal, ytDlpDisponible } = require('../../lib/youtube')
+const fetch = require('../../lib/http').fetchSeguro
+const delirius = require('../../lib/delirius')
+const { conFuentes, descargarLocal } = require('../../lib/youtube')
 
 const LIMITE_VIDEO_MB = 64
 
 module.exports = {
   name: 'facebook',
   aliases: ['fb', 'fbdl'],
-  description: 'Descarga un video o reel público de Facebook (requiere yt-dlp)',
+  description: 'Descarga un video o reel público de Facebook',
   category: 'download',
 
   async execute(sock, msg, args, { config }) {
@@ -25,18 +27,19 @@ module.exports = {
       return sock.sendMessage(jid, { text: '❌ El enlace no parece ser de Facebook.' }, { quoted: msg })
     }
 
-    if (!(await ytDlpDisponible())) {
-      return sock.sendMessage(
-        jid,
-        { text: '❌ Falta instalar yt-dlp en el servidor.\n\n📌 En Termux:\n`pkg install yt-dlp ffmpeg`' },
-        { quoted: msg }
-      )
-    }
-
     try {
       await sock.sendMessage(jid, { text: `⏳ Descargando de Facebook...\n\n🔗 ${link}` }, { quoted: msg })
 
-      const r = await descargarLocal(link, 'video')
+      // yt-dlp local primero (gratis); Delirius queda como respaldo
+      const r = await conFuentes({
+        local: () => descargarLocal(link, 'video'),
+        api: async () => {
+          const d = await delirius.facebook(link)
+          const archivo = await fetch(d.url)
+          if (!archivo.ok) throw new Error(`No se pudo descargar el video (HTTP ${archivo.status})`)
+          return { buffer: Buffer.from(await archivo.arrayBuffer()), titulo: d.titulo, canal: 'Facebook', duracion: 'Desconocida' }
+        },
+      })
       const pesoMB = r.buffer.length / (1024 * 1024)
 
       const caption =
