@@ -50,14 +50,15 @@ module.exports = {
     }
 
     try {
-      const buffer = await descargarMedia(mediaMsg, tipo)
+      // La descarga también falla a veces por DNS/red del celular: se reintenta.
+      const buffer = await reintentar(() => descargarMedia(mediaMsg, tipo))
       const webp = await crearStickerWebp(buffer, { animado: tipo === 'video', config })
       // La subida a WhatsApp falla a veces por un momento (error 500 de sus servidores): se reintenta.
       await reintentar(() => sock.sendMessage(jid, { sticker: webp }, { quoted: msg }))
     } catch (error) {
       console.error('[STICKER]', error)
       const motivo = esErrorPasajero(error)
-        ? 'WhatsApp no pudo recibir el sticker en este momento. Inténtalo de nuevo en unos segundos.'
+        ? 'No hubo conexión estable con WhatsApp en este momento. Inténtalo de nuevo en unos segundos.'
         : error.message || 'Error desconocido'
       await sock.sendMessage(
         jid,

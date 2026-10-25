@@ -6,6 +6,7 @@ test('reconoce el error de subida de WhatsApp como pasajero', () => {
   assert.ok(esErrorPasajero(new Error('Media upload failed on all hosts')))
   assert.ok(esErrorPasajero({ output: { statusCode: 500 } }))
   assert.ok(esErrorPasajero(Object.assign(new TypeError('fetch failed'), { cause: { code: 'UND_ERR_CONNECT_TIMEOUT' } })))
+  assert.ok(esErrorPasajero(Object.assign(new TypeError('fetch failed'), { cause: { code: 'ENOTFOUND' } })))
   assert.ok(!esErrorPasajero(new Error('Archivo inválido')))
 })
 
