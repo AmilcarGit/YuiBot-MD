@@ -6,6 +6,8 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 ## [Sin publicar]
 
 ### Añadido
+- **Comandos nuevos con Delirius** (gratis, sin token): `.letra` (letras de canciones), `.spotify` (busca en Spotify y envía el audio), `.soundcloud` (busca y descarga; requiere yt-dlp), `.ss` (captura de una página web).
+- `.ia`, `.stickerly` y `.pinterest` ahora usan Delirius (la IA ya no depende de lempi; `.pinterest` conserva la API anterior de respaldo). 10 pruebas nuevas con las respuestas reales de la API.
 - **Delirius como API de respaldo** (gratis, sin token) para YouTube (audio, video, búsqueda), TikTok, Instagram y Facebook, en lugar de lempi y dv-yer. Nuevo `lib/delirius.js` con 6 pruebas. `.facebook` también usa Delirius si yt-dlp falla.
 - **TikTok, Instagram y Facebook sin APIs externas**: `.tiktok` y `.instagram` usan yt-dlp primero (API de respaldo) y hay un comando nuevo `.facebook` (`.fb`) para videos públicos. La opción `YOUTUBE` de `defaults.js` pasa a llamarse `DESCARGAS` y admite `COOKIES` (ruta a un `cookies.txt`) para los sitios que piden iniciar sesión.
 - **Descargas de YouTube sin APIs externas**: `.play`, `.ytv` (ahora también `.video`) y la búsqueda usan **yt-dlp** instalado en tu equipo (`pkg install yt-dlp ffmpeg` en Termux), con la API anterior como respaldo. Opciones en `YOUTUBE` de `defaults.js` (`MODO`, `MAX_MB`, `ALTURA`). Se agregan 7 pruebas con un yt-dlp simulado.

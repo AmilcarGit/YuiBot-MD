@@ -1,9 +1,8 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
 const fetch = require('../../lib/http').fetchSeguro // timeout por defecto (ver lib/http.js)
-const { APIS } = require('../../defaults')
+const delirius = require('../../lib/delirius')
 const { crearStickerWebp } = require('../../lib/stickers')
 
-const SEARCH_URL = 'https://api.lempi.lat/s/stickers'
 const LIMITE_STICKERS = 10
 
 function extensionDe(url) {
@@ -40,36 +39,28 @@ module.exports = {
     }
 
     try {
-      const url = `${SEARCH_URL}?q=${encodeURIComponent(query)}&apikey=${encodeURIComponent(APIS.LEMPI_KEY)}`
-      const resp = await fetch(url)
-      if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
-
-      const data = await resp.json()
-
-      if (!data?.status || !Array.isArray(data?.resultados) || data.resultados.length === 0) {
-        throw new Error(`No se encontraron paquetes de stickers para "${query}"`)
-      }
-
-      const paquetes = data.resultados
+      const paquetes = await delirius.buscarStickerly(query)
 
       if (numeroPack < 1 || numeroPack > paquetes.length) {
         let lista = `❌ Ese paquete no existe. Hay ${paquetes.length} disponibles para "${query}":\n\n`
         paquetes.forEach((p, i) => {
-          lista += `${i + 1}. ${p.titulo} — por ${p.autor} (${p.stickers.length} stickers)\n`
+          lista += `${i + 1}. ${p.titulo} — por ${p.autor} (${p.cantidad} stickers)\n`
         })
         lista += `\n📌 Usa: ${prefijo}stickerly ${query} <número>`
         return sock.sendMessage(jid, { text: lista }, { quoted: msg })
       }
 
-      const paquete = paquetes[numeroPack - 1]
+      const elegido = paquetes[numeroPack - 1]
+      const paquete = await delirius.paqueteStickerly(elegido.url)
       const seleccion = paquete.stickers.slice(0, LIMITE_STICKERS)
 
       await sock.sendMessage(
         jid,
         {
           text:
-            `📦 "${paquete.titulo}" por ${paquete.autor}\n` +
-            `Enviando ${seleccion.length} de ${paquete.stickers.length} stickers...`
+            `📦 "${paquete.titulo || elegido.titulo}" por ${paquete.autor || elegido.autor}\n` +
+            `Enviando ${seleccion.length} de ${paquete.stickers.length} stickers...` +
+            (paquetes.length > 1 ? `\n💡 Otros paquetes: ${prefijo}stickerly ${query} 2` : '')
         },
         { quoted: msg }
       )
@@ -86,9 +77,11 @@ module.exports = {
           if (buffer.length < 200) throw new Error('Archivo demasiado pequeño')
 
           const ext = extensionDe(urlSticker)
-          const esAnimado = ext === 'gif'
 
-          const webp = await crearStickerWebp(buffer, { animado: esAnimado, config, extensionEntrada: ext })
+          // Los .webp de Sticker.ly ya son stickers (conservan la animación): se envían tal cual.
+          const webp = ext === 'webp'
+            ? buffer
+            : await crearStickerWebp(buffer, { animado: ext === 'gif', config, extensionEntrada: ext })
           await sock.sendMessage(jid, { sticker: webp }, { quoted: msg })
           enviados++
         } catch (errIndividual) {

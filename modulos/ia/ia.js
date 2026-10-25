@@ -1,58 +1,18 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
-const https = require('https')
+const delirius = require('../../lib/delirius')
 
-const API_KEY_IA = 'lem_68c9ac61d46e98e4e1d7c4694a8366d596328d1e'
 const memoria = new Map()
 const MAX_MENSAJES = 12
-const TIMEOUT_MS = 15000
 const CADUCIDAD_MS = 30 * 60 * 1000
+// La consulta viaja en la URL: se recorta el historial para no pasar de este tamaño.
+const MAX_URL_CHARS = 6000
 
 function esChatPrivado(jid) {
   return Boolean(jid && !jid.endsWith('@g.us'))
 }
 
 function consultarIA(texto) {
-  return new Promise((resolve, reject) => {
-    if (!API_KEY_IA || API_KEY_IA === 'TU_API_KEY_AQUI') {
-      reject(new Error('Falta la clave exclusiva de IA.'))
-      return
-    }
-
-    const url = new URL('https://api.lempi.lat/ai/chatgpt')
-    url.searchParams.set('q', texto)
-    url.searchParams.set('apikey', API_KEY_IA)
-
-    const request = https.get(url, { timeout: TIMEOUT_MS }, (response) => {
-      let data = ''
-      response.setEncoding('utf8')
-
-      response.on('data', (chunk) => {
-        data += chunk
-      })
-
-      response.on('end', () => {
-        try {
-          const json = JSON.parse(data)
-          const respuesta = json?.resultado?.respuesta
-
-          if (!json?.status || !respuesta) {
-            reject(new Error(`La API no devolvió una respuesta válida (${response.statusCode}).`))
-            return
-          }
-
-          resolve(String(respuesta).trim())
-        } catch {
-          reject(new Error('La API devolvió una respuesta inválida.'))
-        }
-      })
-    })
-
-    request.on('timeout', () => {
-      request.destroy(new Error('Tiempo de espera agotado.'))
-    })
-
-    request.on('error', reject)
-  })
+  return delirius.chatgpt(texto)
 }
 
 function construirContexto(jid, texto) {
@@ -104,13 +64,13 @@ module.exports = {
     if (esSubBot) return
     if (!esChatPrivado(jid) || msg.key.fromMe) return
 
-    const texto = args.join(' ').trim()
+    const texto = args.join(' ').trim().slice(0, 1000)
 
     if (!texto) return
 
     const contexto = construirContexto(jid, texto)
 
-    const prompt = `Eres Yui, la personalidad femenina de YuiBot-MD. Tu creador y dueño oficial es AmilcarGit. Nunca atribuyas la creación de YuiBot-MD a Ado ni a otra persona. Si te preguntan quién creó, hizo o es el creador de YuiBot-MD, responde que fue AmilcarGit. Ado puede ser mencionado como parte de otros créditos o colaboradores solo si existe contexto explícito para ello, pero nunca como creador del bot.
+    const armarPrompt = (contexto) => `Eres Yui, la personalidad femenina de YuiBot-MD. Tu creador y dueño oficial es AmilcarGit. Nunca atribuyas la creación de YuiBot-MD a Ado ni a otra persona. Si te preguntan quién creó, hizo o es el creador de YuiBot-MD, responde que fue AmilcarGit. Ado puede ser mencionado como parte de otros créditos o colaboradores solo si existe contexto explícito para ello, pero nunca como creador del bot.
 
 Tu personalidad:
 - Eres dulce, alegre, cariñosa, espontánea y divertida.
@@ -133,6 +93,14 @@ Contexto reciente de la conversación:
 ${contexto}
 
 Responde ahora como Yui, directamente al usuario, sin prefacios técnicos:`
+
+    // La consulta va en la URL: si el historial la hace demasiado larga, se descartan los mensajes más viejos.
+    const lineas = contexto.split('\n')
+    let prompt = armarPrompt(lineas.join('\n'))
+    while (encodeURIComponent(prompt).length > MAX_URL_CHARS && lineas.length > 1) {
+      lineas.shift()
+      prompt = armarPrompt(lineas.join('\n'))
+    }
 
     try {
       await sock.sendPresenceUpdate('composing', jid).catch(() => {})
