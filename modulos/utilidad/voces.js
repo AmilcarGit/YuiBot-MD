@@ -1,26 +1,24 @@
-//CÓDIGO ORIGINAL DE YUIBOT-MD
+const { VOCES, IDIOMAS } = require('../../lib/tts')
+
 module.exports = {
   name: 'voces',
-  aliases: ['ttsvoices'],
-  description: 'Muestra las voces disponibles para el comando tts',
+  aliases: ['ttsvoices', 'idiomastts'],
+  description: 'Muestra las voces e idiomas disponibles para el comando tts',
   category: 'utilidad',
 
   async execute(sock, msg, args, { config }) {
-    const jid = msg.key.remoteJid
-    const prefijo = config.PREFIXES[0]
-
+    const P = config.PREFIXES[0]
+    const grupo = (lang) => Object.entries(VOCES)
+      .filter(([, v]) => v.lang === lang)
+      .map(([clave, v]) => `${v.pais} ${clave} ${v.genero === 'mujer' ? '👩' : '👨'}`)
+      .join('\n')
+    const idiomas = Object.entries(IDIOMAS).map(([c, n]) => `${c} (${n})`).join(', ')
     const texto =
-      `⛧───「 Voces disponibles 」───⛧\n\n` +
-      `🇪🇸 *Castellano:* jorge, carmen, juan, leonor, monica, duardo, lola, manuel, juanito, florita\n\n` +
-      `🇲🇽 *Mexicana:* esperanza, javier, paulina, francisco, gloria, violeta, miguelito, paquita, mia\n\n` +
-      `🇦🇷 *Argentina:* diego\n\n` +
-      `🇨🇱 *Chilena:* francisca\n\n` +
-      `🌎 *Latina:* carlos, soledad, ximena, miguel, penelope, lupe\n\n` +
-      `🇪🇸 *España (Polly):* conchita, enrique, lucia\n\n` +
-      `🇺🇸 *Inglés US:* joanna, matthew\n\n` +
-      `🇬🇧 *Inglés UK:* amy, brian\n\n` +
-      `╰─➤ _Uso: ${prefijo}tts <voz> <texto>_ 🥀`
-
-    await sock.sendMessage(jid, { text: texto }, { quoted: msg })
+      `🔊 *Voces disponibles*\n\n` +
+      `🗣️ *Español*\n${grupo('es')}\n\n` +
+      `🗣️ *Inglés*\n${grupo('en')}\n\n` +
+      `🌍 *Idiomas:* ${idiomas}\n\n` +
+      `📌 ${P}tts <voz o idioma> <texto>`
+    await sock.sendMessage(msg.key.remoteJid, { text: texto }, { quoted: msg })
   },
 }

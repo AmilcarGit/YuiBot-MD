@@ -1,117 +1,43 @@
-//CÓDIGO ORIGINAL DE YUIBOT-MD
-const fetch = require('../../lib/http').fetchSeguro // timeout por defecto (ver lib/http.js)
-const { APIS } = require('../../defaults')
-
-const API_URL = 'https://api.lempi.lat/s/ttsmp3'
-
-const VOCES = {
-  jorge: 'Jorge (Castilian)',
-  carmen: 'Carmen (Castilian)',
-  juan: 'Juan (Castilian)',
-  leonor: 'Leonor (Castilian)',
-  diego: 'Diego (Argentinian)',
-  esperanza: 'Esperanza (Mexican)',
-  francisca: 'Francisca (Chilean)',
-  carlos: 'Carlos (Latin American)',
-  soledad: 'Soledad (Latin American)',
-  ximena: 'Ximena (Latin American)',
-  monica: 'Monica (Castilian)',
-  duardo: 'Duardo (Castilian)',
-  lola: 'Lola (Castilian)',
-  manuel: 'Manuel (Castilian)',
-  juanito: 'Juanito (Castilian, boy)',
-  florita: 'Florita (Castilian, girl)',
-  javier: 'Javier (Mexican)',
-  paulina: 'Paulina (Mexican)',
-  francisco: 'Francisco (Mexican)',
-  gloria: 'Gloria (Mexican)',
-  violeta: 'Violeta (Mexican)',
-  miguelito: 'Miguelito (Mexican, boy)',
-  paquita: 'Paquita (Mexican, girl)',
-  conchita: 'Conchita (Spanish, EU)',
-  enrique: 'Enrique (Spanish, EU)',
-  lucia: 'Lucia (Spanish, EU)',
-  mia: 'Mia (Spanish, MX)',
-  miguel: 'Miguel (Spanish, US)',
-  penelope: 'Penelope (Spanish, US)',
-  lupe: 'Lupe (Spanish, US)',
-  joanna: 'Joanna (English, US)',
-  matthew: 'Matthew (English, US)',
-  amy: 'Amy (English, UK)',
-  brian: 'Brian (English, UK)',
-}
-
-const VOZ_DEFAULT = 'jorge'
+// .tts [voz|idioma] <texto> — texto a voz gratis (ver lib/tts.js).
+const tts = require('../../lib/tts')
 
 module.exports = {
   name: 'tts',
   aliases: ['voz', 'texttospeech'],
-  description: 'Convierte texto a voz',
+  description: 'Convierte texto a voz (tts lupe Hola · tts en Hello)',
   category: 'utilidad',
 
   async execute(sock, msg, args, { config }) {
     const jid = msg.key.remoteJid
-    const prefijo = config.PREFIXES[0]
+    const P = config.PREFIXES[0]
+    const responder = (text) => sock.sendMessage(jid, { text }, { quoted: msg })
 
-    if (!args.length) {
-      return sock.sendMessage(
-        jid,
-        {
-          text:
-            `❌ Escribe el texto a convertir.\n\n` +
-            `📌 Ejemplo: ${prefijo}tts Hola cómo estás\n` +
-            `📌 Con voz específica: ${prefijo}tts esperanza Hola cómo estás\n\n` +
-            `_Usa ${prefijo}voces para ver la lista de voces disponibles._`
-        },
-        { quoted: msg }
+    const citado = msg.message?.extendedTextMessage?.contextInfo?.quotedMessage
+    const textoCitado = citado?.conversation || citado?.extendedTextMessage?.text || ''
+
+    let seleccion = tts.VOZ_DEFECTO
+    let resto = args
+    if (args.length && tts.esSeleccion(args[0].toLowerCase())) {
+      seleccion = args[0].toLowerCase()
+      resto = args.slice(1)
+    }
+    const texto = resto.join(' ').trim() || textoCitado.trim()
+
+    if (!texto) {
+      return responder(
+        `❌ Escribe el texto a convertir (o cita un mensaje).\n\n` +
+        `📌 ${P}tts Hola cómo estás\n📌 ${P}tts lupe Hola cómo estás\n📌 ${P}tts en Hello world\n\n` +
+        `_Usa ${P}voces para ver las voces e idiomas._`
       )
-    }
-
-    let vozClave = VOZ_DEFAULT
-    let texto = args.join(' ')
-
-    const primeraPalabra = args[0].toLowerCase()
-    if (VOCES[primeraPalabra]) {
-      vozClave = primeraPalabra
-      texto = args.slice(1).join(' ')
-    }
-
-    if (!texto.trim()) {
-      return sock.sendMessage(jid, { text: '❌ Falta el texto después del nombre de la voz.' }, { quoted: msg })
     }
 
     try {
-      const url =
-        `${API_URL}?text=${encodeURIComponent(texto)}` +
-        `&speaker=${encodeURIComponent(VOCES[vozClave])}` +
-        `&apikey=${encodeURIComponent(APIS.LEMPI_KEY)}`
-
-      const resp = await fetch(url)
-      if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
-
-      const data = await resp.json()
-
-      if (!data?.status || !data?.datos?.audioUrl) {
-        throw new Error(data?.message || data?.error || 'No se pudo generar el audio')
-      }
-
-      const respAudio = await fetch(data.datos.audioUrl)
-      if (!respAudio.ok) throw new Error(`No se pudo descargar el audio (HTTP ${respAudio.status})`)
-
-      const buffer = Buffer.from(await respAudio.arrayBuffer())
-
-      await sock.sendMessage(
-        jid,
-        { audio: buffer, mimetype: 'audio/mpeg', ptt: false },
-        { quoted: msg }
-      )
+      const { buffer, etiqueta } = await tts.generar(texto, seleccion)
+      await sock.sendMessage(jid, { audio: buffer, mimetype: 'audio/mpeg', ptt: false }, { quoted: msg })
+      return etiqueta
     } catch (error) {
       console.error('[TTS]', error)
-      await sock.sendMessage(
-        jid,
-        { text: `❌ No se pudo generar el audio.\n\n> ${error.message || 'Error desconocido'}` },
-        { quoted: msg }
-      )
+      return responder(`❌ No se pudo generar el audio.\n\n> ${error.message || 'Error desconocido'}`)
     }
   },
 }
