@@ -19,7 +19,7 @@ function partirTexto(texto, max = MAX_CARACTERES) {
 
 module.exports = {
   name: 'letra',
-  aliases: ['lyrics', 'letras'],
+  aliases: ['lyrics'],
   description: 'Busca la letra de una canción: .letra <canción o artista>',
   category: 'utilidad',
 

@@ -24,7 +24,7 @@ const numeroDe = (jid) => String(jid).split('@')[0].split(':')[0]
 
 module.exports = {
   name: 'ship',
-  aliases: ['pareja', 'compatibilidad'],
+  aliases: ['compatibilidad'],
   description: 'Mide la compatibilidad entre dos personas: .ship @uno @dos',
   category: 'diversion',
 

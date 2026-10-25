@@ -6,6 +6,7 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 ## [Sin publicar]
 
 ### Añadido
+- Prueba automática `tests/comandos.test.js`: ningún comando puede repetir el nombre o alias de otro (el cargador se queda en silencio con el último). Revisión actual: 161 comandos, sin duplicados.
 - **8 comandos nuevos**: `.pokemon` (Pokédex), `.anime` (MyAnimeList), `.divisa` (conversor de monedas), `.cripto` (precios), `.pais` (datos de un país), `.bola8`, `.ppt` (piedra, papel o tijera) y `.ship` (compatibilidad). Los primeros cinco usan APIs públicas gratuitas sin key (`lib/publicas.js`); los otros tres no necesitan internet. 10 pruebas nuevas.
 - `lib/reintentar.js`: `.sticker` y `.stickerly` reintentan hasta 3 veces cuando WhatsApp rechaza la subida (`Media upload failed on all hosts`, error 500) y avisan con un mensaje claro si no se logra.
 - Delirius reintenta hasta 3 veces los fallos de conexión (timeouts, 5xx) y el error indica la causa en lugar de `fetch failed`.
@@ -23,6 +24,7 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 - `lib/http.js`: `crearFetchSeguro()` para crear variantes con otros tiempos de espera.
 
 ### Cambiado
+- Se quitaron alias que son palabras comunes del español (`precio`, `cambio`, `moneda`, `mal`, `bola`, `pareja`, `letras`, `comandos`), porque el bot acepta comandos sin prefijo y se activaban por accidente al escribir normal.
 - **README rediseñado** con banner, arquitectura, guías para Termux/VPS, tabla de comandos, configuración y solución de problemas, basado en el código real.
 
 ---

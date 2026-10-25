@@ -433,7 +433,7 @@ async function enviarTextos(sock, jid, msg, textos) {
 
 module.exports = {
   name: 'menu',
-  aliases: ['ayuda', 'help', 'comandos'],
+  aliases: ['ayuda', 'help'],
   description: 'Menú por categorías: .menu <categoría>, .menu <palabra> para buscar o .menu todo',
   category: 'main',
 

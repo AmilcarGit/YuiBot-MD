@@ -12,7 +12,7 @@ function interpretar(args) {
 
 module.exports = {
   name: 'divisa',
-  aliases: ['cambio', 'convertir', 'moneda'],
+  aliases: ['divisas', 'conversor'],
   description: 'Convierte divisas: .divisa 100 usd pen',
   category: 'utilidad',
 

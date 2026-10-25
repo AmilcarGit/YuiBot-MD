@@ -3,7 +3,7 @@ const publicas = require('../../lib/publicas')
 
 module.exports = {
   name: 'anime',
-  aliases: ['animeinfo', 'mal'],
+  aliases: ['animeinfo', 'myanimelist'],
   description: 'Información de un anime (MyAnimeList): .anime <nombre>',
   category: 'diversion',
 

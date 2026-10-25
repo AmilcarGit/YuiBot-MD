@@ -2,7 +2,7 @@ const publicas = require('../../lib/publicas')
 
 module.exports = {
   name: 'cripto',
-  aliases: ['crypto', 'precio'],
+  aliases: ['crypto'],
   description: 'Precio de una criptomoneda: .cripto btc',
   category: 'utilidad',
 

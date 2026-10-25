@@ -6,7 +6,7 @@ const RESPUESTAS = [
 
 module.exports = {
   name: 'bola8',
-  aliases: ['8ball', 'bola', 'pregunta8'],
+  aliases: ['8ball', 'bolamagica'],
   description: 'La bola mágica responde tu pregunta: .bola8 ¿Aprobaré?',
   category: 'diversion',
 
