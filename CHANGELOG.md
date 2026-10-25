@@ -6,6 +6,7 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 ## [Sin publicar]
 
 ### Añadido
+- **TikTok, Instagram y Facebook sin APIs externas**: `.tiktok` y `.instagram` usan yt-dlp primero (API de respaldo) y hay un comando nuevo `.facebook` (`.fb`) para videos públicos. La opción `YOUTUBE` de `defaults.js` pasa a llamarse `DESCARGAS` y admite `COOKIES` (ruta a un `cookies.txt`) para los sitios que piden iniciar sesión.
 - **Descargas de YouTube sin APIs externas**: `.play`, `.ytv` (ahora también `.video`) y la búsqueda usan **yt-dlp** instalado en tu equipo (`pkg install yt-dlp ffmpeg` en Termux), con la API anterior como respaldo. Opciones en `YOUTUBE` de `defaults.js` (`MODO`, `MAX_MB`, `ALTURA`). Se agregan 7 pruebas con un yt-dlp simulado.
 - **Menú en un solo mensaje**: `.menu` envía imagen/gif y una cajita desplegable «📂 Abrir menú» con todos los comandos por categoría; al tocar uno se ejecuta. Opción `MENU_LISTA` (false = menú clásico). Si la lista falla, baja a botones y luego a texto.
 - **Menú Plus** (`.menu`): portada compacta con perfil (nivel, rango, monedas), estado del bot e índice de las 16 categorías; botones de acceso rápido; `.menu <categoría>` (acepta alias como `juegos` o `descargas`), `.menu <palabra>` para buscar, `.menu <comando>` para ver su ficha, y `.menu todo` repartido en varios mensajes. Solo muestra los comandos que puedes usar, sugiere "¿quisiste decir…?" y cae a texto simple si fallan los botones o el medio. Opción `MENU_BOTONES` en `defaults.js`.

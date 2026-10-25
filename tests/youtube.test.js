@@ -37,9 +37,9 @@ console.log(JSON.stringify({ id: 'abc123', title: 'Cancion Uno', channel: 'Canal
 test.after(() => fs.rmSync(carpeta, { recursive: true, force: true }))
 
 function conConfig(opciones, fn) {
-  const antes = config.YOUTUBE
-  config.YOUTUBE = { MODO: 'local', BIN: falso, MAX_MB: 100, ALTURA: 720, ...opciones }
-  return Promise.resolve(fn()).finally(() => { config.YOUTUBE = antes })
+  const antes = config.DESCARGAS
+  config.DESCARGAS = { MODO: 'local', BIN: falso, MAX_MB: 100, ALTURA: 720, ...opciones }
+  return Promise.resolve(fn()).finally(() => { config.DESCARGAS = antes })
 }
 
 test('ordenDeFuentes respeta el modo y la disponibilidad de yt-dlp', () => {
@@ -87,4 +87,32 @@ test('un error de yt-dlp llega con un mensaje legible', () => conConfig({}, asyn
 
 test('en modo local sin yt-dlp instalado, el error explica cómo instalarlo', () => conConfig({ BIN: path.join(carpeta, 'no-existe') }, async () => {
   await assert.rejects(youtube.conFuentes({ local: () => youtube.descargarLocal('x', 'audio'), api: async () => 1 }), /yt-dlp/)
+}))
+
+function crearSock() {
+  const enviados = []
+  return { enviados, async sendMessage(jid, contenido) { enviados.push(contenido) } }
+}
+const MSG = { key: { remoteJid: '1@s.whatsapp.net' } }
+
+test('.facebook descarga con yt-dlp y envía el video', () => conConfig({}, async () => {
+  const sock = crearSock()
+  await require('../modulos/download/facebook').execute(sock, MSG, ['https://www.facebook.com/watch/?v=1'], { config })
+  const video = sock.enviados.find((m) => m.video)
+  assert.equal(video.video.toString(), 'contenido-mp4')
+  assert.ok(video.caption.includes('FACEBOOK'))
+}))
+
+test('.facebook rechaza enlaces que no son de Facebook', async () => {
+  const sock = crearSock()
+  await require('../modulos/download/facebook').execute(sock, MSG, ['https://ejemplo.com/x'], { config })
+  assert.ok(sock.enviados[0].text.includes('no parece ser de Facebook'))
+})
+
+test('.instagram descarga con yt-dlp y envía el video', () => conConfig({}, async () => {
+  const sock = crearSock()
+  await require('../modulos/download/instagram').execute(sock, MSG, ['https://www.instagram.com/reel/abc/'], { config })
+  const video = sock.enviados.find((m) => m.video)
+  assert.equal(video.video.toString(), 'contenido-mp4')
+  assert.ok(video.caption.includes('INSTAGRAM'))
 }))

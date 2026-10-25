@@ -1,6 +1,7 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
 const fetch = require('../../lib/http').fetchSeguro // timeout por defecto (ver lib/http.js)
 const { descargarInstagram } = require('../../lib/instagram')
+const { conFuentes, descargarLocal } = require('../../lib/youtube')
 
 const LIMITE_VIDEO_MB = 64
 
@@ -34,13 +35,24 @@ module.exports = {
     try {
       await sock.sendMessage(jid, { text: `⏳ Descargando de Instagram...\n\n🔗 ${link}` }, { quoted: msg })
 
-      const data = await descargarInstagram(link)
-      const { selected, title, username } = data
-
-      const respArchivo = await fetch(selected.download_url)
-      if (!respArchivo.ok) throw new Error(`No se pudo descargar el archivo (HTTP ${respArchivo.status})`)
-
-      const buffer = Buffer.from(await respArchivo.arrayBuffer())
+      // yt-dlp local primero (gratis); la API de antes queda como respaldo (también para fotos)
+      const { buffer, selected, title, username } = await conFuentes({
+        local: async () => {
+          const r = await descargarLocal(link, 'video')
+          return {
+            buffer: r.buffer,
+            selected: { type: 'video', filename: 'instagram.mp4' },
+            title: r.info.description || r.titulo,
+            username: r.info.uploader_id || r.info.uploader || r.canal,
+          }
+        },
+        api: async () => {
+          const datos = await descargarInstagram(link)
+          const respArchivo = await fetch(datos.selected.download_url)
+          if (!respArchivo.ok) throw new Error(`No se pudo descargar el archivo (HTTP ${respArchivo.status})`)
+          return { ...datos, buffer: Buffer.from(await respArchivo.arrayBuffer()) }
+        },
+      })
       const pesoMB = buffer.length / (1024 * 1024)
 
       const caption =
