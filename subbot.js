@@ -19,6 +19,7 @@ const estadisticas = require('./lib/estadisticas')
 const resiliencia = require('./lib/resiliencia')
 const config = require('./defaults')
 const { crearColaEnvio } = require('./lib/colaEnvio')
+const proteccion = require('./lib/proteccion')
 
 // Cola de envío anti-ban (compartida entre reconexiones del mismo proceso).
 const colaEnvio = crearColaEnvio(config.ANTIBAN)
@@ -227,6 +228,17 @@ async function startSubBot() {
 
   sock.ev.on('creds.update', saveCreds)
 
+  // Anti-llamadas de este subbot (se activa con .anticall; ver lib/proteccion.js).
+  sock.ev.on('call', async (llamadas) => {
+    for (const llamada of llamadas || []) {
+      try {
+        await proteccion.manejarLlamada(sock, llamada, { idBot: numero, config })
+      } catch (error) {
+        console.error(`[ANTICALL] [subbot ${numero}] Error manejando una llamada:`, error.message)
+      }
+    }
+  })
+
   // Hooks de moderación (antiraid, antifake, futuros) — antes los subbots
   // no reaccionaban en absoluto a entradas/salidas de grupo.
   sock.ev.on('group-participants.update', async (update) => {
@@ -285,7 +297,7 @@ async function startSubBot() {
       // Hooks de moderación (antilink, antiflood, antiraid, antifake...)
       // — antes los subbots no aplicaban ninguno.
       const detenido = await ejecutarHooks(hooks.onMessage, sock, msg, {
-        jid, body: cuerpo, esGrupo, remitente: remitenteJid, numeroRemitente, config: configSubbot, commands,
+        jid, body: cuerpo, esGrupo, remitente: remitenteJid, numeroRemitente, config: configSubbot, commands, idBot: numero,
       })
       if (detenido) continue // un hook (ej. modoadmi, botgrupo) pidió no seguir con el comando
 

@@ -6,6 +6,7 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 ## [Sin publicar]
 
 ### Añadido
+- **Protección** (`lib/proteccion.js`): `.anticall` rechaza las llamadas y avisa (con `bloquear`, bloquea a quien insiste) y `.antiprivado` impide que usuarios normales usen comandos por privado (los owners y `.code` siguen funcionando). Los ajustes son **por bot**: el principal y cada subbot tienen los suyos (`data/proteccion.json`). Opciones en `PROTECCION` de `defaults.js`. 11 pruebas.
 - **Interactivos nativos de WhatsApp**: `.encuesta` (encuesta real; `-m` permite varias respuestas), `.evento` (evento con fecha y hora de Perú), `.contacto` (tarjeta de contacto por número, mención o respuesta) y `.ubicacion` (coordenadas o enlace de Google Maps). `.pinterest` ahora envía las fotos como un **álbum**. Se corrigió `enviarAlbum` (usaba un formato que ultra-baileys no tiene). 11 pruebas.
 - **Cola de envío anti-ban** (`lib/colaEnvio.js`, opción `ANTIBAN`): mantiene el orden de los mensajes de cada chat, los espacia con un poco de azar y separa los envíos entre chats; si un envío se cuelga se descarta para no bloquear el chat. Activa en el bot principal y en los subbots; se ve en `.healthbot`. 9 pruebas.
 - Prueba automática `tests/comandos.test.js`: ningún comando puede repetir el nombre o alias de otro (el cargador se queda en silencio con el último). Revisión actual: 161 comandos, sin duplicados.

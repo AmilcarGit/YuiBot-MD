@@ -23,6 +23,7 @@ const { verificarYAplicar: verificarHorarios } = require('./lib/horariogrupo');
 const estadisticas = require('./lib/estadisticas');
 const resiliencia = require('./lib/resiliencia');
 const { crearColaEnvio } = require('./lib/colaEnvio');
+const proteccion = require('./lib/proteccion');
 const config = require('./defaults');
 const iaConfig = require('./config/ia.json');
 
@@ -238,6 +239,17 @@ async function startBot() {
 
   sock.ev.on('creds.update', saveCreds);
 
+  // Anti-llamadas (se activa con .anticall; ver lib/proteccion.js).
+  sock.ev.on('call', async (llamadas) => {
+    for (const llamada of llamadas || []) {
+      try {
+        await proteccion.manejarLlamada(sock, llamada, { idBot: 'principal', config });
+      } catch (error) {
+        console.error('[ANTICALL] Error manejando una llamada:', error.message);
+      }
+    }
+  });
+
   sock.ev.on('group-participants.update', async (update) => {
     console.log('[WELCOME] Evento group-participants.update recibido:', JSON.stringify(update));
 
@@ -392,7 +404,7 @@ async function startBot() {
     // Se ejecuta para TODO mensaje (no solo de grupo): cada hook decide
     // internamente si le corresponde actuar o no.
     // A futuro, cualquier módulo anti-* nuevo se agrega igual, sin tocar main.js.
-    const detenido = await ejecutarHooks(hooks.onMessage, sock, msg, { jid, body, esGrupo, remitente, numeroRemitente, config, commands });
+    const detenido = await ejecutarHooks(hooks.onMessage, sock, msg, { jid, body, esGrupo, remitente, numeroRemitente, config, commands, idBot: 'principal' });
     if (detenido) return; // un hook (ej. modoadmi, botgrupo) pidió no seguir con el comando
 
     const parsed = parseCommand(body, config);

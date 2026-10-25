@@ -22,6 +22,12 @@ module.exports = {
   // el mensaje llegó pero no fue "leído".
   MARCAR_LEIDO: false,
   // Cola de envío anti-ban: espacia los mensajes para no parecer un robot (ver lib/colaEnvio.js).
+  // Protección (comandos .anticall y .antiprivado; los ajustes se guardan en data/proteccion.json).
+  PROTECCION: {
+    MAX_LLAMADAS: 3, // llamadas seguidas (10 min) antes de bloquear, si .anticall bloquear está activo
+    MAX_INSISTENCIAS: 5, // mensajes privados (1 h) antes de bloquear, si .antiprivado bloquear está activo
+    COMANDOS_PRIVADO_PERMITIDOS: ['code'], // comandos que funcionan en privado aun con antiprivado
+  },
   ANTIBAN: { ENABLED: true, MIN_CHAT_MS: 700, JITTER_MS: 300, MIN_GLOBAL_MS: 120, MAX_COLA_CHAT: 40 },
   // Logs de consola. LOG_MENSAJES imprime el texto de cada mensaje que recibe
   // el bot (útil para depurar, pero ruidoso y guarda conversaciones en los
