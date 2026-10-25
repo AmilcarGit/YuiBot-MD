@@ -11,6 +11,7 @@ const { loadCommands, ejecutarHooks } = require('./lib/cargador')
 const { getMessageBody, parseCommand } = require('./lib/handler')
 const { evaluarPermiso, mensajeDenegado } = require('./lib/permisos')
 const { iniciarHeartbeat, puedeResponderSubbot } = require('./lib/red')
+const recordatorios = require('./lib/recordatorios')
 const { obtenerPrefijo } = require('./lib/subbots')
 const { crearControladorReconexion } = require('./lib/reconexion')
 const { resolverVersionWA } = require('./lib/versionWA')
@@ -217,6 +218,7 @@ async function startSubBot() {
 
       if (detenerHeartbeatSubbot) detenerHeartbeatSubbot()
       detenerHeartbeatSubbot = iniciarHeartbeat(numero)
+      recordatorios.iniciar(sock, numero)
 
       if (intervaloHorariosSubbot) clearInterval(intervaloHorariosSubbot)
       verificarHorarios(sock).catch((error) => console.error(`[HORARIOGRUPO] [subbot ${numero}] Error en la primera verificación:`, error))

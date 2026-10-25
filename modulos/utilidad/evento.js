@@ -1,46 +1,6 @@
 // .evento Nombre | fecha hora | descripción opcional
 // Fechas: 25/12 20:00 · 25/12/2026 20:00 · hoy 18:30 · mañana 9:00   (hora de Perú, UTC-5)
-const OFFSET_HORAS = 5 // Lima = UTC-5, sin horario de verano
-
-function interpretarFecha(texto, ahora = new Date()) {
-  const t = String(texto || '').trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
-  const hora = t.match(/(\d{1,2}):(\d{2})\s*$/)
-  if (!hora) return null
-  const horas = Number(hora[1])
-  const minutos = Number(hora[2])
-  if (horas > 23 || minutos > 59) return null
-
-  const dia = t.slice(0, hora.index).trim()
-  // "Hoy" en Perú: se corre el reloj -5 h y se leen las partes UTC.
-  const enPeru = new Date(ahora.getTime() - OFFSET_HORAS * 3600000)
-  let anio = enPeru.getUTCFullYear()
-  let mes = enPeru.getUTCMonth()
-  let diaMes = enPeru.getUTCDate()
-
-  if (dia === 'hoy') {
-    // tal cual
-  } else if (dia === 'manana') {
-    const siguiente = new Date(Date.UTC(anio, mes, diaMes + 1))
-    ;[anio, mes, diaMes] = [siguiente.getUTCFullYear(), siguiente.getUTCMonth(), siguiente.getUTCDate()]
-  } else {
-    const f = dia.match(/^(\d{1,2})[\/-](\d{1,2})(?:[\/-](\d{2,4}))?$/)
-    if (!f) return null
-    diaMes = Number(f[1])
-    mes = Number(f[2]) - 1
-    if (f[3]) anio = f[3].length === 2 ? 2000 + Number(f[3]) : Number(f[3])
-  }
-
-  const fecha = new Date(Date.UTC(anio, mes, diaMes, horas + OFFSET_HORAS, minutos))
-  // Rechaza fechas imposibles como 31/02 (JavaScript las "corrige" en silencio).
-  const comprobar = new Date(fecha.getTime() - OFFSET_HORAS * 3600000)
-  if (comprobar.getUTCMonth() !== mes || comprobar.getUTCDate() !== diaMes) return null
-
-  // Sin año explícito y ya pasó: se asume el año siguiente.
-  if (!/\d{4}|\d{1,2}[\/-]\d{1,2}[\/-]\d{2}/.test(dia) && dia !== 'hoy' && dia !== 'manana' && fecha.getTime() < ahora.getTime()) {
-    fecha.setUTCFullYear(fecha.getUTCFullYear() + 1)
-  }
-  return fecha
-}
+const { interpretarFecha } = require('../../lib/fechas')
 
 function interpretar(args, ahora = new Date()) {
   const [nombre, fechaTexto, ...descripcion] = args.join(' ').split('|').map((p) => p.trim())

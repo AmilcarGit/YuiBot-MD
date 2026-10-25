@@ -17,6 +17,8 @@ const { agregarXpConCooldown, obtenerGrupo } = require('./lib/db');
 const { obtenerRangoExacto } = require('./lib/roles');
 const { limpiarPreKeysAntiguas, respaldarSesion } = require('./lib/mantenimiento');
 const { iniciarHeartbeat, actualizarGruposPrincipal, ID_PRINCIPAL } = require('./lib/red');
+const recordatorios = require('./lib/recordatorios');
+const alertasRed = require('./lib/alertasRed');
 const { crearControladorReconexion } = require('./lib/reconexion');
 const { resolverVersionWA } = require('./lib/versionWA');
 const { verificarYAplicar: verificarHorarios } = require('./lib/horariogrupo');
@@ -125,6 +127,8 @@ async function elegirMetodoDeVinculacion() {
   return respuesta.trim() === '1';
 }
 
+let detenerAlertasRed = null;
+
 async function startBot() {
   const {
     default: makeWASocket,
@@ -224,6 +228,10 @@ async function startBot() {
 
       if (detenerHeartbeatPrincipal) detenerHeartbeatPrincipal();
       detenerHeartbeatPrincipal = iniciarHeartbeat(ID_PRINCIPAL);
+
+      recordatorios.iniciar(sock, 'principal');
+      if (detenerAlertasRed) detenerAlertasRed();
+      detenerAlertasRed = alertasRed.iniciar(sock, config.OWNERS);
 
       if (intervaloGruposPrincipal) clearInterval(intervaloGruposPrincipal);
       actualizarGruposPrincipal(sock);
