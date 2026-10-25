@@ -63,15 +63,7 @@ const FRASES = [
 
 // ───────────────────────── utilidades de texto ─────────────────────────
 
-/** "Hola 123" → "𝗛𝗼𝗹𝗮 𝟭𝟮𝟯" (negrita Unicode; deja intactos acentos y símbolos). */
-function negrita(texto) {
-  return String(texto).replace(/[A-Za-z0-9]/g, (c) => {
-    const code = c.charCodeAt(0)
-    if (code >= 65 && code <= 90) return String.fromCodePoint(0x1d5d4 + (code - 65))
-    if (code >= 97 && code <= 122) return String.fromCodePoint(0x1d5ee + (code - 97))
-    return String.fromCodePoint(0x1d7ec + (code - 48))
-  })
-}
+const { negrita } = require('../../lib/estilo')
 
 function normalizar(texto) {
   return String(texto || '')
