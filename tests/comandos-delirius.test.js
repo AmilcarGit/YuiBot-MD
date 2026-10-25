@@ -124,3 +124,26 @@ test('.ss valida el enlace y envía la imagen', async () => {
   const imagen = sock.enviados.find((m) => m.image)
   assert.deepEqual([...imagen.image], [1, 2, 3])
 })
+
+test('reintenta los fallos de conexión y termina funcionando', async () => {
+  let llamadas = 0
+  globalThis.fetch = async () => {
+    llamadas++
+    if (llamadas < 3) throw Object.assign(new TypeError('fetch failed'), { cause: { code: 'UND_ERR_CONNECT_TIMEOUT' } })
+    return new Response(JSON.stringify(ok('listo')))
+  }
+  assert.equal(await delirius._internos.pedir('/ia/chatgpt', { q: 'x' }), 'listo')
+  assert.equal(llamadas, 3)
+})
+
+test('si la red falla siempre, el mensaje explica la causa', async () => {
+  globalThis.fetch = async () => { throw Object.assign(new TypeError('fetch failed'), { cause: { code: 'UND_ERR_CONNECT_TIMEOUT' } }) }
+  await assert.rejects(delirius._internos.pedir('/ia/chatgpt', { q: 'x' }), /UND_ERR_CONNECT_TIMEOUT.*internet/)
+})
+
+test('un 404 no se reintenta', async () => {
+  let llamadas = 0
+  globalThis.fetch = async () => { llamadas++; return new Response('no', { status: 404 }) }
+  await assert.rejects(delirius._internos.pedir('/x', {}), /HTTP 404/)
+  assert.equal(llamadas, 1)
+})

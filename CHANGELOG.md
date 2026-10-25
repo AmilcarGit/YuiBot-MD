@@ -6,6 +6,7 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 ## [Sin publicar]
 
 ### Añadido
+- Delirius reintenta hasta 3 veces los fallos de conexión (timeouts, 5xx) y el error indica la causa en lugar de `fetch failed`.
 - **Comandos nuevos con Delirius** (gratis, sin token): `.letra` (letras de canciones), `.spotify` (busca en Spotify y envía el audio), `.soundcloud` (busca y descarga; requiere yt-dlp), `.ss` (captura de una página web).
 - `.ia`, `.stickerly` y `.pinterest` ahora usan Delirius (la IA ya no depende de lempi; `.pinterest` conserva la API anterior de respaldo). 10 pruebas nuevas con las respuestas reales de la API.
 - **Delirius como API de respaldo** (gratis, sin token) para YouTube (audio, video, búsqueda), TikTok, Instagram y Facebook, en lugar de lempi y dv-yer. Nuevo `lib/delirius.js` con 6 pruebas. `.facebook` también usa Delirius si yt-dlp falla.
