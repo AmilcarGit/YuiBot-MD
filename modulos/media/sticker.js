@@ -1,6 +1,7 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
 const { downloadContentFromMessage } = require('@whiskeysockets/baileys')
 const { crearStickerWebp } = require('../../lib/stickers')
+const { reintentar, esErrorPasajero } = require('../../lib/reintentar')
 
 async function descargarMedia(mensaje, tipo) {
   const stream = await downloadContentFromMessage(mensaje, tipo)
@@ -51,12 +52,16 @@ module.exports = {
     try {
       const buffer = await descargarMedia(mediaMsg, tipo)
       const webp = await crearStickerWebp(buffer, { animado: tipo === 'video', config })
-      await sock.sendMessage(jid, { sticker: webp }, { quoted: msg })
+      // La subida a WhatsApp falla a veces por un momento (error 500 de sus servidores): se reintenta.
+      await reintentar(() => sock.sendMessage(jid, { sticker: webp }, { quoted: msg }))
     } catch (error) {
       console.error('[STICKER]', error)
+      const motivo = esErrorPasajero(error)
+        ? 'WhatsApp no pudo recibir el sticker en este momento. Inténtalo de nuevo en unos segundos.'
+        : error.message || 'Error desconocido'
       await sock.sendMessage(
         jid,
-        { text: `❌ No se pudo crear el sticker.\n\n> ${error.message || 'Error desconocido'}` },
+        { text: `❌ No se pudo crear el sticker.\n\n> ${motivo}` },
         { quoted: msg }
       )
     }

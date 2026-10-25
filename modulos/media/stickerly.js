@@ -1,6 +1,7 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
 const fetch = require('../../lib/http').fetchSeguro // timeout por defecto (ver lib/http.js)
 const delirius = require('../../lib/delirius')
+const { reintentar } = require('../../lib/reintentar')
 const { crearStickerWebp } = require('../../lib/stickers')
 
 const LIMITE_STICKERS = 10
@@ -82,7 +83,7 @@ module.exports = {
           const webp = ext === 'webp'
             ? buffer
             : await crearStickerWebp(buffer, { animado: ext === 'gif', config, extensionEntrada: ext })
-          await sock.sendMessage(jid, { sticker: webp }, { quoted: msg })
+          await reintentar(() => sock.sendMessage(jid, { sticker: webp }, { quoted: msg }))
           enviados++
         } catch (errIndividual) {
           fallidos++
