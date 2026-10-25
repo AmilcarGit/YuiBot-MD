@@ -16,8 +16,8 @@ function formatearResultado({ pregunta, opciones, conteo, totalVotos }) {
 
 module.exports = {
   name: 'votacion',
-  aliases: ['encuesta', 'poll'],
-  description: 'Crea una votación/encuesta en el grupo',
+  aliases: ['votaciones'],
+  description: 'Votación clásica por conteo en el grupo (para encuesta nativa de WhatsApp usa .encuesta)',
   category: 'grupo',
 
   async execute(sock, msg, args, { config }) {

@@ -2,6 +2,7 @@
 const fetch = require('../../lib/http').fetchSeguro // timeout por defecto (ver lib/http.js)
 const { APIS } = require('../../defaults')
 const delirius = require('../../lib/delirius')
+const { enviarAlbum } = require('../../lib/whatsapp/interactivos')
 
 const API_URL = 'https://api.evogb.org/search/pinterestv2'
 const LIMITE = 5
@@ -54,18 +55,21 @@ module.exports = {
         { quoted: msg }
       )
 
+      // Se descargan todas y se envían como UN álbum (si solo llega una, va suelta).
+      const medios = []
       for (const { url: urlImagen, caption } of imagenes) {
         if (!urlImagen) continue
-
         try {
           const respImg = await fetch(urlImagen)
           if (!respImg.ok) continue
-          const buffer = Buffer.from(await respImg.arrayBuffer())
-          await sock.sendMessage(jid, { image: buffer, caption }, { quoted: msg })
+          medios.push({ image: Buffer.from(await respImg.arrayBuffer()), caption: medios.length === 0 ? caption : undefined })
         } catch (errIndividual) {
           console.error(`[PINTEREST] Falló una imagen:`, errIndividual.message)
         }
       }
+
+      if (!medios.length) throw new Error('No se pudo descargar ninguna imagen')
+      await enviarAlbum(sock, jid, medios, { quoted: msg })
     } catch (error) {
       console.error('[PINTEREST]', error)
       await sock.sendMessage(
