@@ -6,6 +6,7 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 ## [Sin publicar]
 
 ### Añadido
+- **8 comandos nuevos**: `.pokemon` (Pokédex), `.anime` (MyAnimeList), `.divisa` (conversor de monedas), `.cripto` (precios), `.pais` (datos de un país), `.bola8`, `.ppt` (piedra, papel o tijera) y `.ship` (compatibilidad). Los primeros cinco usan APIs públicas gratuitas sin key (`lib/publicas.js`); los otros tres no necesitan internet. 10 pruebas nuevas.
 - `lib/reintentar.js`: `.sticker` y `.stickerly` reintentan hasta 3 veces cuando WhatsApp rechaza la subida (`Media upload failed on all hosts`, error 500) y avisan con un mensaje claro si no se logra.
 - Delirius reintenta hasta 3 veces los fallos de conexión (timeouts, 5xx) y el error indica la causa en lugar de `fetch failed`.
 - **Comandos nuevos con Delirius** (gratis, sin token): `.letra` (letras de canciones), `.spotify` (busca en Spotify y envía el audio), `.soundcloud` (busca y descarga; requiere yt-dlp), `.ss` (captura de una página web).
