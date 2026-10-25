@@ -22,8 +22,13 @@ const { resolverVersionWA } = require('./lib/versionWA');
 const { verificarYAplicar: verificarHorarios } = require('./lib/horariogrupo');
 const estadisticas = require('./lib/estadisticas');
 const resiliencia = require('./lib/resiliencia');
+const { crearColaEnvio } = require('./lib/colaEnvio');
 const config = require('./defaults');
 const iaConfig = require('./config/ia.json');
+
+// Cola de envío anti-ban (compartida entre reconexiones del mismo proceso).
+const colaEnvio = crearColaEnvio(config.ANTIBAN);
+global.__YUI_COLA_ENVIO = colaEnvio;
 
 config.IA_ENABLED = iaConfig.enabled;
 
@@ -147,6 +152,7 @@ async function startBot() {
     logger: pino({ level: 'silent' }),
     printQRInTerminal: false,
   });
+  colaEnvio.envolver(sock);
 
   const { commands, categories, hooks } = loadCommands();
   printBanner({ totalComandos: [...new Set(commands.values())].length });

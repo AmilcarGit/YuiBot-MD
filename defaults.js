@@ -14,12 +14,15 @@ module.exports = {
   PHONE_NUMBER: '',
   PM2_PROCESS_NAME: 'YuiBot-MD',
   WELCOME_ENABLED: true,
+  BYE_ENABLED: true, // mensaje de despedida cuando alguien sale del grupo
   WELCOME_BACKGROUND: 'https://files.catbox.moe/vajp5d.jpeg',
   PROFILE_BACKGROUND: 'https://files.catbox.moe/9fqfuv.png',
   // Si es true, el bot marca los mensajes entrantes como leídos (✓✓ azul)
   // automáticamente. Ponlo en false si prefieres que WhatsApp muestre que
   // el mensaje llegó pero no fue "leído".
   MARCAR_LEIDO: false,
+  // Cola de envío anti-ban: espacia los mensajes para no parecer un robot (ver lib/colaEnvio.js).
+  ANTIBAN: { ENABLED: true, MIN_CHAT_MS: 700, JITTER_MS: 300, MIN_GLOBAL_MS: 120, MAX_COLA_CHAT: 40 },
   // Logs de consola. LOG_MENSAJES imprime el texto de cada mensaje que recibe
   // el bot (útil para depurar, pero ruidoso y guarda conversaciones en los
   // logs de PM2); ponlo en false para registrar solo eventos del bot.

@@ -18,6 +18,11 @@ const { verificarYAplicar: verificarHorarios } = require('./lib/horariogrupo')
 const estadisticas = require('./lib/estadisticas')
 const resiliencia = require('./lib/resiliencia')
 const config = require('./defaults')
+const { crearColaEnvio } = require('./lib/colaEnvio')
+
+// Cola de envío anti-ban (compartida entre reconexiones del mismo proceso).
+const colaEnvio = crearColaEnvio(config.ANTIBAN)
+global.__YUI_COLA_ENVIO = colaEnvio
 
 const numero = process.argv[2]
 
@@ -137,6 +142,7 @@ async function startSubBot() {
     logger: pino({ level: 'silent' }),
     printQRInTerminal: false,
   })
+  colaEnvio.envolver(sock)
 
   socketActivo = sock
 

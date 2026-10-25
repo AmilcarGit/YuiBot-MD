@@ -40,6 +40,8 @@ module.exports = {
     const comandosBloqueados = Object.entries(estadoResiliencia.comandos || {})
       .filter(([, info]) => info.deshabilitadoHasta > ahora)
 
+    const cola = global.__YUI_COLA_ENVIO?.estado?.()
+
     const proveedores = apiManager.listar()
     const proveedoresCaidos = Object.entries(proveedores).filter(([, info]) => info.enabled === false)
 
@@ -52,6 +54,7 @@ module.exports = {
       `Memoria del sistema: *${porcentajeMemoriaSistema}% usada*`,
       `Carga del sistema (1 min): *${cargaSistema.toFixed(2)}*`,
       '',
+      cola ? `Cola anti-ban: *${cola.enviados}* enviados · *${cola.enEspera}* en espera · espera media *${cola.esperaMediaMs} ms*${cola.fallidos ? ` · ${cola.fallidos} fallidos` : ''}` : null,
       `Circuit breaker: *${estadoResiliencia.enabled ? 'activado' : 'desactivado'}*`,
       comandosBloqueados.length
         ? `⛔ Comandos deshabilitados ahora: ${comandosBloqueados.map(([n]) => n).join(', ')}`
@@ -60,7 +63,7 @@ module.exports = {
       proveedoresCaidos.length
         ? `⚠️ Proveedores de API deshabilitados: ${proveedoresCaidos.map(([n]) => n).join(', ')}`
         : '✅ Todos los proveedores de API están habilitados.',
-    ].join('\n')
+    ].filter((linea) => linea !== null).join('\n')
 
     return sock.sendMessage(jid, { text: texto }, { quoted: msg })
   },
