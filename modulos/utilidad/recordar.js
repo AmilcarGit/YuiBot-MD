@@ -1,4 +1,5 @@
 // .recordar <cuándo> <texto> — recordatorios persistentes por bot.
+const { caja } = require('../../lib/estilo')
 const recordatorios = require('../../lib/recordatorios')
 const { interpretarDuracion, describirDuracion, formatearFechaPeru } = require('../../lib/fechas')
 
@@ -25,7 +26,7 @@ module.exports = {
         return responder(`📭 No tienes recordatorios.\n📌 Ejemplo: ${P}recordar 30m sacar la ropa\nUnidades: m, h, d (ej. 1h30m, 2d)`)
       }
       const filas = mias.map((r) => `• #${r.id} — ${formatearFechaPeru(new Date(r.cuando))}\n   ${r.texto}`)
-      return responder(`⏰ *Tus recordatorios*\n\n${filas.join('\n')}\n\n🗑️ ${P}recordar borrar <id>`)
+      return responder(`${caja('⏰', 'Tus recordatorios', [`Total: ${mias.length}`])}\n\n${filas.join('\n')}\n\n🗑️ ${P}recordar borrar <id>`)
     }
 
     if (sub === 'borrar' || sub === 'del' || sub === 'eliminar') {
@@ -44,7 +45,7 @@ module.exports = {
 
     try {
       const r = recordatorios.crear({ idBot, jid, numero, texto, cuando: Date.now() + duracion })
-      return responder(`✅ Listo, te lo recordaré en ${describirDuracion(duracion)} (#${r.id}).\n🕒 ${formatearFechaPeru(new Date(r.cuando))}`)
+      return responder(caja('⏰', 'Recordatorio creado', [['ID', `#${r.id}`], ['En', describirDuracion(duracion)], ['Fecha', formatearFechaPeru(new Date(r.cuando))], ['Texto', texto]], 'Listo, te lo recordaré'))
     } catch (error) {
       return responder(`❌ ${error.message}`)
     }

@@ -1,4 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const { caja, negrita } = require('../../lib/estilo')
 const fetch = require('../../lib/http').fetchSeguro // timeout por defecto (ver lib/http.js)
 const { APIS } = require('../../defaults')
 const delirius = require('../../lib/delirius')
@@ -33,7 +34,7 @@ module.exports = {
       try {
         const urls = await delirius.buscarPinterest(query)
         total = urls.length
-        imagenes = urls.slice(0, LIMITE).map((url) => ({ url, caption: `🖼️ ${query}` }))
+        imagenes = urls.slice(0, LIMITE).map((url) => ({ url, caption: caja('📌', 'Pinterest', [['Búsqueda', query]], 'YuiBot-MD ✨') }))
       } catch (errorDelirius) {
         console.log('[PINTEREST] Delirius falló, probando la API anterior:', errorDelirius.message)
         const resp = await fetch(`${API_URL}?query=${encodeURIComponent(query)}&key=${encodeURIComponent(APIS.EVOGB_KEY)}`)
@@ -45,13 +46,13 @@ module.exports = {
         total = data.response.total
         imagenes = data.response.pins.slice(0, LIMITE).map((pin) => ({
           url: pin?.media?.images?.large?.url || pin?.media?.images?.orig?.url,
-          caption: (pin.title?.trim() ? `🖼️ ${pin.title.trim()}\n` : '') + `👤 ${pin.uploader?.full_name || 'Desconocido'}`,
+          caption: caja('📌', 'Pinterest', [['Título', pin.title?.trim() ? pin.title.trim().slice(0, 200) : null], ['Autor', pin.uploader?.full_name || 'Desconocido']], 'YuiBot-MD ✨'),
         }))
       }
 
       await sock.sendMessage(
         jid,
-        { text: `🔎 Encontrados ${total} resultados para "${query}", enviando ${imagenes.length}...` },
+        { text: caja('🔎', 'Pinterest', [['Búsqueda', query], ['Resultados', total], ['Enviando', imagenes.length]], 'Un momento ✨') },
         { quoted: msg }
       )
 

@@ -1,4 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const { caja } = require('../../lib/estilo')
 const estadisticas = require('../../lib/estadisticas')
 
 module.exports = {
@@ -18,16 +19,14 @@ module.exports = {
       ? resumen.topComandos.map(([nombre, cantidad], i) => `${i + 1}. ${nombre} — ${cantidad}`).join('\n')
       : 'Todavía no hay comandos registrados.'
 
-    const texto = [
-      '📊 *DASHBOARD*',
+    const texto = caja('📊', 'Dashboard', [
+      ['Desde', `${desde.toLocaleDateString('es-PE')} (${dias} día(s))`],
+      ['Mensajes procesados', resumen.mensajesTotales],
+      ['Comandos ejecutados', resumen.comandosTotales],
       '',
-      `Desde: *${desde.toLocaleDateString('es-PE')}* (${dias} día(s))`,
-      `Mensajes procesados: *${resumen.mensajesTotales}*`,
-      `Comandos ejecutados: *${resumen.comandosTotales}*`,
-      '',
-      '🏆 *Top comandos:*',
-      topTexto,
-    ].join('\n')
+      '🏆 Top comandos:',
+      ...topTexto.split('\n'),
+    ], 'YuiBot-MD')
 
     return sock.sendMessage(jid, { text: texto }, { quoted: msg })
   },

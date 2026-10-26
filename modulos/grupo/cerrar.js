@@ -1,4 +1,5 @@
 const { exigirAdmin } = require('../../lib/adminGrupo')
+const { caja, error } = require('../../lib/estilo')
 
 module.exports = {
   name: 'cerrar',
@@ -11,9 +12,9 @@ module.exports = {
     if (!ctx) return
     try {
       await sock.groupSettingUpdate(ctx.jid, 'announcement')
-      return sock.sendMessage(ctx.jid, { text: '🔒 Grupo cerrado: solo los admins pueden escribir.' }, { quoted: msg })
+      return sock.sendMessage(ctx.jid, { text: caja('🔒', 'Grupo cerrado', [['Estado', 'Solo los admins pueden escribir']], 'Chat restringido') }, { quoted: msg })
     } catch (e) {
-      return sock.sendMessage(ctx.jid, { text: '❌ No pude cerrar el grupo.' }, { quoted: msg })
+      return sock.sendMessage(ctx.jid, { text: error('No pude cerrar el grupo.') }, { quoted: msg })
     }
   },
 }

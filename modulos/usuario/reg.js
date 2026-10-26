@@ -1,6 +1,8 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
 const { guardarUsuario, obtenerUsuario } = require('../../lib/db')
 
+const { negrita } = require('../../lib/estilo')
+
 const TIMEOUT_MS = 60000
 
 function esperarRespuesta(sock, jid, remitenteEsperado) {
@@ -86,7 +88,7 @@ async function flujoCompleto(sock, jid, remitente, sent, encabezado, pie, yaExis
         `  ❖ nombre: ${nombre}\n` +
         `  ❖ género: ${genero}\n` +
         `  ❖ edad: ${edad}\n\n` +
-        `╰─➤ _Usa ${config.PREFIXES[0]}perfil para ver tu tarjeta_ 🥀`,
+        `> Usa ${config.PREFIXES[0]}perfil para ver tu tarjeta`,
       edit: sent.key,
     }
   )
@@ -104,8 +106,8 @@ module.exports = {
     const numero = remitente.split('@')[0].split(':')[0]
 
     const yaExiste = obtenerUsuario(numero)
-    const encabezado = `⛧───「 Registro 」───⛧\n\n`
-    const pie = `\n\n╰─➤ _Responde en este chat, tienes 60 segundos_ 🥀`
+    const encabezado = `🪪 ${negrita('REGISTRO')}\n\n`
+    const pie = `\n\n> Responde en este chat, tienes 60 segundos`
 
     if (yaExiste) {
       const sentMenu = await sock.sendMessage(

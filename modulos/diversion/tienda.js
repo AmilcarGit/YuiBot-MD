@@ -1,4 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const { caja } = require('../../lib/estilo')
 const { CATALOGO } = require('../../lib/tienda')
 const { saldo, formatoMonedas } = require('../../lib/juegos')
 const { numeroUsuario, enviarRpg } = require('../../lib/rpg')
@@ -20,7 +21,7 @@ module.exports = {
     await enviarRpg(sock, msg, {
       icono: '🛒', titulo: 'Tienda RPG', subtitulo: `Página ${pagina}/${totalPaginas} • Saldo ${formatoMonedas(saldo(numero))}`,
       datos,
-      caption: `╭─ ✦ 🛒 TIENDA RPG ✦\n│ 💰 Saldo: *${formatoMonedas(saldo(numero))}*\n│ 📖 Página: *${pagina}/${totalPaginas}*\n│ 🛍️ Compra con */comprar <id>*\n╰─ 🍃 YuiBot-MD`,
+      caption: caja('🛒', 'Tienda RPG', [['Saldo', formatoMonedas(saldo(numero)), '💰'], ['Página', `${pagina}/${totalPaginas}`, '📖'], ['Compra con', '/comprar <id>', '🛍️']], 'YuiBot-MD 🍃'),
       botones: [
         { id: `/tienda ${pagina < totalPaginas ? pagina + 1 : 1}`, text: '➡️ SIGUIENTE' },
         { id: '/inventario', text: '🎒 INVENTARIO' },

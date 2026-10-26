@@ -1,4 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const { caja } = require('../../lib/estilo')
 const PIROPOS = [
   'Si fueras un signo de puntuación, serías el punto final de mi búsqueda de alguien perfecto.',
   'No sé qué tienes, pero desde que llegaste todo se ve mejor.',
@@ -35,11 +36,11 @@ module.exports = {
       const numero = objetivo.split('@')[0].split(':')[0]
       await sock.sendMessage(
         jid,
-        { text: `💌 @${numero}\n\n_${piropo}_`, mentions: [objetivo] },
+        { text: caja('💌', 'Piropo', [`@${numero}`, `_${piropo}_`]), mentions: [objetivo] },
         { quoted: msg }
       )
     } else {
-      await sock.sendMessage(jid, { text: `💌 _${piropo}_` }, { quoted: msg })
+      await sock.sendMessage(jid, { text: caja('💌', 'Piropo', [`_${piropo}_`]) }, { quoted: msg })
     }
   },
 }

@@ -1,4 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const { caja } = require('../../lib/estilo')
 const { numeroUsuario, estado, progresoNivel, barra, enviarRpg } = require('../../lib/rpg')
 
 module.exports = {
@@ -22,7 +23,7 @@ module.exports = {
         `🎒 Loot: ${inventario.length} objetos`,
         `🏆 Título: ${usuario.tituloEquipado || 'Aventurero'}`,
       ],
-      caption: `╭─ ✦ ⚔️ PERFIL RPG ✦\n│ 👤 *${msg.pushName || numero}*\n│ ⭐ Nivel *${nivel}*\n│ ✨ XP *${xp}*\n│ 💰 Monedas *${monedas}*\n╰─ 🍃 YuiBot-MD`,
+      caption: caja('⚔️', 'Perfil RPG', [['Aventurero', msg.pushName || numero, '👤'], ['Nivel', nivel, '⭐'], ['XP', xp, '✨'], ['Monedas', monedas, '💰']], 'YuiBot-MD 🍃'),
       botones: [{ id: '/nivel', text: '⭐ NIVEL' }, { id: '/inventario', text: '🎒 INVENTARIO' }, { id: '/ranking', text: '🏆 RANKING' }],
     })
   },

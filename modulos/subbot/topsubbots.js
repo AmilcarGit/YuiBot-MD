@@ -1,4 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const { caja } = require('../../lib/estilo')
 const { listarSubbots, obtenerNombrePersonalizado, esPremium } = require('../../lib/subbots')
 const { gruposLiderados } = require('../../lib/red')
 
@@ -21,13 +22,12 @@ module.exports = {
       .map((numero) => ({ numero, grupos: gruposLiderados(numero).length }))
       .sort((a, b) => b.grupos - a.grupos)
 
-    let texto = `⛧───「 Top Subbots 」───⛧\n\n`
-    conteo.forEach((item, i) => {
+    const filas = conteo.map((item, i) => {
       const nombre = obtenerNombrePersonalizado(item.numero)
       const premium = esPremium(item.numero) ? ' ⭐' : ''
-      texto += `${i + 1}. +${item.numero}${premium}${nombre ? ` (${nombre})` : ''} — ${item.grupos} grupo(s)\n`
+      return `${['🥇', '🥈', '🥉'][i] || `${i + 1}.`} +${item.numero}${premium}${nombre ? ` (${nombre})` : ''} — ${item.grupos} grupo(s)`
     })
-    texto += `\n╰─➤ _${config.BOT_NAME}_ 🥀`
+    const texto = caja('🏆', 'Top subbots', filas, config.BOT_NAME)
 
     await sock.sendMessage(jid, { text: texto }, { quoted: msg })
   },

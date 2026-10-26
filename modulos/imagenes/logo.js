@@ -1,4 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const { caja, negrita } = require('../../lib/estilo')
 const { crearLienzo, textoAjustado } = require('../../lib/imagenes')
 
 module.exports = {
@@ -18,6 +19,6 @@ module.exports = {
     ctx.font = '28px sans-serif'
     ctx.fillStyle = '#d9e8ff'
     ctx.fillText('YuiBot-MD', 600, 535 + Math.max(0, lineas - 1) * 20)
-    await sock.sendMessage(jid, { image: canvas.toBuffer('image/png'), caption: `🎨 Logo: ${texto}` }, { quoted: msg })
+    await sock.sendMessage(jid, { image: canvas.toBuffer('image/png'), caption: caja('🎨', 'Logo', [['Texto', texto.slice(0, 200)]], 'YuiBot-MD ✨') }, { quoted: msg })
   },
 }

@@ -1,5 +1,6 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
 const fetch = require('../../lib/http').fetchSeguro // timeout por defecto (ver lib/http.js)
+const { caja } = require('../../lib/estilo')
 module.exports = {
   name: 'ip',
   description: 'Muestra información básica de una dirección IP',
@@ -14,14 +15,7 @@ module.exports = {
       if (!respuesta.ok) throw new Error(`HTTP ${respuesta.status}`)
       const data = await respuesta.json()
       if (data.success === false) throw new Error(data.message || 'IP no válida')
-      await sock.sendMessage(jid, { text: `╭─ ✦ 📡 IP ✦
-│ 🌐 IP: *${data.ip || ip || 'N/A'}*
-│ 🌎 País: *${data.country || 'N/A'}*
-│ 🏙️ Ciudad: *${data.city || 'N/A'}*
-│ 🏢 ISP: *${data.connection?.isp || 'N/A'}*
-│ 🛰️ ASN: *${data.connection?.asn || 'N/A'}*
-│ 📍 Coordenadas: *${data.latitude ?? 'N/A'}, ${data.longitude ?? 'N/A'}*
-╰─ 🍃 YuiBot-MD` }, { quoted: msg })
+      await sock.sendMessage(jid, { text: caja('📡', 'IP', [['IP', data.ip || ip || 'N/A'], ['País', data.country || 'N/A'], ['Ciudad', data.city || 'N/A'], ['ISP', data.connection?.isp || 'N/A'], ['ASN', data.connection?.asn || 'N/A'], ['Coordenadas', `${data.latitude ?? 'N/A'}, ${data.longitude ?? 'N/A'}`]], 'YuiBot-MD') }, { quoted: msg })
     } catch (error) {
       await sock.sendMessage(jid, { text: `❌ No se pudo consultar la IP: ${error.message}` }, { quoted: msg })
     }

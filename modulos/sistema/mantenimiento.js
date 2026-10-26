@@ -1,4 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const { caja } = require('../../lib/estilo')
 const modoMantenimiento = require('../../lib/modoMantenimiento')
 
 module.exports = {
@@ -16,7 +17,7 @@ module.exports = {
       const mensaje = args.slice(1).join(' ').trim()
       modoMantenimiento.activar(mensaje)
       return sock.sendMessage(jid, {
-        text: `🛠️ Modo mantenimiento *activado*.\nMensaje que verán los demás:\n\n${modoMantenimiento.obtenerMensaje()}`,
+        text: caja('🛠️', 'Mantenimiento', [['Estado', '🔴 Activado'], ['Mensaje', modoMantenimiento.obtenerMensaje()]], 'Este es el mensaje que verán los demás'),
       }, { quoted: msg })
     }
 
@@ -26,7 +27,7 @@ module.exports = {
     }
 
     return sock.sendMessage(jid, {
-      text: `🛠️ *MODO MANTENIMIENTO*\n\nEstado: *${modoMantenimiento.estaActivo() ? 'ON 🔴' : 'OFF 🟢'}*\nMensaje actual: ${modoMantenimiento.obtenerMensaje()}\n\nmantenimiento on <mensaje opcional>\nmantenimiento off`,
+      text: caja('🛠️', 'Modo mantenimiento', [['Estado', modoMantenimiento.estaActivo() ? 'ON 🔴' : 'OFF 🟢'], ['Mensaje actual', modoMantenimiento.obtenerMensaje()], '', 'mantenimiento on <mensaje opcional>', 'mantenimiento off'], 'YuiBot-MD'),
     }, { quoted: msg })
   },
 }

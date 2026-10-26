@@ -1,4 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const { caja } = require('../../lib/estilo')
 const fs = require('fs')
 const path = require('path')
 const { escribirJSONAtomico } = require('../../lib/escrituraAtomica')
@@ -43,7 +44,7 @@ module.exports = {
     for (const owner of config.OWNERS) {
       try {
         await sock.sendMessage(`${owner.numero}@s.whatsapp.net`, {
-          text: `🐛 *NUEVO REPORTE*\n\nDe: +${numeroRemitente}\n\n${detalle}`,
+          text: caja('🐛', 'Nuevo reporte', [['De', `+${numeroRemitente}`], ['Detalle', detalle]], 'YuiBot-MD'),
         })
       } catch (error) {
         console.error('[REPORT] No se pudo notificar al owner:', owner.numero, error)

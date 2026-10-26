@@ -2,6 +2,7 @@
 const fetch = require('../../lib/http').fetchSeguro // timeout por defecto (ver lib/http.js)
 const { APIS } = require('../../defaults')
 
+const { caja } = require('../../lib/estilo')
 const API_URL = 'https://api.evogb.org/search/wikipedia'
 const LIMITE_CARACTERES = 1200
 
@@ -45,10 +46,8 @@ module.exports = {
       }
 
       const texto =
-        `⛧───「 ${title} 」───⛧\n\n` +
-        `${resumen}${cortado ? '…' : ''}\n\n` +
-        `🔗 ${urlArticulo}\n\n` +
-        `╰─➤ _${config.BOT_NAME}_ 🥀`
+        `${caja('📚', title, [['Fuente', 'Wikipedia'], ['Enlace', urlArticulo]], config.BOT_NAME)}\n\n` +
+        `${resumen}${cortado ? '…' : ''}`
 
       await sock.sendMessage(jid, { text: texto }, { quoted: msg })
     } catch (error) {

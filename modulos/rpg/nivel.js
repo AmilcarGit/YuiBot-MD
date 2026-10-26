@@ -1,4 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const { caja } = require('../../lib/estilo')
 const { numeroUsuario, estado, progresoNivel, barra, enviarRpg } = require('../../lib/rpg')
 
 module.exports = {
@@ -14,7 +15,7 @@ module.exports = {
       titulo: `Nivel ${nivel}`,
       subtitulo: 'Tu progreso de experiencia',
       datos: [`⭐ Nivel actual: ${nivel}`, `✨ XP total: ${xp}`, `📈 Progreso: ${p.progreso}/${p.necesario}`, `🔮 ${barra(p.progreso, p.necesario)}`, `🎯 Siguiente nivel: ${p.siguiente} XP`],
-      caption: `╭─ ✦ ⭐ NIVEL ✦\n│ ⭐ *Nivel ${nivel}*\n│ ✨ XP: *${xp}*\n│ 📈 *${p.progreso}/${p.necesario}*\n│ 🔮 ${barra(p.progreso, p.necesario)}\n╰─ 🍃 YuiBot-MD`,
+      caption: caja('⭐', 'Nivel', [['Nivel', nivel, '⭐'], ['XP', xp, '✨'], ['Progreso', `${p.progreso}/${p.necesario}`, '📈'], `🔮 ${barra(p.progreso, p.necesario)}`], 'YuiBot-MD 🍃'),
       botones: [{ id: '/perfilrpg', text: '🧙 PERFIL' }, { id: '/misiones', text: '📜 MISIONES' }, { id: '/ranking', text: '🏆 RANKING' }],
     })
   },

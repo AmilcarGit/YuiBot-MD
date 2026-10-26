@@ -1,4 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const { caja } = require('../../lib/estilo')
 const os = require('os')
 const resiliencia = require('../../lib/resiliencia')
 const apiManager = require('../../lib/apiManager')
@@ -45,25 +46,21 @@ module.exports = {
     const proveedores = apiManager.listar()
     const proveedoresCaidos = Object.entries(proveedores).filter(([, info]) => info.enabled === false)
 
-    const texto = [
-      '🩺 *HEALTHBOT*',
-      '',
-      `Uptime del proceso: *${formatearDuracion(process.uptime())}*`,
-      `Node: *${process.version}*`,
-      `Memoria del proceso: *${formatearBytes(memoria.rss)}* (heap: ${formatearBytes(memoria.heapUsed)}/${formatearBytes(memoria.heapTotal)})`,
-      `Memoria del sistema: *${porcentajeMemoriaSistema}% usada*`,
-      `Carga del sistema (1 min): *${cargaSistema.toFixed(2)}*`,
-      '',
-      cola ? `Cola anti-ban: *${cola.enviados}* enviados · *${cola.enEspera}* en espera · espera media *${cola.esperaMediaMs} ms*${cola.fallidos ? ` · ${cola.fallidos} fallidos` : ''}` : null,
-      `Circuit breaker: *${estadoResiliencia.enabled ? 'activado' : 'desactivado'}*`,
+    const texto = caja('🩺', 'Healthbot', [
+      ['Uptime', formatearDuracion(process.uptime()), '🟢'],
+      ['Node', process.version, '⚙️'],
+      ['Memoria proceso', `${formatearBytes(memoria.rss)} (heap: ${formatearBytes(memoria.heapUsed)}/${formatearBytes(memoria.heapTotal)})`, '🤖'],
+      ['Memoria sistema', `${porcentajeMemoriaSistema}% usada`, '📡'],
+      ['Carga (1 min)', cargaSistema.toFixed(2), '📡'],
+      cola ? ['Cola anti-ban', `${cola.enviados} enviados · ${cola.enEspera} en espera · espera media ${cola.esperaMediaMs} ms${cola.fallidos ? ` · ${cola.fallidos} fallidos` : ''}`] : null,
+      ['Circuit breaker', estadoResiliencia.enabled ? '🟢 activado' : '🔴 desactivado', '🛡️'],
       comandosBloqueados.length
         ? `⛔ Comandos deshabilitados ahora: ${comandosBloqueados.map(([n]) => n).join(', ')}`
         : '✅ Ningún comando deshabilitado por fallos.',
-      '',
       proveedoresCaidos.length
         ? `⚠️ Proveedores de API deshabilitados: ${proveedoresCaidos.map(([n]) => n).join(', ')}`
         : '✅ Todos los proveedores de API están habilitados.',
-    ].filter((linea) => linea !== null).join('\n')
+    ], 'YuiBot-MD')
 
     return sock.sendMessage(jid, { text: texto }, { quoted: msg })
   },

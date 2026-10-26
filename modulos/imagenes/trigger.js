@@ -1,4 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const { caja, negrita } = require('../../lib/estilo')
 const fetch = require('../../lib/http').fetchSeguro // timeout por defecto (ver lib/http.js)
 const { loadImage, descargarImagenMensaje, crearLienzo, dibujarCirculo } = require('../../lib/imagenes')
 
@@ -48,7 +49,7 @@ module.exports = {
       ctx.font = '26px sans-serif'
       ctx.fillStyle = '#ffd7d7'
       ctx.fillText('⚡ Efecto generado por YuiBot-MD', 500, 900)
-      await sock.sendMessage(jid, { image: canvas.toBuffer('image/jpeg', { quality: 0.94 }), caption: '⚡ Trigger generado' }, { quoted: msg })
+      await sock.sendMessage(jid, { image: canvas.toBuffer('image/jpeg', { quality: 0.94 }), caption: caja('⚡', 'Trigger', [['Efecto', 'Disparo']], 'YuiBot-MD ✨') }, { quoted: msg })
     } catch {
       await sock.sendMessage(jid, { text: '❌ Envía o cita una imagen, o menciona a un usuario.' }, { quoted: msg })
     }

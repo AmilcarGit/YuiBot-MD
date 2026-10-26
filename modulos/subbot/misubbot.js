@@ -1,4 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const { caja } = require('../../lib/estilo')
 const { obtenerDuenoSubbot, esPremium, obtenerNombrePersonalizado } = require('../../lib/subbots')
 const { gruposLiderados } = require('../../lib/red')
 
@@ -28,15 +29,14 @@ module.exports = {
     const premium = esPremium(subbotNumero)
     const nombre = obtenerNombrePersonalizado(subbotNumero)
 
-    const texto =
-      `⛧───「 Mi Subbot 」───⛧\n\n` +
-      `  ❖ número: +${subbotNumero}\n` +
-      `  ❖ nombre: ${nombre || '(sin personalizar)'}\n` +
-      `  ❖ dueño: ${dueno?.nombre || 'desconocido'}\n` +
-      `  ❖ premium: ${premium ? '⭐ sí' : 'no'}\n` +
-      `  ❖ tiempo activo: ${formatearDuracion(process.uptime())}\n` +
-      `  ❖ grupos que lidero ahora: ${grupos.length}\n\n` +
-      `╰─➤ _${config.BOT_NAME}_ 🥀`
+    const texto = caja('🤖', 'Mi subbot', [
+      ['Número', `+${subbotNumero}`],
+      ['Nombre', nombre || '(sin personalizar)'],
+      ['Dueño', dueno?.nombre || 'desconocido', '👤'],
+      ['Premium', premium ? '⭐ sí' : 'no'],
+      ['Tiempo activo', formatearDuracion(process.uptime()), '🟢'],
+      ['Grupos que lidero ahora', grupos.length],
+    ], config.BOT_NAME)
 
     await sock.sendMessage(jid, { text: texto }, { quoted: msg })
   },

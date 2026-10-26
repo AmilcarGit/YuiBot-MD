@@ -1,6 +1,7 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
 const dns = require('dns').promises
 
+const { caja } = require('../../lib/estilo')
 module.exports = {
   name: 'dns',
   description: 'Consulta registros DNS de un dominio',
@@ -19,12 +20,8 @@ module.exports = {
       else if (tipo === 'NS') datos = await dns.resolveNs(dominio)
       else if (tipo === 'TXT') datos = (await dns.resolveTxt(dominio)).map(x => x.join(''))
       else datos = await dns.resolveCname(dominio)
-      const salida = datos.slice(0, 10).map(x => typeof x === 'object' ? `${x.exchange} (${x.priority})` : String(x)).join('\n│ ')
-      await sock.sendMessage(jid, { text: `╭─ ✦ 🌐 DNS ✦
-│ Dominio: *${dominio}*
-│ Tipo: *${tipo}*
-│ ${salida}
-╰─ 🍃 YuiBot-MD` }, { quoted: msg })
+      const salida = datos.slice(0, 10).map(x => typeof x === 'object' ? `${x.exchange} (${x.priority})` : String(x)).join('\n┃ ')
+      await sock.sendMessage(jid, { text: caja('🌐', 'DNS', [['Dominio', dominio], ['Tipo', tipo], ['Registros', `\n${salida}`]], 'YuiBot-MD') }, { quoted: msg })
     } catch (error) {
       await sock.sendMessage(jid, { text: `❌ No se encontraron registros ${tipo}: ${error.code || error.message}` }, { quoted: msg })
     }

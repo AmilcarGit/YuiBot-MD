@@ -1,4 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const { caja, negrita } = require('../../lib/estilo')
 const fetch = require('../../lib/http').fetchSeguro // timeout por defecto (ver lib/http.js)
 const { pedirBusqueda, pedirVideo } = require('../../lib/youtube')
 const fs = require('fs')
@@ -166,25 +167,20 @@ module.exports = {
       const videos = data.datos.results.videos
       const resultados = videos.slice(0, 10)
 
-      let mensaje =
-        `╭━━━〔 🔎 YOUTUBE SEARCH 〕━━━╮\n` +
-        `┃ 🔍 Búsqueda: ${query}\n` +
-        `┃ 📊 Resultados: ${resultados.length}\n` +
-        `╰━━━━━━━━━━━━━━━━━━━━━━╯\n\n`
+      let mensaje = caja('🔎', 'YouTube Search', [
+        ['Búsqueda', query, '🔍'],
+        ['Resultados', resultados.length, '📊']
+      ]) + '\n\n'
 
       resultados.forEach((video, index) => {
         mensaje +=
-          `╭─〔 ${index + 1} 〕──────────\n` +
-          `│ 🎬 *${video.title || 'Sin título'}*\n` +
-          `│ 👤 Canal: ${video.channel || 'Desconocido'}\n` +
-          `│ ⏱️ Duración: ${video.duration || 'Desconocida'}\n` +
-          `│ 👁️ Vistas: ${video.views || 'Desconocidas'}\n` +
-          `│ 📅 Publicado: ${video.published || 'Desconocido'}\n` +
-          `│ 🔗 ${video.url || 'Sin URL'}\n` +
-          `╰────────────────────\n\n`
+          `${negrita(index + 1)} 🎬 *${video.title || 'Sin título'}*\n` +
+          `   👤 ${video.channel || 'Desconocido'} · ⏱️ ${video.duration || 'Desconocida'}\n` +
+          `   👁️ ${video.views || 'Desconocidas'} · 📅 ${video.published || 'Desconocido'}\n` +
+          `   🔗 ${video.url || 'Sin URL'}\n\n`
       })
 
-      mensaje += `╰─➤ _Responde con el número (1-${resultados.length}) para descargar ese video_ 🥀`
+      mensaje += `> Responde con el número (1-${resultados.length}) para descargar ese video ✨`
 
       const primeraMiniatura = resultados[0]?.thumbnail || resultados[0]?.thumb || resultados[0]?.image || null
 
@@ -229,18 +225,17 @@ module.exports = {
         return sock.sendMessage(jid, { text: '❌ Ese resultado no tiene un enlace válido.' }, { quoted: msg })
       }
 
-      await sock.sendMessage(jid, { text: `⏳ Descargando \"${elegido.title || 'video'}\"...` }, { quoted: msg })
+      await sock.sendMessage(jid, { text: caja('🎬', 'Descargando video', [['Título', String(elegido.title || 'video').slice(0, 200)]], 'Esto puede tardar un poco ⏳') }, { quoted: msg })
 
       const { dataVideo, buffer } = await obtenerVideoDescargable(elegido.url, 3)
       const filename = dataVideo.datos.archivo || `${dataVideo.titulo || 'youtube'}.mp4`
       const pesoMB = buffer.length / (1024 * 1024)
 
-      const caption =
-        `╭━━━〔 🎬 YOUTUBE VIDEO 〕━━━╮\n` +
-        `┃ 🎵 ${dataVideo.titulo || 'Sin título'}\n` +
-        `┃ 👤 ${dataVideo.canal || 'Desconocido'}\n` +
-        `┃ 💾 Tamaño: ${pesoMB.toFixed(1)} MB\n` +
-        `╰━━━━━━━━━━━━━━━━━━━━━━╯`
+      const caption = caja('🎬', 'YouTube Video', [
+        ['Título', String(dataVideo.titulo || 'Sin título').slice(0, 200), '🎵'],
+        ['Canal', dataVideo.canal || 'Desconocido', '👤'],
+        ['Tamaño', `${pesoMB.toFixed(1)} MB`, '💾']
+      ], 'YuiBot-MD ✨')
 
       if (pesoMB <= LIMITE_VIDEO_MB) {
         await sock.sendMessage(jid, { video: buffer, mimetype: 'video/mp4', fileName: filename, caption, gifPlayback: false, ptv: false }, { quoted: msg })

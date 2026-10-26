@@ -1,4 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const { caja } = require('../../lib/estilo')
 const { spawn } = require('child_process')
 const fs = require('fs')
 const os = require('os')
@@ -44,15 +45,15 @@ module.exports = {
       const minutos = Math.floor(duracion / 60)
       const segundos = Math.floor(duracion % 60).toString().padStart(2, '0')
       const tamano = Number(formato.size || buffer.length)
-      const texto = `╭─ 🎵 AUDIOINFO
-│ ⏱️ Duración: ${minutos}:${segundos}
-│ 💾 Tamaño: ${(tamano / 1024 / 1024).toFixed(2)} MB
-│ 🎼 Formato: ${formato.format_name || 'desconocido'}
-│ 🔊 Códec: ${stream.codec_name || 'desconocido'}
-│ 📡 Bitrate: ${formato.bit_rate ? `${Math.round(Number(formato.bit_rate) / 1000)} kbps` : 'desconocido'}
-│ 🎚️ Canales: ${stream.channels || 'desconocido'}
-│ ⚙️ Sample rate: ${stream.sample_rate ? `${stream.sample_rate} Hz` : 'desconocido'}
-╰─ 🍃 YuiBot-MD`
+      const texto = caja('🎵', 'Audioinfo', [
+        ['Duración', `${minutos}:${segundos}`, '⏱️'],
+        ['Tamaño', `${(tamano / 1024 / 1024).toFixed(2)} MB`, '💾'],
+        ['Formato', formato.format_name || 'desconocido', '🎼'],
+        ['Códec', stream.codec_name || 'desconocido', '🔊'],
+        ['Bitrate', formato.bit_rate ? `${Math.round(Number(formato.bit_rate) / 1000)} kbps` : 'desconocido', '📡'],
+        ['Canales', stream.channels || 'desconocido', '🎚️'],
+        ['Sample rate', stream.sample_rate ? `${stream.sample_rate} Hz` : 'desconocido', '⚙️'],
+      ], 'YuiBot-MD 🍃')
       await sock.sendMessage(msg.key.remoteJid, { text: texto }, { quoted: msg })
     } catch {
       await sock.sendMessage(msg.key.remoteJid, { text: '❌ No se pudo analizar el audio. Verifica que FFmpeg esté disponible.' }, { quoted: msg })

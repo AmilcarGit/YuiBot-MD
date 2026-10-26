@@ -1,4 +1,5 @@
 const { exigirAdmin } = require('../../lib/adminGrupo')
+const { caja, error } = require('../../lib/estilo')
 
 module.exports = {
   name: 'nombregrupo',
@@ -14,9 +15,9 @@ module.exports = {
     if (nombre.length > 25) return sock.sendMessage(ctx.jid, { text: '❌ El nombre no puede pasar de 25 caracteres.' }, { quoted: msg })
     try {
       await sock.groupUpdateSubject(ctx.jid, nombre)
-      return sock.sendMessage(ctx.jid, { text: `✅ Nombre cambiado a *${nombre}*.` }, { quoted: msg })
+      return sock.sendMessage(ctx.jid, { text: caja('✏️', 'Nombre actualizado', [['Nuevo nombre', nombre]]) }, { quoted: msg })
     } catch (e) {
-      return sock.sendMessage(ctx.jid, { text: '❌ No pude cambiar el nombre.' }, { quoted: msg })
+      return sock.sendMessage(ctx.jid, { text: error('No pude cambiar el nombre.') }, { quoted: msg })
     }
   },
 }

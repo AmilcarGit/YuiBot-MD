@@ -1,4 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const { caja } = require('../../lib/estilo')
 const { esPremium, obtenerDuenoSubbot, obtenerNombrePersonalizado } = require('../../lib/subbots')
 
 module.exports = {
@@ -28,15 +29,14 @@ module.exports = {
       foto = await sock.profilePictureUrl(sock.user?.id || `${subbotNumero}@s.whatsapp.net`, 'image')
     } catch {}
 
-    const texto =
-      `⛧───「 Perfil del Subbot 」───⛧\n\n` +
-      `  ❖ nombre: *${nombre}*\n` +
-      `  ❖ número: +${subbotNumero}\n` +
-      `  ❖ dueño: ${dueno?.nombre || 'desconocido'}\n` +
-      `  ❖ premium: ⭐ activo\n` +
-      `  ❖ prefijo: ${prefijo}\n` +
-      `  ❖ uptime: ${Math.floor(process.uptime() / 3600)}h ${Math.floor((process.uptime() % 3600) / 60)}m\n\n` +
-      `╰─➤ _${config.BOT_NAME}_ ⭐`
+    const texto = caja('🤖', 'Perfil del subbot', [
+      ['Nombre', nombre],
+      ['Número', `+${subbotNumero}`],
+      ['Dueño', dueno?.nombre || 'desconocido', '👤'],
+      ['Premium', '⭐ activo'],
+      ['Prefijo', prefijo, '⚙️'],
+      ['Uptime', `${Math.floor(process.uptime() / 3600)}h ${Math.floor((process.uptime() % 3600) / 60)}m`, '🟢'],
+    ], config.BOT_NAME)
 
     if (foto) {
       await sock.sendMessage(jid, { image: { url: foto }, caption: texto }, { quoted: msg })

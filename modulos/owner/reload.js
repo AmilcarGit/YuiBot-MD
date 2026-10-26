@@ -1,4 +1,6 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const { caja } = require('../../lib/estilo')
+
 module.exports = {
   name: 'reload',
   aliases: [],
@@ -10,6 +12,6 @@ module.exports = {
     const jid = msg.key.remoteJid
     const { loadCommands } = require('../../lib/cargador')
     loadCommands(commands, categories)
-    await sock.sendMessage(jid, { text: `♻️ Módulos de ${config.BOT_NAME} recargados.` })
+    await sock.sendMessage(jid, { text: caja('♻️', 'Módulos recargados', [['Bot', config.BOT_NAME], ['Estado', '🟢 Listo']], 'Sin reiniciar el bot') })
   },
 }

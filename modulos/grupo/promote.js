@@ -1,4 +1,6 @@
 //COMANDO PROMOTE PARA YUIBOT-MD
+const { caja } = require('../../lib/estilo')
+
 module.exports = {
   name: 'promote',
   aliases: ['daradmin', 'ascender', 'subiradmin'],
@@ -100,17 +102,13 @@ module.exports = {
     }
 
     // Enviar mensaje de confirmación
-    let mensaje = `⛧───「 Admins Promovidos 」───⛧\n\n`
+    const filas = []
     if (promoted > 0) {
-      mensaje += `✅ ${promoted} usuario${promoted > 1 ? 's' : ''} promovido${promoted > 1 ? 's' : ''} correctamente.\n\n`
-      // Mostrar nombres de los promovidos
-      const promotedNames = promotableUsers.map(user => `@${user.split('@')[0]}`).join(', ')
-      mensaje += `👤 Usuarios: ${promotedNames}\n\n`
+      filas.push(['Promovidos', `${promoted} usuario${promoted > 1 ? 's' : ''} promovido${promoted > 1 ? 's' : ''} correctamente`])
+      filas.push(['Usuarios', promotableUsers.map(user => `@${user.split('@')[0]}`).join(', ')])
     }
-    if (failed > 0) {
-      mensaje += `❌ ${failed} usuario${failed > 1 ? 's' : ''} no pudieron ser promovidos.\n`
-    }
-    mensaje += `\n╰─➤ _${metadata.subject}_ 🥀`
+    if (failed > 0) filas.push(['Fallidos', `${failed} usuario${failed > 1 ? 's' : ''} no pudieron ser promovidos`])
+    const mensaje = caja('👑', 'Admins promovidos', filas, metadata.subject)
 
     await sock.sendMessage(jid, { 
       text: mensaje,

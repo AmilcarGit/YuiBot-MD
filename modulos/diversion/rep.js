@@ -1,3 +1,4 @@
+const { caja, error, espera } = require('../../lib/estilo')
 // Reputación compartida entre el bot principal y todos los subbots.
 const reputacion = require('../../lib/reputacion')
 const { describirDuracion } = require('../../lib/fechas')
@@ -22,11 +23,11 @@ module.exports = {
     const responder = (text, mentions) => sock.sendMessage(jid, { text, mentions }, { quoted: msg })
 
     if (!objetivo) {
-      return responder(`⭐ Tu reputación: *${reputacion.obtener(yo)}*\n📌 Para dar +1: ${config.PREFIXES[0]}rep (citando o mencionando)`)
+      return responder(caja('⭐', 'Reputación', [`Tu reputación: *${reputacion.obtener(yo)}*`], `Para dar +1: ${config.PREFIXES[0]}rep (citando o mencionando)`))
     }
     const r = reputacion.dar(yo, objetivo)
-    if (!r.ok && r.motivo === 'propio') return responder('❌ No puedes darte reputación a ti mismo.')
-    if (!r.ok) return responder(`⏳ Ya le diste +1 a esa persona. Vuelve en ${describirDuracion(r.restante)}.`)
-    return responder(`⭐ @${objetivo} recibió +1 de reputación (total: *${r.total}*).`, [`${objetivo}@s.whatsapp.net`])
+    if (!r.ok && r.motivo === 'propio') return responder(error('No puedes darte reputación a ti mismo.'))
+    if (!r.ok) return responder(espera(`Ya le diste +1 a esa persona. Vuelve en ${describirDuracion(r.restante)}.`))
+    return responder(caja('⭐', 'Reputación', [['Para', `@${objetivo}`], ['Recibió', '+1 de reputación'], ['Total', `${r.total}`]], 'Gracias por reconocer a los demás ✨'), [`${objetivo}@s.whatsapp.net`])
   },
 }

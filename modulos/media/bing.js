@@ -1,4 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const { caja, negrita } = require('../../lib/estilo')
 const fetch = require('../../lib/http').fetchSeguro // timeout por defecto (ver lib/http.js)
 const { APIS } = require('../../defaults')
 
@@ -39,7 +40,7 @@ module.exports = {
 
       await sock.sendMessage(
         jid,
-        { text: `🔎 Encontrados ${data.total} resultado(s) para "${query}", enviando ${resultados.length}...` },
+        { text: caja('🔎', 'Bing Imágenes', [['Búsqueda', query], ['Resultados', data.total], ['Enviando', resultados.length]], 'Un momento ✨') },
         { quoted: msg }
       )
 
@@ -47,7 +48,7 @@ module.exports = {
         const urlImagen = item?.image
         if (!urlImagen) continue
 
-        const caption = item.title?.trim() ? `🖼️ ${item.title.trim()}` : ''
+        const caption = item.title?.trim() ? caja('🖼️', 'Bing', [['Título', item.title.trim().slice(0, 200)]], 'YuiBot-MD ✨') : ''
 
         try {
           const respImg = await fetch(urlImagen)

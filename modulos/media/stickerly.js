@@ -1,4 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const { caja, negrita } = require('../../lib/estilo')
 const fetch = require('../../lib/http').fetchSeguro // timeout por defecto (ver lib/http.js)
 const delirius = require('../../lib/delirius')
 const { reintentar } = require('../../lib/reintentar')
@@ -58,10 +59,12 @@ module.exports = {
       await sock.sendMessage(
         jid,
         {
-          text:
-            `📦 "${paquete.titulo || elegido.titulo}" por ${paquete.autor || elegido.autor}\n` +
-            `Enviando ${seleccion.length} de ${paquete.stickers.length} stickers...` +
-            (paquetes.length > 1 ? `\n💡 Otros paquetes: ${prefijo}stickerly ${query} 2` : '')
+          text: caja('📦', 'Sticker.ly', [
+            ['Paquete', paquete.titulo || elegido.titulo],
+            ['Autor', paquete.autor || elegido.autor],
+            ['Enviando', `${seleccion.length} de ${paquete.stickers.length} stickers`],
+            paquetes.length > 1 ? ['Otros paquetes', `${prefijo}stickerly ${query} 2`, '💡'] : null
+          ], 'Un momento ✨')
         },
         { quoted: msg }
       )
@@ -93,7 +96,7 @@ module.exports = {
 
       await sock.sendMessage(
         jid,
-        { text: `✅ Enviados: ${enviados}${fallidos > 0 ? `\n⚠️ Fallidos: ${fallidos}` : ''}` },
+        { text: caja('✅', 'Stickers enviados', [['Enviados', enviados], fallidos > 0 ? ['Fallidos', fallidos, '⚠️'] : null], 'YuiBot-MD ✨') },
         { quoted: msg }
       )
 

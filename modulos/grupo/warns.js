@@ -1,4 +1,5 @@
 const { leerWarns, objetivoDe, MAX_WARNS_DEFECTO } = require('../../lib/adminGrupo')
+const { caja } = require('../../lib/estilo')
 
 module.exports = {
   name: 'warns',
@@ -15,6 +16,6 @@ module.exports = {
     const entradas = objetivo ? [[objetivo, warns[objetivo] || { total: 0, motivos: [] }]] : Object.entries(warns)
     if (!entradas.length) return sock.sendMessage(jid, { text: '✅ Nadie tiene advertencias en este grupo.' }, { quoted: msg })
     const filas = entradas.map(([n, w]) => `• @${n} — ${w.total}/${max}${w.motivos.length ? `\n   📝 ${w.motivos[w.motivos.length - 1]}` : ''}`)
-    return sock.sendMessage(jid, { text: `⚠️ *Advertencias*\n\n${filas.join('\n')}`, mentions: entradas.map(([n]) => `${n}@s.whatsapp.net`) }, { quoted: msg })
+    return sock.sendMessage(jid, { text: caja('⚠️', 'Advertencias', filas, `Máximo permitido: ${max}`), mentions: entradas.map(([n]) => `${n}@s.whatsapp.net`) }, { quoted: msg })
   },
 }

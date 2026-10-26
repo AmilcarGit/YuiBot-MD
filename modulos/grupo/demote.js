@@ -1,4 +1,6 @@
 //COMANDO DEMOTE PARA YUIBOT-MD
+const { caja } = require('../../lib/estilo')
+
 module.exports = {
   name: 'demote',
   aliases: ['quitaradmin', 'sacaradmin', 'degradar'],
@@ -108,17 +110,13 @@ module.exports = {
     }
 
     // Enviar mensaje de confirmación
-    let mensaje = `⛧───「 Admins Degradados 」───⛧\n\n`
+    const filas = []
     if (demoted > 0) {
-      mensaje += `✅ ${demoted} usuario${demoted > 1 ? 's' : ''} degradado${demoted > 1 ? 's' : ''} correctamente.\n\n`
-      // Mostrar nombres de los degradados
-      const demotedNames = demotableUsers.map(user => `@${user.split('@')[0]}`).join(', ')
-      mensaje += `👤 Usuarios: ${demotedNames}\n\n`
+      filas.push(['Degradados', `${demoted} usuario${demoted > 1 ? 's' : ''} degradado${demoted > 1 ? 's' : ''} correctamente`])
+      filas.push(['Usuarios', demotableUsers.map(user => `@${user.split('@')[0]}`).join(', ')])
     }
-    if (failed > 0) {
-      mensaje += `❌ ${failed} usuario${failed > 1 ? 's' : ''} no pudieron ser degradados.\n`
-    }
-    mensaje += `\n╰─➤ _${metadata.subject}_ 🥀`
+    if (failed > 0) filas.push(['Fallidos', `${failed} usuario${failed > 1 ? 's' : ''} no pudieron ser degradados`])
+    const mensaje = caja('⬇️', 'Admins degradados', filas, metadata.subject)
 
     await sock.sendMessage(jid, { 
       text: mensaje,

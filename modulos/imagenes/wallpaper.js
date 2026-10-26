@@ -1,4 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const { caja, negrita } = require('../../lib/estilo')
 const { crearLienzo, textoAjustado } = require('../../lib/imagenes')
 
 module.exports = {
@@ -23,6 +24,6 @@ module.exports = {
     ctx.font = '32px sans-serif'
     ctx.fillStyle = '#d9e8ff'
     textoAjustado(ctx, 'Wallpaper aleatorio • generado localmente', 720, 490, 900, 42)
-    await sock.sendMessage(jid, { image: canvas.toBuffer('image/jpeg', { quality: 0.95 }), caption: '🖼️ Wallpaper generado' }, { quoted: msg })
+    await sock.sendMessage(jid, { image: canvas.toBuffer('image/jpeg', { quality: 0.95 }), caption: caja('🖼️', 'Wallpaper', [['Tamaño', '1440x900'], ['Estilo', 'Aleatorio']], 'YuiBot-MD ✨') }, { quoted: msg })
   },
 }

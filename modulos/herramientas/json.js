@@ -1,4 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const { caja } = require('../../lib/estilo')
 module.exports = {
   name: 'json',
   description: 'Valida y formatea JSON',
@@ -11,10 +12,7 @@ module.exports = {
       const data = JSON.parse(texto)
       const salida = JSON.stringify(data, null, 2)
       if (salida.length > 3500) return sock.sendMessage(jid, { text: `✅ JSON válido.\n📦 Tamaño formateado: *${salida.length} caracteres*\n⚠️ Es demasiado largo para mostrarlo completo.` }, { quoted: msg })
-      await sock.sendMessage(jid, { text: `╭─ ✦ 📦 JSON ✦
-│ ✅ JSON válido
-│ 📏 Caracteres: *${salida.length}*
-╰─ 🍃 YuiBot-MD
+      await sock.sendMessage(jid, { text: `${caja('📦', 'JSON', [['Estado', '✅ JSON válido'], ['Caracteres', salida.length]], 'YuiBot-MD')}
 
 \`\`\`json
 ${salida}

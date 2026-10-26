@@ -1,3 +1,4 @@
+const { caja, uso } = require('../../lib/estilo')
 const OPCIONES = { piedra: '🪨', papel: '📄', tijera: '✂️' }
 const GANA_A = { piedra: 'tijera', papel: 'piedra', tijera: 'papel' }
 
@@ -24,13 +25,13 @@ module.exports = {
     const jid = msg.key.remoteJid
     const jugador = normalizar(args[0])
     if (!jugador) {
-      return sock.sendMessage(jid, { text: `❌ Elige una opción.\n\n📌 ${config.PREFIXES[0]}ppt piedra | papel | tijera` }, { quoted: msg })
+      return sock.sendMessage(jid, { text: uso(config.PREFIXES[0], 'ppt', 'piedra | papel | tijera', 'Elige una opción.') }, { quoted: msg })
     }
     const claves = Object.keys(OPCIONES)
     const bot = claves[Math.floor(Math.random() * claves.length)]
     const resultado = resolver(jugador, bot)
     const veredicto = { gana: '🎉 ¡Ganaste!', pierde: '😈 ¡Perdiste!', empate: '🤝 ¡Empate!' }[resultado]
-    await sock.sendMessage(jid, { text: `🎮 *Piedra, papel o tijera*\n\nTú: ${OPCIONES[jugador]} ${jugador}\nYo: ${OPCIONES[bot]} ${bot}\n\n${veredicto}` }, { quoted: msg })
+    await sock.sendMessage(jid, { text: caja('🎮', 'Piedra, papel o tijera', [['Tú', `${OPCIONES[jugador]} ${jugador}`], ['Yo', `${OPCIONES[bot]} ${bot}`], ['Resultado', veredicto]], 'Juega otra vez cuando quieras ✨') }, { quoted: msg })
   },
 
   _internos: { normalizar, resolver },

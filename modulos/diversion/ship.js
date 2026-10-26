@@ -1,3 +1,4 @@
+const { caja, uso } = require('../../lib/estilo')
 const FRASES = [
   [0, '💔 Ni lo intenten...'], [20, '😬 Hay poca química.'], [40, '🤔 Podría funcionar con esfuerzo.'],
   [60, '😊 ¡Hay buena onda!'], [80, '😍 ¡Qué linda pareja!'], [95, '💍 ¡Almas gemelas!'],
@@ -37,13 +38,13 @@ module.exports = {
     if (personas.length === 1) personas.unshift(remitente)
 
     if (personas.length < 2) {
-      return sock.sendMessage(jid, { text: `❌ Menciona a dos personas, o a una para medirte con ella.\n\n📌 ${config.PREFIXES[0]}ship @uno @dos` }, { quoted: msg })
+      return sock.sendMessage(jid, { text: uso(config.PREFIXES[0], 'ship', '@uno @dos', 'Menciona a dos personas, o a una para medirte con ella.') }, { quoted: msg })
     }
 
     const [a, b] = personas
     const porcentaje = compatibilidad(numeroDe(a), numeroDe(b))
     await sock.sendMessage(jid, {
-      text: `💘 *Compatibilidad*\n\n@${numeroDe(a)} ❤️ @${numeroDe(b)}\n\n${barra(porcentaje)}\n*${porcentaje}%* — ${frase(porcentaje)}`,
+      text: caja('💘', 'Compatibilidad', [`@${numeroDe(a)} ❤️ @${numeroDe(b)}`, barra(porcentaje), ['Afinidad', `${porcentaje}%`], frase(porcentaje)], 'El amor no se mide, pero se intenta ✨'),
       mentions: [a, b],
     }, { quoted: msg })
   },

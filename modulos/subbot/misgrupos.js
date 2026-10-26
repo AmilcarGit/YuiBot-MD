@@ -1,4 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const { caja } = require('../../lib/estilo')
 const { esPremium } = require('../../lib/subbots')
 const { gruposLiderados } = require('../../lib/red')
 
@@ -33,10 +34,10 @@ module.exports = {
         const metadata = await sock.groupMetadata(grupo)
         nombre = metadata.subject || grupo
       } catch {}
-      lineas.push(`  ❖ ${nombre}\n     ${grupo}`)
+      lineas.push(`✦ ${nombre}\n┃    ${grupo}`)
     }
 
-    const texto = `⛧───「 Mis grupos 」───⛧\n\n${lineas.join('\n\n')}\n\n╰─➤ _${grupos.length} grupo(s)_ ⭐`
+    const texto = caja('👥', 'Mis grupos', lineas, `${grupos.length} grupo(s)`)
     await sock.sendMessage(jid, { text: texto }, { quoted: msg })
   },
 }

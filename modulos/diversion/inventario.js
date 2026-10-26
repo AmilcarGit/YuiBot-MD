@@ -1,4 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const { caja } = require('../../lib/estilo')
 const { obtenerUsuario } = require('../../lib/db')
 const { CATALOGO } = require('../../lib/tienda')
 
@@ -20,12 +21,12 @@ module.exports = {
     if (!inventario.length) {
       return sock.sendMessage(
         jid,
-        { text: `📦 Todavía no tienes objetos.\n📌 Usa ${prefijo}tienda para ver qué puedes comprar.` },
+        { text: caja('📦', 'Tu inventario', ['Todavía no tienes objetos.'], `Usa ${prefijo}tienda para ver qué puedes comprar`) },
         { quoted: msg }
       )
     }
 
-    let texto = `📦 *TU INVENTARIO*\n\n`
+    const filas = []
 
     for (const id of inventario) {
       const item = CATALOGO.find((i) => i.id === id)
@@ -36,10 +37,10 @@ module.exports = {
       if (item.tipo === 'color' && datos.colorEquipado === id) equipado = ' ✅ equipado'
       if (item.tipo === 'titulo' && datos.tituloEquipado === id) equipado = ' ✅ equipado'
 
-      texto += `❯ *${item.nombre}*${equipado}\n`
+      filas.push(`✦ *${item.nombre}*${equipado}`)
     }
 
-    texto += `\n╰─➤ _Usa ${prefijo}equipar <número> para cambiar_`
+    const texto = caja('🎒', 'Tu inventario', filas, `Usa ${prefijo}equipar <número> para cambiar`)
 
     await sock.sendMessage(jid, { text: texto }, { quoted: msg })
   },

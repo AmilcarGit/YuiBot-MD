@@ -1,4 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const { caja } = require('../../lib/estilo')
 const { enviarBotones } = require('../../lib/whatsapp/interactivos')
 
 module.exports = {
@@ -19,7 +20,7 @@ module.exports = {
     }
 
     await enviarBotones(sock, jid, {
-      text: `📢 *${nl.NOMBRE || 'Nuestro canal oficial'}*\n\nEntérate de novedades, avisos y actualizaciones del bot directo desde ahí 🌸`,
+      text: caja('📢', nl.NOMBRE || 'Nuestro canal oficial', ['Entérate de novedades, avisos y actualizaciones del bot directo desde ahí 🌸']),
       footer: config.BOT_NAME,
       buttons: [{ text: '📢 Abrir canal', url: nl.URL }],
     })

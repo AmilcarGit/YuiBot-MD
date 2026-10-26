@@ -1,4 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const { caja } = require('../../lib/estilo')
 module.exports = {
   name: 'base64',
   description: 'Codifica y decodifica texto en Base64',
@@ -11,12 +12,7 @@ module.exports = {
     try {
       const resultado = modo === 'encode' ? Buffer.from(texto, 'utf8').toString('base64') : Buffer.from(texto, 'base64').toString('utf8')
       if (modo === 'decode' && Buffer.from(resultado, 'utf8').toString('base64').replace(/=+$/, '') !== texto.replace(/=+$/, '')) throw new Error('Cadena Base64 inválida')
-      await sock.sendMessage(jid, { text: `╭─ ✦ 🔢 BASE64 ✦
-│ ⚙️ Modo: *${modo}*
-│ 📥 Entrada: *${texto}*
-│ 📤 Resultado:
-│ ${resultado}
-╰─ 🍃 YuiBot-MD` }, { quoted: msg })
+      await sock.sendMessage(jid, { text: caja('🔢', 'Base64', [['Modo', modo], ['Entrada', texto], ['Resultado', resultado]], 'YuiBot-MD') }, { quoted: msg })
     } catch (error) {
       await sock.sendMessage(jid, { text: `❌ No se pudo procesar Base64: ${error.message}` }, { quoted: msg })
     }

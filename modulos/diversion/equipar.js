@@ -1,4 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const { caja, error } = require('../../lib/estilo')
 const { obtenerItem } = require('../../lib/tienda')
 const { equiparItem } = require('../../lib/db')
 
@@ -20,7 +21,7 @@ module.exports = {
     if (!item || !['insignia', 'color', 'titulo'].includes(item.tipo)) {
       return sock.sendMessage(
         jid,
-        { text: `❌ Ese número no corresponde a una insignia, color o título.\n📌 Usa ${prefijo}inventario para ver lo que tienes.` },
+        { text: `${error('Ese número no corresponde a una insignia, color o título.')}\n📌 Usa ${prefijo}inventario para ver lo que tienes.` },
         { quoted: msg }
       )
     }
@@ -30,11 +31,11 @@ module.exports = {
     if (!resultado.exito) {
       return sock.sendMessage(
         jid,
-        { text: `❌ No tienes *${item.nombre}*. Cómpralo primero con ${prefijo}comprar ${item.id}.` },
+        { text: error(`No tienes *${item.nombre}*. Cómpralo primero con ${prefijo}comprar ${item.id}.`) },
         { quoted: msg }
       )
     }
 
-    await sock.sendMessage(jid, { text: `✅ *${item.nombre}* equipado. Se verá en tu ${prefijo}perfil.` }, { quoted: msg })
+    await sock.sendMessage(jid, { text: caja('✨', 'Equipado', [['Objeto', item.nombre], ['Tipo', item.tipo]], `Se verá en tu ${prefijo}perfil`) }, { quoted: msg })
   },
 }

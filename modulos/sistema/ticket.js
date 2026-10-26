@@ -1,4 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const { caja } = require('../../lib/estilo')
 const tickets = require('../../lib/tickets')
 
 module.exports = {
@@ -26,7 +27,7 @@ module.exports = {
       const ticket = tickets.obtener(args[1])
       if (!ticket) return sock.sendMessage(jid, { text: `❌ No existe el ticket #${args[1]}.` }, { quoted: msg })
       return sock.sendMessage(jid, {
-        text: `🎫 *TICKET #${ticket.id}*\n\nDe: +${ticket.numero}\nEstado: *${ticket.estado}*\nCreado: ${new Date(ticket.creadoEn).toLocaleString('es-PE')}\n\n${ticket.asunto}`,
+        text: caja('🎫', `Ticket #${ticket.id}`, [['De', `+${ticket.numero}`], ['Estado', ticket.estado], ['Creado', new Date(ticket.creadoEn).toLocaleString('es-PE')], ['Asunto', ticket.asunto]], 'YuiBot-MD'),
       }, { quoted: msg })
     }
 
@@ -34,8 +35,8 @@ module.exports = {
       const abiertos = tickets.listar('abierto')
       if (!abiertos.length) return sock.sendMessage(jid, { text: '✅ No hay tickets abiertos.' }, { quoted: msg })
 
-      const texto = abiertos.map((t) => `#${t.id} — +${t.numero}\n${t.asunto.slice(0, 60)}${t.asunto.length > 60 ? '…' : ''}`).join('\n\n')
-      return sock.sendMessage(jid, { text: `🎫 *TICKETS ABIERTOS (${abiertos.length})*\n\n${texto}\n\nUsa: ticket ver <id> / ticket cerrar <id>` }, { quoted: msg })
+      const filas = abiertos.map((t) => `✦ #${t.id} — +${t.numero}\n┃    ${t.asunto.slice(0, 60)}${t.asunto.length > 60 ? '…' : ''}`)
+      return sock.sendMessage(jid, { text: caja('🎫', `Tickets abiertos (${abiertos.length})`, filas, 'Usa: ticket ver <id> / ticket cerrar <id>') }, { quoted: msg })
     }
 
     // --- Crear ticket (cualquier usuario) ---
@@ -52,7 +53,7 @@ module.exports = {
     for (const owner of config.OWNERS) {
       try {
         await sock.sendMessage(`${owner.numero}@s.whatsapp.net`, {
-          text: `🎫 *NUEVO TICKET #${ticket.id}*\n\nDe: +${numeroRemitente}\n\n${asunto}`,
+          text: caja('🎫', `Nuevo ticket #${ticket.id}`, [['De', `+${numeroRemitente}`], ['Asunto', asunto]], 'YuiBot-MD'),
         })
       } catch (error) {
         console.error('[TICKETS] No se pudo notificar al owner:', owner.numero, error)

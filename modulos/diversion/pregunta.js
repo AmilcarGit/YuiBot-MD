@@ -1,3 +1,4 @@
+const { caja } = require('../../lib/estilo')
 // Comando: pregunta / curiosidad / misterio
 // Preguntas sin respuesta clara o definitiva
 
@@ -49,12 +50,7 @@ module.exports = {
     const jid = msg.key.remoteJid
     const pregunta = PREGUNTAS[Math.floor(Math.random() * PREGUNTAS.length)]
 
-    const texto = `╭─❖ 「 🌌 𝗠𝗜𝗦𝗧𝗘𝗥𝗜𝗢 」 ❖─╮\n` +
-                  `│\n` +
-                  `│  ${pregunta}\n` +
-                  `│\n` +
-                  `╰────────────────────╯\n\n` +
-                  `_No hay una respuesta definitiva..._ 🌌`
+    const texto = caja('🌌', 'Misterio', [pregunta], 'No hay una respuesta definitiva... 🌌')
 
     await sock.sendMessage(jid, { text: texto }, { quoted: msg })
   }

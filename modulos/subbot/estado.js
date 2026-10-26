@@ -1,4 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const { caja } = require('../../lib/estilo')
 const { esPremium, obtenerPrefijo } = require('../../lib/subbots')
 const { gruposLiderados } = require('../../lib/red')
 
@@ -32,17 +33,16 @@ module.exports = {
     const prefijo = obtenerPrefijo(subbotNumero) || config.PREFIXES[0]
     const estadoConexion = sock.user ? '🟢 conectado' : '🔴 desconectado'
 
-    const texto =
-      `⛧───「 Estado del Subbot 」───⛧\n\n` +
-      `  ❖ conexión: ${estadoConexion}\n` +
-      `  ❖ número: +${subbotNumero}\n` +
-      `  ❖ premium: ⭐ activo\n` +
-      `  ❖ prefijo: ${prefijo}\n` +
-      `  ❖ grupos liderados: ${grupos.length}\n` +
-      `  ❖ uptime: ${formatearDuracion(process.uptime())}\n` +
-      `  ❖ memoria: ${Math.round(memoria.rss / 1024 / 1024)} MB\n` +
-      `  ❖ Node: ${process.version}\n\n` +
-      `╰─➤ _${config.BOT_NAME}_ ⭐`
+    const texto = caja('🤖', 'Estado del subbot', [
+      ['Conexión', estadoConexion, '📡'],
+      ['Número', `+${subbotNumero}`],
+      ['Premium', '⭐ activo'],
+      ['Prefijo', prefijo, '⚙️'],
+      ['Grupos liderados', grupos.length],
+      ['Uptime', formatearDuracion(process.uptime())],
+      ['Memoria', `${Math.round(memoria.rss / 1024 / 1024)} MB`],
+      ['Node', process.version, '⚙️'],
+    ], config.BOT_NAME)
 
     await sock.sendMessage(jid, { text: texto }, { quoted: msg })
   },

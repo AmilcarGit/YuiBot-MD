@@ -1,4 +1,5 @@
 const { exigirAdmin, objetivoDe, agregarWarn, participante, esAdmin, MAX_WARNS_DEFECTO } = require('../../lib/adminGrupo')
+const { caja } = require('../../lib/estilo')
 
 module.exports = {
   name: 'warn',
@@ -24,10 +25,10 @@ module.exports = {
     const motivo = args.filter((a) => !/^@?\d{6,}$/.test(a)).join(' ')
     const r = agregarWarn(jid, objetivo, motivo, max)
     const mencion = [miembro.id]
-    if (!r.llego) return responder(`⚠️ @${objetivo} recibió una advertencia (${r.total}/${r.max}).${motivo ? `\n📝 ${motivo}` : ''}`, mencion)
+    if (!r.llego) return responder(caja('⚠️', 'Advertencia', [['Usuario', `@${objetivo}`], ['Advertencias', `${r.total}/${r.max}`], ['Motivo', motivo]], 'Cuidado con las reglas'), mencion)
     try {
       await sock.groupParticipantsUpdate(jid, [miembro.id], 'remove')
-      return responder(`🚫 @${objetivo} llegó a ${r.max} advertencias y fue expulsado.`, mencion)
+      return responder(caja('🚫', 'Usuario expulsado', [['Usuario', `@${objetivo}`], ['Motivo', `Llegó a ${r.max} advertencias y fue expulsado`]], 'Límite alcanzado'), mencion)
     } catch {
       return responder(`🚫 @${objetivo} llegó a ${r.max} advertencias, pero no pude expulsarlo (¿soy admin?).`, mencion)
     }

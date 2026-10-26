@@ -1,6 +1,7 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
 const { guardarGrupo } = require('../../lib/db')
 const { esAdminDeGrupo } = require('../../lib/moderacion')
+const { caja } = require('../../lib/estilo')
 
 module.exports = {
   name: 'setbye',
@@ -49,10 +50,10 @@ module.exports = {
 
     if (texto.toLowerCase() === 'reset') {
       guardarGrupo(jid, { textoDespedida: null })
-      return sock.sendMessage(jid, { text: '✅ Se restauró el mensaje de despedida por defecto.' }, { quoted: msg })
+      return sock.sendMessage(jid, { text: caja('♻️', 'Despedida restaurada', [['Estado', 'Mensaje por defecto activo']]) }, { quoted: msg })
     }
 
     guardarGrupo(jid, { textoDespedida: texto })
-    await sock.sendMessage(jid, { text: '✅ Texto de despedida actualizado.' }, { quoted: msg })
+    await sock.sendMessage(jid, { text: caja('✅', 'Despedida actualizada', [['Estado', 'Texto personalizado guardado']]) }, { quoted: msg })
   },
 }

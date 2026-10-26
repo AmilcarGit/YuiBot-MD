@@ -1,17 +1,18 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
 const { esAdminDeGrupo } = require('../../lib/moderacion')
 const votacionLib = require('../../lib/votacion')
+const { caja } = require('../../lib/estilo')
 
-function formatearResultado({ pregunta, opciones, conteo, totalVotos }) {
+function formatearResultado({ pregunta, opciones, conteo, totalVotos }, titulo = 'Votación', pie = '') {
   const maximo = Math.max(...conteo, 1)
-  const lineas = opciones.map((opcion, i) => {
+  const lineas = opciones.flatMap((opcion, i) => {
     const votos = conteo[i]
     const porcentaje = totalVotos ? Math.round((votos / totalVotos) * 100) : 0
     const barras = '█'.repeat(Math.round((votos / maximo) * 10))
-    return `${i + 1}. ${opcion}\n   ${barras || '·'} ${votos} voto(s) (${porcentaje}%)`
+    return [`${i + 1}. ${opcion}`, `   ${barras || '·'} ${votos} voto(s) (${porcentaje}%)`]
   })
 
-  return `📊 *${pregunta}*\n\n${lineas.join('\n\n')}\n\nTotal de votos: *${totalVotos}*`
+  return caja('📊', titulo, [['Pregunta', pregunta], ...lineas, ['Total de votos', totalVotos]], pie)
 }
 
 module.exports = {
@@ -42,7 +43,7 @@ module.exports = {
           : '⚠️ Esa opción no existe. Revisa el número con *votacion* (sin argumentos).'
         return sock.sendMessage(jid, { text: texto }, { quoted: msg })
       }
-      return sock.sendMessage(jid, { text: '✅ ¡Voto registrado! (puedes cambiarlo votando de nuevo)' }, { quoted: msg })
+      return sock.sendMessage(jid, { text: caja('✅', 'Voto registrado', [['Nota', 'Puedes cambiarlo votando de nuevo']]) }, { quoted: msg })
     }
 
     if (!accion || accion === 'resultados' || accion === 'ver') {
@@ -55,7 +56,7 @@ module.exports = {
       const conteo = votacionLib.contarVotos(votacion)
       const totalVotos = Object.keys(votacion.votos || {}).length
       return sock.sendMessage(jid, {
-        text: formatearResultado({ pregunta: votacion.pregunta, opciones: votacion.opciones, conteo, totalVotos }) + '\n\nVota con: *votacion votar <número>*',
+        text: formatearResultado({ pregunta: votacion.pregunta, opciones: votacion.opciones, conteo, totalVotos }, 'Votación', 'Vota con: votacion votar <número>'),
       }, { quoted: msg })
     }
 
@@ -74,7 +75,7 @@ module.exports = {
 
     if (accion === 'cancelar') {
       votacionLib.cancelar(jid)
-      return sock.sendMessage(jid, { text: '✅ Votación cancelada sin mostrar resultados.' }, { quoted: msg })
+      return sock.sendMessage(jid, { text: caja('🛑', 'Votación cancelada', [['Estado', 'Cancelada sin mostrar resultados']]) }, { quoted: msg })
     }
 
     if (accion === 'cerrar') {
@@ -82,7 +83,7 @@ module.exports = {
       if (!resultado) {
         return sock.sendMessage(jid, { text: 'ℹ️ No hay ninguna votación activa.' }, { quoted: msg })
       }
-      return sock.sendMessage(jid, { text: `🔒 *VOTACIÓN CERRADA*\n\n${formatearResultado(resultado)}` }, { quoted: msg })
+      return sock.sendMessage(jid, { text: formatearResultado(resultado, 'Votación cerrada', 'Resultados finales') }, { quoted: msg })
     }
 
     if (accion === 'crear') {
@@ -102,9 +103,8 @@ module.exports = {
       const [pregunta, ...opciones] = partes
       votacionLib.crear(jid, { pregunta, opciones, creadoPor: numeroRemitente })
 
-      const listaOpciones = opciones.map((op, i) => `${i + 1}. ${op}`).join('\n')
       return sock.sendMessage(jid, {
-        text: `📊 *NUEVA VOTACIÓN*\n\n${pregunta}\n\n${listaOpciones}\n\nVota con: *votacion votar <número>*`,
+        text: caja('📊', 'Nueva votación', [['Pregunta', pregunta], ...opciones.map((op, i) => `${i + 1}. ${op}`)], 'Vota con: votacion votar <número>'),
       }, { quoted: msg })
     }
 

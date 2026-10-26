@@ -1,4 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const { caja, espera } = require('../../lib/estilo')
 const { reclamarDaily } = require('../../lib/db')
 
 function formatearTiempo(ms) {
@@ -23,7 +24,7 @@ module.exports = {
     if (!resultado.exito) {
       return sock.sendMessage(
         jid,
-        { text: `⏳ Ya reclamaste tu recompensa de hoy. Vuelve en *${formatearTiempo(resultado.restanteMs)}*.` },
+        { text: espera(`Ya reclamaste tu recompensa de hoy. Vuelve en *${formatearTiempo(resultado.restanteMs)}*.`) },
         { quoted: msg }
       )
     }
@@ -32,10 +33,10 @@ module.exports = {
       jid,
       {
         text:
-          `🎁 ¡Reclamaste tu recompensa diaria!\n\n` +
-          `  ❖ ganaste: ${resultado.ganado} monedas\n` +
-          `  ❖ balance total: ${resultado.monedas} monedas\n\n` +
-          `╰─➤ _${config.BOT_NAME}_ 🥀`
+          caja('🎁', 'Recompensa diaria', [
+            ['Ganaste', `${resultado.ganado} monedas 💰`],
+            ['Balance total', `${resultado.monedas} monedas`],
+          ], `Vuelve mañana por más ✨ · ${config.BOT_NAME}`)
       },
       { quoted: msg }
     )

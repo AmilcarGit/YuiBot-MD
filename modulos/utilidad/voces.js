@@ -1,3 +1,4 @@
+const { caja } = require('../../lib/estilo')
 const { VOCES, IDIOMAS } = require('../../lib/tts')
 
 module.exports = {
@@ -14,11 +15,7 @@ module.exports = {
       .join('\n')
     const idiomas = Object.entries(IDIOMAS).map(([c, n]) => `${c} (${n})`).join(', ')
     const texto =
-      `🔊 *Voces disponibles*\n\n` +
-      `🗣️ *Español*\n${grupo('es')}\n\n` +
-      `🗣️ *Inglés*\n${grupo('en')}\n\n` +
-      `🌍 *Idiomas:* ${idiomas}\n\n` +
-      `📌 ${P}tts <voz o idioma> <texto>`
+      `${caja('🔊', 'Voces disponibles', [['Español', `\n${grupo('es').replace(/^/gm, '┃ ')}`], ['Inglés', `\n${grupo('en').replace(/^/gm, '┃ ')}`], ['Idiomas', idiomas]], `${P}tts <voz o idioma> <texto>`)}`
     await sock.sendMessage(msg.key.remoteJid, { text: texto }, { quoted: msg })
   },
 }

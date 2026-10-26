@@ -1,4 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const { caja, negrita } = require('../../lib/estilo')
 const fetch = require('../../lib/http').fetchSeguro // timeout por defecto (ver lib/http.js)
 const { APIS } = require('../../defaults')
 const { crearStickerWebp } = require('../../lib/stickers')
@@ -41,7 +42,7 @@ module.exports = {
 
       await sock.sendMessage(
         jid,
-        { text: `🔎 Encontrados ${data.total ?? data.results.length} resultados para "${query}", enviando ${resultados.length}...` },
+        { text: caja('🔎', 'Orbit Stickers', [['Búsqueda', query], ['Resultados', data.total ?? data.results.length], ['Enviando', resultados.length]], 'Un momento ✨') },
         { quoted: msg }
       )
 
@@ -67,7 +68,7 @@ module.exports = {
 
       await sock.sendMessage(
         jid,
-        { text: `✅ Enviados: ${enviados}${fallidos > 0 ? `\n⚠️ Fallidos: ${fallidos}` : ''}` },
+        { text: caja('✅', 'Stickers enviados', [['Enviados', enviados], fallidos > 0 ? ['Fallidos', fallidos, '⚠️'] : null], 'YuiBot-MD ✨') },
         { quoted: msg }
       )
     } catch (error) {

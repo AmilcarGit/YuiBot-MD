@@ -1,4 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const { caja, error, uso } = require('../../lib/estilo')
 const { obtenerUsuario, agregarMonedas } = require('../../lib/db')
 
 module.exports = {
@@ -21,7 +22,7 @@ module.exports = {
     if (!objetivoJid) {
       return sock.sendMessage(
         jid,
-        { text: `❌ Cita o menciona a quién le quieres dar monedas.\n📌 Ejemplo: ${prefijo}dar 50 (citando su mensaje)` },
+        { text: uso(prefijo, 'dar', '50 (citando su mensaje)', 'Cita o menciona a quién le quieres dar monedas.') },
         { quoted: msg }
       )
     }
@@ -29,7 +30,7 @@ module.exports = {
     const numeroObjetivo = objetivoJid.split('@')[0].split(':')[0]
 
     if (numeroObjetivo === numeroRemitente) {
-      return sock.sendMessage(jid, { text: '❌ No puedes darte monedas a ti mismo.' }, { quoted: msg })
+      return sock.sendMessage(jid, { text: error('No puedes darte monedas a ti mismo.') }, { quoted: msg })
     }
 
     const cantidad = parseInt(args[0], 10)
@@ -37,7 +38,7 @@ module.exports = {
     if (!cantidad || cantidad <= 0) {
       return sock.sendMessage(
         jid,
-        { text: `❌ Escribe una cantidad válida.\n📌 Ejemplo: ${prefijo}dar 50 (citando su mensaje)` },
+        { text: uso(prefijo, 'dar', '50 (citando su mensaje)', 'Escribe una cantidad válida.') },
         { quoted: msg }
       )
     }
@@ -48,7 +49,7 @@ module.exports = {
     if (balanceActual < cantidad) {
       return sock.sendMessage(
         jid,
-        { text: `❌ No tienes suficientes monedas. Tu balance es ${balanceActual}.` },
+        { text: error(`No tienes suficientes monedas. Tu balance es ${balanceActual}.`) },
         { quoted: msg }
       )
     }
@@ -59,7 +60,7 @@ module.exports = {
     await sock.sendMessage(
       jid,
       {
-        text: `✅ @${numeroRemitente} le dio *${cantidad}* monedas a @${numeroObjetivo}.`,
+        text: caja('💸', 'Transferencia', [['De', `@${numeroRemitente}`], ['Para', `@${numeroObjetivo}`], ['Monto', `${cantidad} monedas 💰`]], 'Transferencia completada ✅'),
         mentions: [remitente, objetivoJid],
       },
       { quoted: msg }

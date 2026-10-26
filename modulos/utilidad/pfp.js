@@ -1,5 +1,6 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
 const fetch = require('../../lib/http').fetchSeguro // timeout por defecto (ver lib/http.js)
+const { caja } = require('../../lib/estilo')
 module.exports = {
   name: 'profilepic',
   description: 'Obtiene la foto de perfil de un usuario (mencionado, número o el otro participante en privado)',
@@ -76,7 +77,7 @@ module.exports = {
       const buffer = Buffer.from(await respImg.arrayBuffer())
       await sock.sendMessage(remoteJid, {
         image: buffer,
-        caption: `🖼️ *Foto de perfil de* ${targetJid.split('@')[0]}\n${isGroup ? `👥 Grupo: ${(await sock.groupMetadata(remoteJid)).subject}` : '💬 Chat privado'}`
+        caption: caja('🖼️', 'Foto de perfil', [['Usuario', targetJid.split('@')[0]], isGroup ? ['Grupo', (await sock.groupMetadata(remoteJid)).subject] : ['Chat', 'Privado']])
       }, { quoted: msg })
     } catch (error) {
       console.error('[PROFILEPIC] Error al obtener foto:', error)

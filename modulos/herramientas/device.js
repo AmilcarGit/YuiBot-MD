@@ -1,4 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const { caja } = require('../../lib/estilo')
 function tipoMensaje(message) {
   if (!message) return 'desconocido'
   const claves = Object.keys(message)
@@ -16,13 +17,6 @@ module.exports = {
     const plataforma = msg.key.fromMe ? 'Bot' : (msg.pushName ? 'Usuario' : 'Desconocida')
     const mensaje = tipoMensaje(msg.message)
     const grupo = jid.endsWith('@g.us') ? 'Sí' : 'No'
-    await sock.sendMessage(jid, { text: `╭─ ✦ 📱 DEVICE ✦
-│ 👤 Usuario: *${numero}*
-│ 💬 Chat: *${grupo === 'Sí' ? 'Grupo' : 'Privado'}*
-│ 📦 Mensaje: *${mensaje}*
-│ 🤖 Emisor: *${plataforma}*
-│ 🆔 JID: *${jid}*
-│ 🔑 ID: *${msg.key.id || 'N/A'}*
-╰─ 🍃 YuiBot-MD` }, { quoted: msg })
+    await sock.sendMessage(jid, { text: caja('📱', 'Device', [['Usuario', numero], ['Chat', grupo === 'Sí' ? 'Grupo' : 'Privado'], ['Mensaje', mensaje], ['Emisor', plataforma], ['JID', jid], ['ID', msg.key.id || 'N/A']], 'YuiBot-MD') }, { quoted: msg })
   },
 }

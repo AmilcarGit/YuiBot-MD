@@ -1,4 +1,5 @@
 const { esAdmin, limpiar } = require('../../lib/adminGrupo')
+const { caja } = require('../../lib/estilo')
 
 module.exports = {
   name: 'admins',
@@ -15,6 +16,6 @@ module.exports = {
     }
     const lista = metadata.participants.filter(esAdmin)
     const filas = lista.map((p) => `${p.admin === 'superadmin' ? '👑' : '🛡️'} @${limpiar(p.id)}`)
-    return sock.sendMessage(jid, { text: `🛡️ *Admins (${lista.length})*\n\n${filas.join('\n')}`, mentions: lista.map((p) => p.id) }, { quoted: msg })
+    return sock.sendMessage(jid, { text: caja('🛡️', 'Staff del grupo', [`✦ Admins (${lista.length})`, ...filas], 'Administradores activos'), mentions: lista.map((p) => p.id) }, { quoted: msg })
   },
 }

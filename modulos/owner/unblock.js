@@ -1,4 +1,6 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const { caja } = require('../../lib/estilo')
+
 module.exports = {
   name: 'unblock',
   description: 'Desbloquea un usuario de WhatsApp',
@@ -18,7 +20,7 @@ module.exports = {
 
     try {
       await sock.updateBlockStatus(objetivo, 'unblock')
-      await sock.sendMessage(jid, { text: `✅ Usuario desbloqueado: *${objetivo.split('@')[0]}*` }, { quoted: msg })
+      await sock.sendMessage(jid, { text: caja('✅', 'Usuario desbloqueado', [['Número', objetivo.split('@')[0]]], 'YuiBot-MD') }, { quoted: msg })
     } catch (error) {
       await sock.sendMessage(jid, { text: `❌ No se pudo desbloquear al usuario.\n${error.message || 'Error desconocido'}` }, { quoted: msg })
     }

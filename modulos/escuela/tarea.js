@@ -1,4 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const { caja } = require('../../lib/estilo')
 
 module.exports = {
 
@@ -16,15 +17,13 @@ const jid = msg.key.remoteJid
 if (!args.length) {
 return await sock.sendMessage(jid, {
 text:
-'📚「 TAREAS 」\n\n' +
-'Puedes usar:\n\n' +
-'➕ .tarea agregar <materia> - <tarea>\n' +
-'📋 .tarea lista\n' +
-'❌ .tarea eliminar <número>\n' +
-'✅ .tarea completar <número>\n' +
-'🗑️ .tarea limpiar\n\n' +
-'Ejemplo:\n' +
-'.tarea agregar Matemáticas - Resolver ejercicios 1 al 10'
+caja('📚', 'Tareas', [
+'➕ .tarea agregar <materia> - <tarea>',
+'📋 .tarea lista',
+'❌ .tarea eliminar <número>',
+'✅ .tarea completar <número>',
+'🗑️ .tarea limpiar',
+], 'Ejemplo: .tarea agregar Matemáticas - Resolver ejercicios 1 al 10')
 })
 }
 
@@ -58,20 +57,14 @@ text: '❌ La materia y la tarea no pueden estar vacías.'
 
 return await sock.sendMessage(jid, {
 text:
-'✅ Tarea registrada.\n\n' +
-`📚 Materia: ${materia}\n` +
-`📝 Tarea: ${tarea}\n\n` +
-'⚠️ Nota: esta primera versión solo muestra la tarea registrada. '
+caja('✅', 'Tarea registrada', [['Materia', materia, '📚'], ['Tarea', tarea, '📝']], '⚠️ Nota: esta primera versión solo muestra la tarea registrada.')
 })
 }
 
 if (accion === 'lista' || accion === 'listar') {
 return await sock.sendMessage(jid, {
 text:
-'📋「 LISTA DE TAREAS 」\n\n' +
-'No tienes tareas guardadas todavía.\n\n' +
-'Usa:\n' +
-'.tarea agregar Matemáticas - Resolver ejercicios'
+caja('📋', 'Lista de tareas', ['No tienes tareas guardadas todavía.'], 'Usa: .tarea agregar Matemáticas - Resolver ejercicios')
 })
 }
 

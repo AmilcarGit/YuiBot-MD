@@ -1,4 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const { caja } = require('../../lib/estilo')
 const { numeroUsuario, estado, enviarRpg } = require('../../lib/rpg')
 const { obtenerUsuario, guardarUsuario, agregarMonedasConBoost } = require('../../lib/db')
 
@@ -46,6 +47,6 @@ module.exports = {
       return
     }
     const datos = misiones.lista.map((m) => `${m.reclamada ? '✅' : m.progreso >= m.meta ? '🏆' : '📜'} ${m.id}. ${m.nombre} ${m.progreso}/${m.meta}`)
-    await enviarRpg(sock, msg, { icono: '📜', titulo: 'Misiones', subtitulo: 'Misiones diarias de YUI RPG', datos, caption: `╭─ ✦ 📜 MISIONES ✦\n│ ${datos.join('\n│ ')}\n╰─ 🍃 Reclama con */misiones reclamar <id>*`, botones: [{ id: '/misiones reclamar 1', text: '📜 MISIÓN 1' }, { id: '/loot', text: '🎁 LOOT' }, { id: '/duelo', text: '⚔️ DUELO' }] })
+    await enviarRpg(sock, msg, { icono: '📜', titulo: 'Misiones', subtitulo: 'Misiones diarias de YUI RPG', datos, caption: caja('📜', 'Misiones', datos, 'Reclama con /misiones reclamar <id> 🍃'), botones: [{ id: '/misiones reclamar 1', text: '📜 MISIÓN 1' }, { id: '/loot', text: '🎁 LOOT' }, { id: '/duelo', text: '⚔️ DUELO' }] })
   },
 }

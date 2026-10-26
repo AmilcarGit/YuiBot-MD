@@ -1,4 +1,6 @@
 //COMANDO KICK PARA YUIBOT-MD
+const { caja } = require('../../lib/estilo')
+
 module.exports = {
   name: 'kick',
   aliases: ['sacar', 'expulsar'],
@@ -100,14 +102,10 @@ module.exports = {
     }
 
     // Enviar mensaje de confirmación
-    let mensaje = `⛧───「 Usuarios Eliminados 」───⛧\n\n`
-    if (kicked > 0) {
-      mensaje += `✅ ${kicked} usuario${kicked > 1 ? 's' : ''} eliminado${kicked > 1 ? 's' : ''} correctamente.\n\n`
-    }
-    if (failed > 0) {
-      mensaje += `❌ ${failed} usuario${failed > 1 ? 's' : ''} no pudieron ser eliminados.\n`
-    }
-    mensaje += `\n╰─➤ _${metadata.subject}_ 🥀`
+    const filas = []
+    if (kicked > 0) filas.push(['Eliminados', `${kicked} usuario${kicked > 1 ? 's' : ''} eliminado${kicked > 1 ? 's' : ''} correctamente`])
+    if (failed > 0) filas.push(['Fallidos', `${failed} usuario${failed > 1 ? 's' : ''} no pudieron ser eliminados`])
+    const mensaje = caja('🚪', 'Usuarios eliminados', filas, metadata.subject)
 
     await sock.sendMessage(jid, { text: mensaje }, { quoted: msg })
   },

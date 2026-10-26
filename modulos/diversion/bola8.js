@@ -1,3 +1,5 @@
+const { caja, uso } = require('../../lib/estilo')
+
 const RESPUESTAS = [
   '🟢 Sí, definitivamente.', '🟢 Sin duda alguna.', '🟢 Todo apunta a que sí.', '🟢 Puedes contar con ello.', '🟢 Es muy probable.',
   '🟡 Pregúntame de nuevo más tarde.', '🟡 No puedo predecirlo ahora.', '🟡 Concéntrate y vuelve a preguntar.', '🟡 Mejor no te lo digo ahora.',
@@ -14,10 +16,10 @@ module.exports = {
     const jid = msg.key.remoteJid
     const pregunta = args.join(' ').trim()
     if (!pregunta) {
-      return sock.sendMessage(jid, { text: `❌ Hazme una pregunta.\n\n📌 Ejemplo: ${config.PREFIXES[0]}bola8 ¿Me irá bien hoy?` }, { quoted: msg })
+      return sock.sendMessage(jid, { text: uso(config.PREFIXES[0], 'bola8', '¿Me irá bien hoy?', 'Hazme una pregunta.') }, { quoted: msg })
     }
     const respuesta = RESPUESTAS[Math.floor(Math.random() * RESPUESTAS.length)]
-    await sock.sendMessage(jid, { text: `🎱 *Bola mágica*\n\n❓ ${pregunta}\n\n${respuesta}` }, { quoted: msg })
+    await sock.sendMessage(jid, { text: caja('🎱', 'Bola mágica', [['Pregunta', pregunta], ['Respuesta', respuesta]], 'Las bolas mágicas nunca mienten ✨') }, { quoted: msg })
   },
 
   _internos: { RESPUESTAS },

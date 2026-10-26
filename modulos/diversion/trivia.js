@@ -1,4 +1,5 @@
 const { agregarMonedasConBoost } = require('../../lib/db')
+const { caja, error } = require('../../lib/estilo')
 
 const PREGUNTAS = [
   { pregunta: '¿Cuál es el planeta más grande del sistema solar?', opciones: ['Marte', 'Júpiter', 'Saturno', 'Tierra'], correcta: 1 },
@@ -119,11 +120,10 @@ module.exports = {
 
     const item = PREGUNTAS[Math.floor(Math.random() * PREGUNTAS.length)]
 
-    let texto = `🧠 *TRIVIA*\n\n${item.pregunta}\n\n`
-    item.opciones.forEach((opcion, i) => {
-      texto += `${i + 1}. ${opcion}\n`
-    })
-    texto += `\n╰─➤ _Responde con el número correcto (30 segundos)_ 🥀`
+    const texto = caja('🧠', 'Trivia', [
+      item.pregunta,
+      ...item.opciones.map((opcion, i) => `${i + 1}. ${opcion}`),
+    ], 'Responde con el número correcto (30 segundos) ⏳')
 
     await sock.sendMessage(jid, { text: texto }, { quoted: msg })
 
@@ -163,14 +163,14 @@ module.exports = {
       const balance = agregarMonedasConBoost(numeroRemitente, recompensa)
       return sock.sendMessage(
         jid,
-        { text: `✅ ¡Correcto! Ganaste *${recompensa}* monedas.\n💰 Balance: ${balance} monedas.` },
+        { text: caja('🧠', 'Trivia', [['Resultado', '¡Correcto! ✅'], ['Ganaste', `${recompensa} monedas 💰`], ['Balance', `${balance} monedas`]], '¡Sigue así! ✨') },
         { quoted: msg }
       )
     }
 
     await sock.sendMessage(
       jid,
-      { text: `❌ Incorrecto. La respuesta correcta era: *${item.opciones[item.correcta]}*` },
+      { text: error(`Incorrecto. La respuesta correcta era: *${item.opciones[item.correcta]}*`) },
       { quoted: msg }
     )
   },

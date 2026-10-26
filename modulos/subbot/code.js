@@ -1,4 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const { caja } = require('../../lib/estilo')
 const { exec } = require('child_process')
 const fs = require('fs')
 const path = require('path')
@@ -111,11 +112,10 @@ module.exports = {
     await sock.sendMessage(
       jid,
       {
-        text:
-          `⛧───「 Código de vinculación 」───⛧\n\n` +
-          `  ❖ número: +${numero}\n` +
-          `  ❖ premium: ${esPremium ? '⭐ sí' : 'no'}\n\n` +
-          `╰─➤ _Ve a WhatsApp > Dispositivos vinculados > Vincular con número de teléfono, e ingresa el código de abajo en el celular de ese número_ 🥀`
+        text: caja('🔗', 'Código de vinculación', [
+          ['Número', `+${numero}`],
+          ['Premium', esPremium ? '⭐ sí' : 'no'],
+        ], 'Ve a WhatsApp > Dispositivos vinculados > Vincular con número de teléfono, e ingresa el código de abajo en el celular de ese número')
       },
       { quoted: msg }
     )

@@ -1,4 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const { caja } = require('../../lib/estilo')
 const resiliencia = require('../../lib/resiliencia')
 
 module.exports = {
@@ -30,19 +31,23 @@ module.exports = {
     const ahora = Date.now()
     const bloqueados = entradas.filter(([, info]) => info.deshabilitadoHasta > ahora)
 
-    let texto = `🛡️ *Circuit breaker* — ${estado.enabled ? 'activado' : 'desactivado'}\n`
-    texto += `Umbral: ${estado.threshold} fallos en ${Math.round(estado.windowMs / 60000)} min → cooldown de ${Math.round(estado.cooldownMs / 60000)} min\n\n`
+    const filas = [
+      ['Estado', estado.enabled ? '🟢 Activado' : '🔴 Desactivado'],
+      ['Umbral', `${estado.threshold} fallos en ${Math.round(estado.windowMs / 60000)} min`],
+      ['Cooldown', `${Math.round(estado.cooldownMs / 60000)} min`],
+    ]
+    let pie = 'Ningún comando está deshabilitado ahora mismo.'
 
-    if (!bloqueados.length) {
-      texto += '✅ Ningún comando está deshabilitado ahora mismo.'
-    } else {
-      texto += `⛔ Comandos deshabilitados (${bloqueados.length}):\n`
+    if (bloqueados.length) {
+      filas.push(['Deshabilitados', bloqueados.length])
       for (const [nombre, info] of bloqueados) {
         const minutos = Math.max(1, Math.ceil((info.deshabilitadoHasta - ahora) / 60000))
-        texto += `• *${nombre}* — vuelve en ~${minutos} min. Último error: ${info.ultimoError || 'desconocido'}\n`
+        filas.push(`⛔ *${nombre}* — vuelve en ~${minutos} min. Último error: ${info.ultimoError || 'desconocido'}`)
       }
-      texto += '\nUsa *resiliencia reset <comando>* para reactivarlo manualmente.'
+      pie = 'Usa resiliencia reset <comando> para reactivarlo manualmente.'
     }
+
+    const texto = caja('🛡️', 'Circuit breaker', filas, pie)
 
     return sock.sendMessage(jid, { text: texto }, { quoted: msg })
   },

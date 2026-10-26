@@ -1,4 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const { caja } = require('../../lib/estilo')
 const { numeroUsuario, estado, enviarRpg } = require('../../lib/rpg')
 const { CATALOGO } = require('../../lib/tienda')
 
@@ -22,7 +23,7 @@ module.exports = {
       titulo: 'Inventario',
       subtitulo: 'Tus objetos y recompensas',
       datos: [...nombres, ...(nombres.length < 4 ? tienda : [])].slice(0, 6),
-      caption: `╭─ ✦ 🎒 INVENTARIO ✦\n│ 🎁 Loot RPG: *${objetos.length}*\n│ 🛒 Objetos de tienda: *${comprados.length}*\n╰─ 🍃 YuiBot-MD`,
+      caption: caja('🎒', 'Inventario', [['Loot RPG', objetos.length, '🎁'], ['Objetos de tienda', comprados.length, '🛒']], 'YuiBot-MD 🍃'),
       botones: [{ id: '/loot', text: '🎁 LOOT' }, { id: '/tienda', text: '🛒 TIENDA' }, { id: '/perfilrpg', text: '🧙 PERFIL' }],
     })
   },

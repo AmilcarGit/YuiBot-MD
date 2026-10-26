@@ -1,4 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const { caja } = require('../../lib/estilo')
 const { exec } = require('child_process')
 const { esPremium, obtenerNombrePersonalizado } = require('../../lib/subbots')
 const { gruposLiderados } = require('../../lib/red')
@@ -47,7 +48,7 @@ module.exports = {
       return sock.sendMessage(jid, { text: `📭 No hay subbots activos.\nUsa ${config.PREFIXES[0]}code <número> para crear uno.` }, { quoted: msg })
     }
 
-    let texto = `⛧───「 Subbots activos 」───⛧\n\n`
+    const filas = []
     for (const p of subbots) {
       const numero = numeroDeProcesoSubbot(p.name)
       const estado = p.pm2_env?.status || 'desconocido'
@@ -58,10 +59,10 @@ module.exports = {
         ? formatearDuracion(Date.now() - p.pm2_env.pm_uptime)
         : '—'
 
-      texto += `  ❖ +${numero}${premium}${nombre ? ` (${nombre})` : ''}\n`
-      texto += `     ${estado === 'online' ? '🟢' : '🔴'} ${estado} — activo: ${tiempoActivo} — lidera ${grupos} grupo(s)\n`
+      filas.push(`✦ +${numero}${premium}${nombre ? ` (${nombre})` : ''}`)
+      filas.push(`┃    ${estado === 'online' ? '🟢' : '🔴'} ${estado} — activo: ${tiempoActivo} — lidera ${grupos} grupo(s)`)
     }
-    texto += `\n╰─➤ _${subbots.length} subbot(s) en total_ 🥀`
+    const texto = caja('🤖', 'Subbots activos', filas, `${subbots.length} subbot(s) en total`)
 
     await sock.sendMessage(jid, { text: texto }, { quoted: msg })
   },

@@ -1,4 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const { caja } = require('../../lib/estilo')
 const { obtenerUsuario } = require('../../lib/db')
 
 module.exports = {
@@ -17,7 +18,7 @@ module.exports = {
 
     await sock.sendMessage(
       jid,
-      { text: `💰 Tienes *${monedas}* monedas.\n\n╰─➤ _Usa ${config.PREFIXES[0]}daily para ganar más_ 🥀` },
+      { text: caja('💰', 'Tus monedas', [['Balance', `${monedas} monedas`]], `Usa ${config.PREFIXES[0]}daily para ganar más ✨`) },
       { quoted: msg }
     )
   },

@@ -1,4 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const { caja } = require('../../lib/estilo')
 const { darToken, soltarToken, obtenerTokenActual } = require('../../lib/premium')
 
 module.exports = {
@@ -19,9 +20,8 @@ module.exports = {
         jid,
         {
           text:
-            `⛧───「 Token premium 」───⛧\n\n` +
-            `Nuevo token generado. Compártelo con quien quieras dar permisos premium.\n\n` +
-            `Para usarlo al crear su subbot:\n${prefijo}code <numero> ${token}`
+            caja('💎', 'Token premium', ['Nuevo token generado.', 'Compártelo con quien quieras dar permisos premium.'], 'Para usarlo al crear su subbot:') +
+            `\n\n${prefijo}code <numero> ${token}`
         },
         { quoted: msg }
       )
@@ -38,7 +38,7 @@ module.exports = {
       {
         text:
           actual
-            ? `⛧───「 Token premium 」───⛧\n\nToken activo:\n${actual}\n\n📌 ${prefijo}token soltar — para revocarlo\n📌 ${prefijo}token dar — para generar uno nuevo`
+            ? caja('💎', 'Token premium', ['Token activo:'], `${prefijo}token soltar — para revocarlo | ${prefijo}token dar — para generar uno nuevo`) + `\n\n${actual}`
             : `📭 No hay ningún token premium activo.\n\n📌 ${prefijo}token dar — para generar uno`
       },
       { quoted: msg }

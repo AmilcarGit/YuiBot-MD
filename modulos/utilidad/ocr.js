@@ -1,6 +1,7 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
 const fetch = require('../../lib/http').fetchSeguro // timeout por defecto (ver lib/http.js)
 const { downloadContentFromMessage } = require('@whiskeysockets/baileys')
+const { negrita } = require('../../lib/estilo')
 const { APIS } = require('../../defaults')
 
 const API_URL = 'https://api.ocr.space/parse/image'
@@ -62,7 +63,7 @@ module.exports = {
 
       await sock.sendMessage(
         jid,
-        { text: `📝 *Texto extraído*\n\n${texto}\n\n> ${config.BOT_NAME}` },
+        { text: `📝 ${negrita('Texto extraído')}\n\n${texto}\n\n> ${config.BOT_NAME}` },
         { quoted: msg }
       )
     } catch (error) {

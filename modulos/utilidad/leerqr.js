@@ -1,6 +1,7 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
 const { downloadContentFromMessage } = require('@whiskeysockets/baileys')
 const { loadImage, createCanvas } = require('../../lib/canvas')
+const { negrita } = require('../../lib/estilo')
 const jsQR = require('jsqr')
 
 async function descargarMedia(mensaje, tipo) {
@@ -50,7 +51,7 @@ module.exports = {
 
       await sock.sendMessage(
         jid,
-        { text: `🔳 *QR leído*\n\n${resultado.data}\n\n> ${config.BOT_NAME}` },
+        { text: `🔳 ${negrita('QR leído')}\n\n${resultado.data}\n\n> ${config.BOT_NAME}` },
         { quoted: msg }
       )
     } catch (error) {

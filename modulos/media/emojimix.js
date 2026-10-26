@@ -58,7 +58,7 @@ module.exports = {
       await sock.sendMessage(jid, { sticker }, { quoted: msg })
     } catch (error) {
       console.error('[EMOJIMIX] Error:', error)
-      await sock.sendMessage(jid, { text: '⚠️ Ocurrió un error generando el emojimix.' }, { quoted: msg })
+      await sock.sendMessage(jid, { text: '❌ Ocurrió un error generando el emojimix.' }, { quoted: msg })
     }
   },
 }

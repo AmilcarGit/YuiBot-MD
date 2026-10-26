@@ -1,4 +1,5 @@
 const { exigirAdmin } = require('../../lib/adminGrupo')
+const { caja, error } = require('../../lib/estilo')
 
 module.exports = {
   name: 'linkgrupo',
@@ -12,9 +13,9 @@ module.exports = {
     const reset = args.some((a) => ['-r', 'reset', 'revocar'].includes(a.toLowerCase()))
     try {
       const codigo = reset ? await sock.groupRevokeInvite(ctx.jid) : await sock.groupInviteCode(ctx.jid)
-      return sock.sendMessage(ctx.jid, { text: `${reset ? '♻️ Enlace restablecido:' : '🔗 Enlace del grupo:'}\nhttps://chat.whatsapp.com/${codigo}` }, { quoted: msg })
+      return sock.sendMessage(ctx.jid, { text: caja(reset ? '♻️' : '🔗', reset ? 'Enlace restablecido' : 'Enlace del grupo', [], 'Toca el enlace para unirte:') + `\nhttps://chat.whatsapp.com/${codigo}` }, { quoted: msg })
     } catch (e) {
-      return sock.sendMessage(ctx.jid, { text: '❌ No pude obtener el enlace.' }, { quoted: msg })
+      return sock.sendMessage(ctx.jid, { text: error('No pude obtener el enlace.') }, { quoted: msg })
     }
   },
 }

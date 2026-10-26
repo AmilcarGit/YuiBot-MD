@@ -1,3 +1,4 @@
+const { caja } = require('../../lib/estilo')
 const reputacion = require('../../lib/reputacion')
 
 module.exports = {
@@ -13,7 +14,7 @@ module.exports = {
     const medallas = ['🥇', '🥈', '🥉']
     const filas = lista.map((u, i) => `${medallas[i] || `${i + 1}.`} @${u.numero} — ${u.reputacion}`)
     return sock.sendMessage(jid, {
-      text: `⭐ *Top reputación*\n\n${filas.join('\n')}`,
+      text: caja('🏆', 'Top reputación', filas, 'Usa rep citando a alguien ⭐'),
       mentions: lista.map((u) => `${u.numero}@s.whatsapp.net`),
     }, { quoted: msg })
   },

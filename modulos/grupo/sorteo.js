@@ -1,6 +1,7 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
 const { esAdminDeGrupo } = require('../../lib/moderacion')
 const sorteoLib = require('../../lib/sorteo')
+const { caja } = require('../../lib/estilo')
 
 // ⚠️ Estos timers viven en memoria: si el bot se reinicia mientras un
 // sorteo está activo, el sorteo sigue guardado en data/sorteo.json pero
@@ -25,13 +26,13 @@ async function anunciarGanador(sock, jid) {
 
   if (!resultado.ganador) {
     await sock.sendMessage(jid, {
-      text: `🎉 *SORTEO FINALIZADO*\n\nPremio: *${resultado.premio}*\n\nNadie participó, no hay ganador esta vez.`,
+      text: caja('🎉', 'Sorteo finalizado', [['Premio', resultado.premio], ['Ganador', 'Nadie participó, no hay ganador esta vez']]),
     })
     return
   }
 
   await sock.sendMessage(jid, {
-    text: `🎉 *SORTEO FINALIZADO*\n\nPremio: *${resultado.premio}*\nParticipantes: *${resultado.participantes.length}*\n\n🏆 Ganador: @${resultado.ganador}`,
+    text: caja('🎉', 'Sorteo finalizado', [['Premio', resultado.premio], ['Participantes', resultado.participantes.length], ['🏆 Ganador', `@${resultado.ganador}`]], 'Felicidades'),
     mentions: [`${resultado.ganador}@s.whatsapp.net`],
   })
 }
@@ -60,7 +61,7 @@ module.exports = {
           : 'ℹ️ Ya estás participando en el sorteo actual.'
         return sock.sendMessage(jid, { text: texto }, { quoted: msg })
       }
-      return sock.sendMessage(jid, { text: `✅ Te uniste al sorteo. Participantes: *${resultado.total}*` }, { quoted: msg })
+      return sock.sendMessage(jid, { text: caja('✅', 'Te uniste al sorteo', [['Participantes', resultado.total]], 'Mucha suerte') }, { quoted: msg })
     }
 
     // A partir de acá, todo requiere admin/owner.
@@ -80,7 +81,7 @@ module.exports = {
       sorteoLib.cancelar(jid)
       clearTimeout(timers.get(jid))
       timers.delete(jid)
-      return sock.sendMessage(jid, { text: '✅ Sorteo cancelado.' }, { quoted: msg })
+      return sock.sendMessage(jid, { text: caja('🛑', 'Sorteo cancelado', [['Estado', 'Cancelado sin ganador']]) }, { quoted: msg })
     }
 
     if (accion === 'terminar') {
@@ -109,7 +110,7 @@ module.exports = {
     programarFin(sock, jid, duracionMs)
 
     return sock.sendMessage(jid, {
-      text: `🎉 *SORTEO INICIADO*\n\nPremio: *${premio}*\nDuración: *${minutos} min*\n\nEscribe *sorteo unirme* para participar.`,
+      text: caja('🎉', 'Sorteo iniciado', [['Premio', premio], ['Duración', `${minutos} min`]], 'Escribe sorteo unirme para participar'),
     }, { quoted: msg })
   },
 }

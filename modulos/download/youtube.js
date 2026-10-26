@@ -1,4 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const { caja, negrita } = require('../../lib/estilo')
 const fetch = require('../../lib/http').fetchSeguro // timeout por defecto (ver lib/http.js)
 const { pedirVideo, pedirBusqueda, conFuentes, descargarLocal } = require('../../lib/youtube')
 const LIMITE_VIDEO_MB = 3000
@@ -98,9 +99,7 @@ module.exports = {
       await sock.sendMessage(
         jid,
         {
-          text:
-            `⏳ Descargando video...\n\n` +
-            `🎬 ${titulo}`
+          text: caja('🎬', 'Descargando video', [['Título', String(titulo).slice(0, 200)]], 'Esto puede tardar un poco ⏳')
         },
         { quoted: msg }
       )
@@ -129,14 +128,13 @@ module.exports = {
       const pesoMB = buffer.length / (1024 * 1024)
       console.log(`[YTV] Peso real descargado: ${pesoMB.toFixed(2)} MB`)
 
-      const caption =
-        `╭━━━〔 🎬 YOUTUBE VIDEO 〕━━━╮\n` +
-        `┃ 🎵 ${data.titulo || resultadoBusqueda?.title || 'Sin título'}\n` +
-        `┃ 👤 ${data.canal || resultadoBusqueda?.channel || 'Desconocido'}\n` +
-        `┃ ⏱️ ${data.duracion || resultadoBusqueda?.duration || 'Desconocida'}\n` +
-        `┃ 🎞️ Calidad: ${data.datos.calidad || 'Desconocida'}\n` +
-        `┃ 💾 Tamaño: ${pesoMB.toFixed(1)} MB\n` +
-        `╰━━━━━━━━━━━━━━━━━━━━━━╯`
+      const caption = caja('🎬', 'YouTube Video', [
+        ['Título', String(data.titulo || resultadoBusqueda?.title || 'Sin título').slice(0, 200), '🎵'],
+        ['Canal', data.canal || resultadoBusqueda?.channel || 'Desconocido', '👤'],
+        ['Duración', data.duracion || resultadoBusqueda?.duration || 'Desconocida', '⏱️'],
+        ['Calidad', data.datos.calidad || 'Desconocida', '🎞️'],
+        ['Tamaño', `${pesoMB.toFixed(1)} MB`, '💾']
+      ], 'YuiBot-MD ✨')
 
       if (pesoMB <= LIMITE_VIDEO_MB) {
         await sock.sendMessage(

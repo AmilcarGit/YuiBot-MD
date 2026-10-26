@@ -1,5 +1,6 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
 const fetch = require('../../lib/http').fetchSeguro // timeout por defecto (ver lib/http.js)
+const { caja } = require('../../lib/estilo')
 module.exports = {
   name: 'whois',
   description: 'Muestra información básica de un dominio mediante RDAP',
@@ -17,13 +18,7 @@ module.exports = {
       const actualizado = eventos.find(e => e.eventAction === 'last changed')?.eventDate || eventos.find(e => e.eventAction === 'last update of RDAP database')?.eventDate || 'N/A'
       const vencimiento = eventos.find(e => e.eventAction === 'expiration')?.eventDate || 'N/A'
       const estado = Array.isArray(data.status) && data.status.length ? data.status.slice(0, 3).join(', ') : 'N/A'
-      await sock.sendMessage(jid, { text: `╭─ ✦ 🔍 WHOIS ✦
-│ 🌐 Dominio: *${data.ldhName || dominio}*
-│ 📅 Registro: *${creado}*
-│ 🔄 Actualizado: *${actualizado}*
-│ ⏳ Vencimiento: *${vencimiento}*
-│ 📌 Estado: *${estado}*
-╰─ 🍃 YuiBot-MD` }, { quoted: msg })
+      await sock.sendMessage(jid, { text: caja('🔍', 'Whois', [['Dominio', data.ldhName || dominio], ['Registro', creado], ['Actualizado', actualizado], ['Vencimiento', vencimiento], ['Estado', estado]], 'YuiBot-MD') }, { quoted: msg })
     } catch (error) {
       await sock.sendMessage(jid, { text: `❌ No se pudo consultar el dominio: ${error.message}` }, { quoted: msg })
     }

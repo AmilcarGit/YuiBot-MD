@@ -1,4 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const { caja, negrita } = require('../../lib/estilo')
 const fetch = require('../../lib/http').fetchSeguro // timeout por defecto (ver lib/http.js)
 const { loadImage, descargarImagenMensaje, crearLienzo, dibujarCirculo } = require('../../lib/imagenes')
 
@@ -38,7 +39,7 @@ module.exports = {
       ctx.fillText(objetivo.split('@')[0], 450, 875)
       ctx.font = 'bold 30px serif'
       ctx.fillText('RECOMPENSA: 🍃', 450, 950)
-      await sock.sendMessage(jid, { image: canvas.toBuffer('image/jpeg', { quality: 0.94 }), caption: '🎯 Cartel generado' }, { quoted: msg })
+      await sock.sendMessage(jid, { image: canvas.toBuffer('image/jpeg', { quality: 0.94 }), caption: caja('🎯', 'Se busca', [['Objetivo', objetivo.split('@')[0]], ['Recompensa', '🍃']], 'YuiBot-MD ✨') }, { quoted: msg })
     } catch {
       await sock.sendMessage(jid, { text: '❌ No pude obtener una imagen para crear el cartel.' }, { quoted: msg })
     }

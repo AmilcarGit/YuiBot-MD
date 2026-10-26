@@ -1,4 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const { caja } = require('../../lib/estilo')
 const fs = require('fs')
 const path = require('path')
 const { numeroUsuario, enviarRpg } = require('../../lib/rpg')
@@ -17,6 +18,6 @@ module.exports = {
       .slice(0, 8)
     const yo = numeroUsuario(msg)
     const datos = lista.map((u, i) => `${i + 1}. ${u.numero === yo ? '👑' : '⚔️'} ${u.numero} • Nv.${u.nivel} • ${u.xp} XP`)
-    await enviarRpg(sock, msg, { icono: '🏆', titulo: 'Ranking', subtitulo: 'Los mejores aventureros', datos: datos.length ? datos : ['🌱 Aún no hay aventureros registrados'], caption: `╭─ ✦ 🏆 RANKING RPG ✦\n│ 🥇 Mejores aventureros\n│ ⭐ Ordenado por nivel y XP\n╰─ 🍃 YuiBot-MD`, botones: [{ id: '/perfilrpg', text: '🧙 MI PERFIL' }, { id: '/nivel', text: '⭐ MI NIVEL' }, { id: '/duelo', text: '⚔️ DUELO' }] })
+    await enviarRpg(sock, msg, { icono: '🏆', titulo: 'Ranking', subtitulo: 'Los mejores aventureros', datos: datos.length ? datos : ['🌱 Aún no hay aventureros registrados'], caption: caja('🏆', 'Ranking RPG', [['Top', 'Mejores aventureros', '🥇'], ['Orden', 'Por nivel y XP', '⭐']], 'YuiBot-MD 🍃'), botones: [{ id: '/perfilrpg', text: '🧙 MI PERFIL' }, { id: '/nivel', text: '⭐ MI NIVEL' }, { id: '/duelo', text: '⚔️ DUELO' }] })
   },
 }

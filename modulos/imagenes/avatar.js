@@ -1,4 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const { caja, negrita } = require('../../lib/estilo')
 const { cargarAvatar, loadImage, crearLienzo, dibujarCirculo } = require('../../lib/imagenes')
 
 module.exports = {
@@ -25,7 +26,7 @@ module.exports = {
       ctx.font = '28px sans-serif'
       ctx.fillStyle = '#d9e8ff'
       ctx.fillText(objetivo.split('@')[0], 450, 755)
-      await sock.sendMessage(jid, { image: canvas.toBuffer('image/jpeg', { quality: 0.94 }), caption: '🖼️ Avatar generado' }, { quoted: msg })
+      await sock.sendMessage(jid, { image: canvas.toBuffer('image/jpeg', { quality: 0.94 }), caption: caja('🖼️', 'Avatar', [['Usuario', objetivo.split('@')[0]]], 'YuiBot-MD ✨') }, { quoted: msg })
     } catch {
       await sock.sendMessage(jid, { text: '❌ No se pudo obtener el avatar de ese usuario.' }, { quoted: msg })
     }

@@ -1,4 +1,6 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const { caja } = require('../../lib/estilo')
+
 module.exports = {
   name: 'block',
   description: 'Bloquea un usuario de WhatsApp',
@@ -22,7 +24,7 @@ module.exports = {
 
     try {
       await sock.updateBlockStatus(objetivo, 'block')
-      await sock.sendMessage(jid, { text: `🚫 Usuario bloqueado: *${objetivo.split('@')[0]}*` }, { quoted: msg })
+      await sock.sendMessage(jid, { text: caja('🚫', 'Usuario bloqueado', [['Número', objetivo.split('@')[0]]], 'YuiBot-MD') }, { quoted: msg })
     } catch (error) {
       await sock.sendMessage(jid, { text: `❌ No se pudo bloquear al usuario.\n${error.message || 'Error desconocido'}` }, { quoted: msg })
     }

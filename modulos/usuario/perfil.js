@@ -1,5 +1,6 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
 const { obtenerUsuario } = require('../../lib/db')
+const { caja } = require('../../lib/estilo')
 const { generarTarjetaPerfil } = require('../../lib/perfilCard')
 
 module.exports = {
@@ -40,8 +41,8 @@ module.exports = {
       })
 
       const caption = datos
-        ? `⛧───「 Perfil 」───⛧\n\n_${prefijo}reg para actualizar tus datos_`
-        : `⛧───「 Perfil 」───⛧\n\n_Sin registrar — usa ${prefijo}reg para registrarte_`
+        ? caja('👤', 'Perfil', [['Nombre', datos.nombre], ['Género', datos.genero], ['Edad', datos.edad]], `${prefijo}reg para actualizar tus datos`)
+        : caja('👤', 'Perfil', [['Estado', 'Sin registrar']], `Usa ${prefijo}reg para registrarte`)
 
       await sock.sendMessage(jid, { image: imagen, caption }, { quoted: msg })
     } catch (error) {
