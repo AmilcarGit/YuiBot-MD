@@ -7,7 +7,7 @@
 [![CI](https://img.shields.io/github/actions/workflow/status/AmilcarGit/YuiBot-MD/ci.yml?branch=main&style=for-the-badge&logo=githubactions&logoColor=white&label=CI)](https://github.com/AmilcarGit/YuiBot-MD/actions/workflows/ci.yml)
 [![Node.js](https://img.shields.io/badge/Node.js-%E2%89%A5%2020-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
 [![WhatsApp](https://img.shields.io/badge/WhatsApp-Multi--Device-25D366?style=for-the-badge&logo=whatsapp&logoColor=white)](https://www.whatsapp.com/)
-[![Comandos](https://img.shields.io/badge/Comandos-178-ff69b4?style=for-the-badge)](#-comandos)
+[![Comandos](https://img.shields.io/badge/Comandos-191-ff69b4?style=for-the-badge)](#-comandos)
 [![PM2](https://img.shields.io/badge/PM2-ready-2B037A?style=for-the-badge&logo=pm2&logoColor=white)](#-producción-con-pm2)
 [![Licencia](https://img.shields.io/badge/Licencia-MIT-blue?style=for-the-badge)](LICENSE)
 
@@ -109,6 +109,7 @@ Está diseñado para ser **modular** (cada comando es un archivo), **resistente*
 - Protección por bot: `.anticall`, `.antiprivado` y cola de envío anti-ban (`ANTIBAN`, `PROTECCION`, `DESCARGAS`, `MENU_LISTA` en `defaults.js`)
 - Administración de grupos: `.cerrar`, `.abrir`, `.linkgrupo`, `.nombregrupo`, `.descgrupo`, `.hidetag`, `.admins` y sistema de advertencias (`.warn`, `.unwarn`, `.warns`; a las 3 se expulsa, configurable en `MODERACION.WARNS.MAX`)
 - Niveles y logros: 14 insignias con premio en monedas (`.logros`), racha de días, ranking semanal (`.topsemana`) y tarjeta de `.perfil` rediseñada con nivel, barra de XP, rango, estadísticas e insignias
+- Escuela: tareas guardadas con fecha de entrega (`.tarea`), horario (`.misclases`), libreta de notas con promedios (`.libreta`, `.promediar`, `.notaminima`), exámenes con aviso automático (`.misexamenes`), `.pomodoro` y calculadoras (`.ecuacion`, `.fraccion`, `.mcm`, `.factorizar`, `.porcentaje`, `.unidades`, `.tablamult`)
 - Funciones únicas: reputación compartida entre bots (`.rep`, `.toprep`), `.afk`, `.recordar` (persistente por bot) y `.red` con alertas al owner cuando un subbot se cae
 
 </td>
@@ -238,7 +239,7 @@ Cualquier persona puede tener su propio bot usando tu servidor:
 
 ## 📜 Comandos
 
-El bot trae **178 comandos** organizados por categoría. Usa `.menu` para ver las categorías, `.menu <categoría>` (ej. `.menu juegos`) para sus comandos, `.menu <palabra>` para buscar y `.menu todo` para la lista completa. Solo ves los comandos que puedes usar.
+El bot trae **191 comandos** organizados por categoría. Usa `.menu` para ver las categorías, `.menu <categoría>` (ej. `.menu juegos`) para sus comandos, `.menu <palabra>` para buscar y `.menu todo` para la lista completa. Solo ves los comandos que puedes usar.
 
 | Categoría | Ejemplos |
 |---|---|

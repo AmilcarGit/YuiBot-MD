@@ -24,3 +24,8 @@ test('uso, lista y estados', () => {
   assert.equal(e.lista(['a', 'b'], { numerada: true }), '1. a\n2. b')
   assert.ok(e.error('x').startsWith('❌') && e.exito('x').startsWith('✅'))
 })
+
+test('caja pone el borde en cada línea de una fila multilínea', () => {
+  const t = e.caja('📖', 'x', ['uno\n   dos\ntres'])
+  assert.deepEqual(t.split('\n').slice(1, 4), ['┃ uno', '┃    dos', '┃ tres'])
+})
