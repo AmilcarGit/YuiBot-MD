@@ -1,3 +1,4 @@
+const E = require('../../lib/estilo')
 const publicas = require('../../lib/publicas')
 
 module.exports = {
@@ -15,12 +16,11 @@ module.exports = {
       const cambio = c.cambio24h
       const flecha = typeof cambio === 'number' ? (cambio >= 0 ? '📈' : '📉') : '➖'
       await sock.sendMessage(jid, {
-        text:
-          `🪙 *${c.id.toUpperCase()}*\n\n` +
-          `💵 USD: *$${c.usd.toLocaleString('en-US', { maximumFractionDigits: 6 })}*\n` +
-          (typeof c.pen === 'number' ? `🇵🇪 PEN: *S/ ${c.pen.toLocaleString('es-PE', { maximumFractionDigits: 4 })}*\n` : '') +
-          (typeof cambio === 'number' ? `${flecha} 24 h: *${cambio.toFixed(2)}%*\n` : '') +
-          `\n_Datos de CoinGecko_`,
+        text: E.caja('🪙', c.id, [
+          ['USD', `$${c.usd.toLocaleString('en-US', { maximumFractionDigits: 6 })}`, '💵'],
+          typeof c.pen === 'number' ? ['PEN', `S/ ${c.pen.toLocaleString('es-PE', { maximumFractionDigits: 4 })}`, '🇵🇪'] : null,
+          typeof cambio === 'number' ? ['24 h', `${cambio.toFixed(2)}%`, flecha] : null,
+        ], 'Datos de CoinGecko'),
       }, { quoted: msg })
     } catch (error) {
       const texto = error.noEncontrado

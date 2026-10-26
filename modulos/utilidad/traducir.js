@@ -1,4 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const E = require('../../lib/estilo')
 const fetch = require('../../lib/http').fetchSeguro // timeout por defecto (ver lib/http.js)
 module.exports = {
   name: 'traducir',
@@ -7,10 +8,10 @@ module.exports = {
   category: 'utilidad',
   async execute(sock, msg, args) {
     const jid = msg.key.remoteJid
-    if (args.length < 2) return sock.sendMessage(jid, { text: '❌ Usa: *traducir es-en Hola, cómo estás*' }, { quoted: msg })
+    if (args.length < 2) return sock.sendMessage(jid, { text: '❌ Faltan datos.\n\n📌 Ejemplo: traducir es-en Hola, cómo estás' }, { quoted: msg })
     const par = args[0]
     const texto = args.slice(1).join(' ')
-    if (!/^[a-z]{2}-[a-z]{2}$/i.test(par)) return sock.sendMessage(jid, { text: '❌ El formato debe ser *origen-destino*, por ejemplo *es-en*.' }, { quoted: msg })
+    if (!/^[a-z]{2}-[a-z]{2}$/i.test(par)) return sock.sendMessage(jid, { text: '❌ El formato debe ser origen-destino.\n\n📌 Ejemplo: traducir es-en Hola' }, { quoted: msg })
     const [origen, destino] = par.toLowerCase().split('-')
     try {
       const respuesta = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(texto)}&langpair=${origen}|${destino}`)
@@ -18,7 +19,7 @@ module.exports = {
       const data = await respuesta.json()
       const traduccion = data?.responseData?.translatedText
       if (!traduccion) throw new Error('No se obtuvo una traducción.')
-      await sock.sendMessage(jid, { text: `╭─ ✦ 🌐 TRADUCIR ✦\n│ 🔤 Idiomas: *${origen} → ${destino}*\n│ 📝 Original: *${texto}*\n│ ✅ Traducción: *${traduccion}*\n╰─ 🍃 YuiBot-MD` }, { quoted: msg })
+      await sock.sendMessage(jid, { text: E.caja('🌐', 'Traducir', [['Idiomas', `${origen} → ${destino}`, '🔤'], ['Original', texto, '📝'], ['Traducción', traduccion, '✅']], 'YuiBot-MD') }, { quoted: msg })
     } catch (error) {
       await sock.sendMessage(jid, { text: `❌ No se pudo traducir: ${error.message}` }, { quoted: msg })
     }

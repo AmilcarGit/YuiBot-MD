@@ -1,4 +1,5 @@
 // .afk [motivo] — marca que estás ausente; avisa a quien te mencione.
+const E = require('../../lib/estilo')
 const afk = require('../../lib/afk')
 
 module.exports = {
@@ -12,7 +13,7 @@ module.exports = {
     const remitente = msg.key.participantAlt || msg.key.participant || jid
     const numero = remitente.split('@')[0].split(':')[0]
     afk.activar(numero, args.join(' '))
-    return sock.sendMessage(jid, { text: `💤 Ahora estás AFK${args.length ? `: ${args.join(' ')}` : ''}.\nVolverás automáticamente al escribir.` }, { quoted: msg })
+    return sock.sendMessage(jid, { text: E.caja('💤', 'AFK', [['Estado', 'Ausente'], args.length ? ['Motivo', args.join(' ')] : null, 'Volverás automáticamente al escribir.'], 'Te avisaré si alguien te menciona') }, { quoted: msg })
   },
 
   async onMessage(sock, msg, ctx) {

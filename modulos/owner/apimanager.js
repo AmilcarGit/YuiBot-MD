@@ -1,5 +1,6 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
 const apiManager = require('../../lib/apiManager')
+const { caja } = require('../../lib/estilo')
 
 module.exports = {
   name: 'apimanager',
@@ -29,13 +30,12 @@ module.exports = {
       return sock.sendMessage(jid, { text: 'ℹ️ No hay proveedores registrados todavía.' }, { quoted: msg })
     }
 
-    let texto = '🔌 *Proveedores de API*\n\n'
-    for (const nombre of nombres) {
+    const filas = nombres.map((nombre) => {
       const info = proveedores[nombre]
       const tieneKey = info.apiKey ? '🔑' : '⚠️ sin key'
-      texto += `${info.enabled !== false ? '✅' : '⛔'} *${nombre}* ${tieneKey}\n`
-    }
-    texto += '\nUsa *apimanager on/off <proveedor>* para habilitar o deshabilitar uno.'
+      return [nombre, `${info.enabled !== false ? '🟢' : '🔴'} ${tieneKey}`]
+    })
+    const texto = caja('🔌', 'Proveedores de API', filas, 'Usa apimanager on/off <proveedor> para habilitar o deshabilitar uno.')
 
     return sock.sendMessage(jid, { text: texto }, { quoted: msg })
   },

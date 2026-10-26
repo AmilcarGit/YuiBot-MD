@@ -1,4 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const E = require('../../lib/estilo')
 const fetch = require('../../lib/http').fetchSeguro // timeout por defecto (ver lib/http.js)
 module.exports = {
   name: 'shorturl',
@@ -8,14 +9,14 @@ module.exports = {
   async execute(sock, msg, args) {
     const jid = msg.key.remoteJid
     const url = args[0]
-    if (!url || !/^https?:\/\//i.test(url)) return sock.sendMessage(jid, { text: '❌ Usa: *shorturl https://ejemplo.com*' }, { quoted: msg })
+    if (!url || !/^https?:\/\//i.test(url)) return sock.sendMessage(jid, { text: '❌ Escribe un enlace válido.\n\n📌 Ejemplo: shorturl https://ejemplo.com' }, { quoted: msg })
 
     try {
       const respuesta = await fetch(`https://tinyurl.com/api-create.php?url=${encodeURIComponent(url)}`)
       if (!respuesta.ok) throw new Error(`HTTP ${respuesta.status}`)
       const corto = (await respuesta.text()).trim()
       if (!/^https?:\/\//i.test(corto)) throw new Error('El servicio no devolvió un enlace válido.')
-      await sock.sendMessage(jid, { text: `╭─ ✦ 🔗 SHORTURL ✦\n│ 🔗 Original: *${url}*\n│ ✨ Corto: *${corto}*\n╰─ 🍃 YuiBot-MD` }, { quoted: msg })
+      await sock.sendMessage(jid, { text: E.caja('🔗', 'Enlace corto', [['Original', url, '🔗'], ['Corto', corto, '✨']], 'YuiBot-MD') }, { quoted: msg })
     } catch (error) {
       await sock.sendMessage(jid, { text: `❌ No se pudo acortar el enlace: ${error.message}` }, { quoted: msg })
     }

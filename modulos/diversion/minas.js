@@ -2,6 +2,8 @@
 const { numeroUsuario, saldo, apostar, pagar, apuestaDesdeArgs, formatoMonedas, panel } = require('../../lib/juegos')
 const { enviarJuego } = require('../../lib/juegosVisual')
 
+const { caja } = require('../../lib/estilo')
+
 module.exports = {
   name: 'minas',
   aliases: [],
@@ -21,13 +23,13 @@ module.exports = {
           { id: '/minas 50', text: '💣 50' },
           { id: '/minas 100', text: '💣 100' },
         ],
-        caption: '╭─ ✦ 💣 MINAS ✦\n│ Elige una apuesta y desafía a la suerte.\n╰─ 🍃 YuiBot-MD',
+        caption: caja('💣', 'Minas', [['Saldo', formatoMonedas(saldo(numero)), '💰'], ['Apuesta mínima', '20', '🎯'], ['Ruta segura', 'x2.5', '🍀'], ['Mina', 'pérdida', '💥']], 'Desafía a la suerte ✨'),
       })
       return
     }
     const retirada = apostar(numero, apuesta)
     if (!retirada.ok) {
-      await sock.sendMessage(msg.key.remoteJid, { text: panel('💣 MINAS', [`❌ Saldo insuficiente`, `💰 Disponible: *${formatoMonedas(retirada.disponible)}*`]) }, { quoted: msg })
+      await sock.sendMessage(msg.key.remoteJid, { text: caja('💣', 'Minas', [['Estado', '❌ Saldo insuficiente'], ['Disponible', formatoMonedas(retirada.disponible), '💰'], ['Necesitas', formatoMonedas(apuesta), '🎯']], 'Consigue más monedas con /daily') }, { quoted: msg })
       return
     }
     const seguro = Math.random() < 0.6
@@ -43,7 +45,7 @@ module.exports = {
         { id: '/minas 20', text: '💣 20' },
         { id: '/minas 100', text: '💎 100' },
       ],
-      caption: `╭─ ✦ 💣 MINAS ✦\n│ ${seguro ? '💎 ¡Encontraste una ruta segura!' : '💥 ¡BOOM! Pisaste una mina!'}\n│ 💰 Saldo: *${formatoMonedas(saldo(numero))}*\n╰─ 🍃 YuiBot-MD`,
+      caption: caja(seguro ? '💎' : '💥', 'Minas', [['Resultado', seguro ? '💎 ¡Encontraste una ruta segura!' : '💥 ¡BOOM! Pisaste una mina!', '🎯'], ['Apuesta', formatoMonedas(apuesta), '🎲'], ['Saldo', formatoMonedas(saldo(numero)), '💰']], seguro ? '¡Felicidades! 🏆' : 'Suerte en la próxima 🍀'),
     })
   },
 }

@@ -17,6 +17,8 @@ const preguntas = [
   ['¿Qué color sale al mezclar azul y amarillo?', 'verde'],
 ]
 
+const { caja } = require('../../lib/estilo')
+
 module.exports = {
   name: 'dueloquiz',
   aliases: [],
@@ -31,7 +33,7 @@ module.exports = {
       titulo: 'Duelo Quiz',
       subtitulo: 'Tienes 30 segundos para responder',
       datos: [`❓ ${pregunta[0]}`, `🏆 Premio: ${formatoMonedas(premio)}`, `💰 Saldo: ${formatoMonedas(saldo(numero))}`],
-      caption: '╭─ ✦ 🧠 DUELO QUIZ ✦\n│ ✍️ Responde: */dueloquiz respuesta*\n╰─ 🍃 YuiBot-MD',
+      caption: caja('🧠', 'Duelo Quiz', [['Pregunta', pregunta[0], '❓'], ['Premio', formatoMonedas(premio), '🏆'], ['Responde', '/dueloquiz respuesta', '✍️'], ['Tiempo', '30 segundos', '⏱️']], 'Piensa rápido ✨'),
       botones: [{ id: '/dueloquiz', text: '🧠 NUEVA PREGUNTA' }, { id: '/menu', text: '🍃 MENÚ' }],
     })
     const listener = async ({ messages }) => {
@@ -47,7 +49,7 @@ module.exports = {
         titulo: 'Duelo Quiz',
         subtitulo: '¡Respuesta correcta!',
         datos: [`🎯 Respuesta: ${respuesta}`, `💰 Ganaste: +${formatoMonedas(premio)}`, `💳 Saldo: ${formatoMonedas(saldo(numero))}`],
-        caption: '🎉 ¡Excelente respuesta!',
+        caption: caja('🏆', 'Duelo Quiz', [['Respuesta', respuesta, '🎯'], ['Ganaste', `+${formatoMonedas(premio)}`, '💰'], ['Saldo', formatoMonedas(saldo(numero)), '💳']], '🎉 ¡Excelente respuesta!'),
         botones: [{ id: '/dueloquiz', text: '🧠 OTRA PREGUNTA' }, { id: '/menu', text: '🍃 MENÚ' }],
       })
       sock.ev.off('messages.upsert', listener)

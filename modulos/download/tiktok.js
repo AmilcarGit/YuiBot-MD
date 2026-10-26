@@ -1,6 +1,7 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
 const fetch = require('../../lib/http').fetchSeguro // timeout por defecto (ver lib/http.js)
 const { pedirTikTok } = require('../../lib/tiktok')
+const { caja, espera, uso } = require('../../lib/estilo')
 const { conFuentes, descargarLocal } = require('../../lib/youtube')
 const { generateWAMessageFromContent, prepareWAMessageMedia, proto } = require('@whiskeysockets/baileys')
 
@@ -100,11 +101,7 @@ module.exports = {
     if (!link) {
       return sock.sendMessage(
         jid,
-        {
-          text:
-            `❌ Debes enviar un enlace de TikTok.\n\n` +
-            `📌 Ejemplo:\n${prefijo}tiktok https://vt.tiktok.com/ZSqF1r1S3/`
-        },
+        { text: uso(prefijo, 'tiktok', 'https://vt.tiktok.com/ZSqF1r1S3/', 'Debes enviar un enlace de TikTok.') },
         { quoted: msg }
       )
     }
@@ -114,7 +111,7 @@ module.exports = {
     }
 
     try {
-      await sock.sendMessage(jid, { text: `⏳ Descargando TikTok...\n\n🔗 ${link}` }, { quoted: msg })
+      await sock.sendMessage(jid, { text: espera(`Descargando TikTok...\n\n🔗 ${link}`) }, { quoted: msg })
 
       // yt-dlp local primero (gratis); la API de antes queda como respaldo
       const data = await conFuentes({
@@ -142,15 +139,14 @@ module.exports = {
       const autor = data.autor || {}
       const estadisticas = data.estadisticas || {}
 
-      const caption =
-        `╭━━━〔 🎵 TIKTOK 〕━━━╮\n` +
-        `┃ 📝 ${data.titulo || 'Sin título'}\n` +
-        `┃ 👤 ${autor.nombre || autor.usuario || 'Desconocido'}\n` +
-        `┃ 🌎 Región: ${data.region || 'N/A'}\n` +
-        `┃ 👁️ Vistas: ${estadisticas.vistas ?? 0}\n` +
-        `┃ ❤️ Likes: ${estadisticas.likes ?? 0}\n` +
-        `┃ 💾 Tamaño: ${pesoMB.toFixed(1)} MB\n` +
-        `╰━━━━━━━━━━━━━━━━━━━━╯`
+      const caption = caja('🎵', 'TikTok', [
+        ['Descripción', String(data.titulo || 'Sin título').replace(/\s+/g, ' ').slice(0, 150), '📝'],
+        ['Autor', autor.nombre || autor.usuario || 'Desconocido', '👤'],
+        ['Región', data.region || 'N/A', '🌎'],
+        ['Vistas', estadisticas.vistas ?? 0, '👁️'],
+        ['Likes', estadisticas.likes ?? 0, '❤️'],
+        ['Tamaño', `${pesoMB.toFixed(1)} MB`, '💾'],
+      ], '📥 Descargado sin marca de agua')
 
       if (pesoMB <= LIMITE_VIDEO_MB) {
         await enviarTikTokConBotones(sock, jid, msg, data, link, buffer, caption)

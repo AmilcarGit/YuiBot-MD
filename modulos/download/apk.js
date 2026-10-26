@@ -1,6 +1,9 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
 const fetch = require('../../lib/http').fetchSeguro // timeout por defecto (ver lib/http.js)
 const { APIS } = require('../../defaults')
+const { caja, espera, uso, negrita } = require('../../lib/estilo')
+
+const cortar = (t, n) => { const s = String(t ?? '').replace(/\s+/g, ' ').trim(); return s.length > n ? `${s.slice(0, n - 1)}…` : s }
 
 const API_URL = 'https://api.mitzuki.xyz/search/aptoide'
 const LIMITE = 5
@@ -25,7 +28,7 @@ module.exports = {
     if (!query) {
       return sock.sendMessage(
         jid,
-        { text: `❌ Escribe qué app quieres buscar.\n📌 Ejemplo: ${prefijo}apk minecraft` },
+        { text: uso(prefijo, 'apk', 'minecraft', 'Escribe qué app quieres buscar.') },
         { quoted: msg }
       )
     }
@@ -43,17 +46,20 @@ module.exports = {
 
       const items = data.data.items.slice(0, LIMITE)
 
-      let texto = `⛧───「 Resultados: ${query} 」───⛧\n\n`
+      const filas = [['Búsqueda', cortar(query, 60), '🔍'], '┃']
       items.forEach((app, index) => {
-        texto += `${index + 1}. *${app.name}*\n`
-        texto += `   ❖ desarrollador: ${app.developer}\n`
-        texto += `   ❖ versión: ${app.version}\n`
-        texto += `   ❖ tamaño: ${formatearTamano(app.size)}\n`
-        texto += `   ❖ descargas: ${app.downloads?.toLocaleString('es') || 'Desconocidas'}\n`
-        texto += `   ❖ rating: ⭐ ${app.rating}\n`
-        texto += `   ❖ seguridad: ${app.malware_rank}\n\n`
+        filas.push(
+          `${index + 1}. *${cortar(app.name, 60)}*`,
+          ['Desarrollador', cortar(app.developer, 40), '👤'],
+          ['Versión', app.version, '🏷️'],
+          ['Tamaño', formatearTamano(app.size), '💾'],
+          ['Descargas', app.downloads?.toLocaleString('es') || 'Desconocidas', '📥'],
+          ['Rating', app.rating !== undefined && app.rating !== null ? `⭐ ${app.rating}` : null, '⭐'],
+          ['Seguridad', app.malware_rank, '🛡️'],
+          '┃'
+        )
       })
-      texto += `╰─➤ _Responde con el número (1-${items.length}) para descargar_ 🥀`
+      const texto = caja('📦', 'Resultados APK', filas, `Responde con el número (1-${items.length}) para descargar`)
 
       await sock.sendMessage(jid, { text: texto }, { quoted: msg })
 
@@ -83,7 +89,7 @@ module.exports = {
 
       const elegida = items[respuesta - 1]
 
-      await sock.sendMessage(jid, { text: `⏳ Descargando ${elegida.name}...` }, { quoted: msg })
+      await sock.sendMessage(jid, { text: espera(`Descargando ${elegida.name}...`) }, { quoted: msg })
 
       const respApk = await fetch(elegida.apk)
       if (!respApk.ok) throw new Error(`No se pudo descargar el APK (HTTP ${respApk.status})`)
@@ -96,7 +102,11 @@ module.exports = {
           document: buffer,
           mimetype: 'application/vnd.android.package-archive',
           fileName: `${elegida.name}.apk`,
-          caption: `📦 ${elegida.name}\n📌 v${elegida.version} — ${formatearTamano(elegida.size)}`
+          caption: caja('📦', 'APK', [
+            ['App', cortar(elegida.name, 80)],
+            ['Versión', elegida.version],
+            ['Tamaño', formatearTamano(elegida.size)],
+          ], 'Instálala bajo tu responsabilidad')
         },
         { quoted: msg }
       )

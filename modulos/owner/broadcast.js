@@ -1,4 +1,6 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const { caja } = require('../../lib/estilo')
+
 module.exports = {
   name: 'broadcast',
   description: 'Envía un mensaje a todos los grupos o a números indicados',
@@ -48,7 +50,7 @@ module.exports = {
     }
 
     await sock.sendMessage(jid, {
-      text: `📢 *BROADCAST COMPLETADO*\n\n✅ Enviados: ${enviados}\n❌ Fallidos: ${fallidos}\n📨 Destinos: ${unicos.length}`
+      text: caja('📢', 'Broadcast completado', [['Enviados', `✅ ${enviados}`], ['Fallidos', `❌ ${fallidos}`], ['Destinos', unicos.length]], 'YuiBot-MD')
     }, { quoted: msg })
   },
 }

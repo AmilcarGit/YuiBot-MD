@@ -1,4 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const { caja } = require('../../lib/estilo')
 const { esAdminDeGrupo } = require('../../lib/moderacion')
 const { estaEnWhitelist } = require('../../lib/whitelist')
 const { isOwner } = require('../../lib/handler')
@@ -57,7 +58,13 @@ module.exports = {
     }
 
     return sock.sendMessage(jid, {
-      text: `🤖 *ANTIBOT CLON*\n\nEstado: *${antibot.estaActivo(jid) ? 'ON ✅' : 'OFF ❌'}*\n\nDetecta cuentas que ejecutan comandos válidos muy rápido Y tienen nombre de perfil sospechoso ("bot", "asistente", etc).\n\nantibot on\nantibot off`,
+      text: caja('🤖', 'Antibot clon', [
+        ['Estado', antibot.estaActivo(jid) ? 'ON ✅' : 'OFF ❌', '📡'],
+        'Detecta cuentas que ejecutan comandos válidos muy rápido Y tienen nombre de perfil sospechoso ("bot", "asistente", etc).',
+        '',
+        '📌 antibot on',
+        '📌 antibot off',
+      ]),
     }, { quoted: msg })
   },
 

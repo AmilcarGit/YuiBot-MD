@@ -1,5 +1,6 @@
 const fetch = require('../../lib/http').fetchSeguro
 const delirius = require('../../lib/delirius')
+const { caja, espera, uso } = require('../../lib/estilo')
 const { pedirBusqueda, obtenerAudio } = require('../../lib/youtube')
 
 module.exports = {
@@ -14,21 +15,19 @@ module.exports = {
     const query = args.join(' ').trim()
 
     if (!query) {
-      return sock.sendMessage(jid, { text: `❌ Escribe el nombre de la canción.\n\n📌 Ejemplo: ${prefijo}spotify Monaco Bad Bunny` }, { quoted: msg })
+      return sock.sendMessage(jid, { text: uso(prefijo, 'spotify', 'Monaco Bad Bunny', 'Escribe el nombre de la canción.') }, { quoted: msg })
     }
 
     try {
       const [cancion] = await delirius.buscarSpotify(query)
 
-      const caption =
-        `╭━━━〔 🟢 SPOTIFY 〕━━━╮\n` +
-        `┃ 🎵 ${cancion.titulo}\n` +
-        `┃ 👤 ${cancion.artista || 'Desconocido'}\n` +
-        `┃ 💿 ${cancion.album || '—'}\n` +
-        `┃ ⏱️ ${cancion.duracion || '—'}\n` +
-        `┃ 📅 ${cancion.publicado || '—'}\n` +
-        `╰━━━━━━━━━━━━━━━━━━━━╯\n` +
-        `⏳ Preparando el audio...`
+      const caption = caja('🟢', 'Spotify', [
+        ['Título', String(cancion.titulo || 'Sin título').slice(0, 150), '🎵'],
+        ['Artista', cancion.artista || 'Desconocido', '👤'],
+        ['Álbum', cancion.album || '—', '💿'],
+        ['Duración', cancion.duracion || '—', '⏱️'],
+        ['Publicado', cancion.publicado || '—', '📅'],
+      ], espera('Preparando el audio...'))
 
       try {
         if (!cancion.imagen) throw new Error('sin portada')

@@ -4,6 +4,8 @@ const { enviarJuego } = require('../../lib/juegosVisual')
 
 const simbolos = ['🍒', '🍋', '⭐', '💎', '7️⃣']
 
+const { caja } = require('../../lib/estilo')
+
 module.exports = {
   name: 'tragamonedas',
   aliases: [],
@@ -23,13 +25,13 @@ module.exports = {
           { id: '/tragamonedas 50', text: '🎰 50' },
           { id: '/tragamonedas 100', text: '🎰 100' },
         ],
-        caption: '╭─ ✦ 🎰 TRAGAMONEDAS ✦\n│ Elige tu apuesta y gira los rodillos.\n╰─ 🍃 YuiBot-MD',
+        caption: caja('🎰', 'Tragamonedas', [['Saldo', formatoMonedas(saldo(numero)), '💰'], ['Apuesta mínima', '10', '🎯'], ['2 iguales', 'x2', '🍒'], ['3 iguales', 'x5', '💎']], 'Gira los rodillos ✨'),
       })
       return
     }
     const retirada = apostar(numero, apuesta)
     if (!retirada.ok) {
-      await sock.sendMessage(msg.key.remoteJid, { text: panel('🎰 TRAGAMONEDAS', [`❌ Saldo insuficiente`, `💰 Disponible: *${formatoMonedas(retirada.disponible)}*`, `🎯 Necesitas: *${formatoMonedas(apuesta)}*`]) }, { quoted: msg })
+      await sock.sendMessage(msg.key.remoteJid, { text: caja('🎰', 'Tragamonedas', [['Estado', '❌ Saldo insuficiente'], ['Disponible', formatoMonedas(retirada.disponible), '💰'], ['Necesitas', formatoMonedas(apuesta), '🎯']], 'Consigue más monedas con /daily') }, { quoted: msg })
       return
     }
     const r = [0, 1, 2].map(() => simbolos[Math.floor(Math.random() * simbolos.length)])
@@ -48,7 +50,7 @@ module.exports = {
         { id: '/tragamonedas 10', text: '🎰 10' },
         { id: '/tragamonedas 100', text: '💎 100' },
       ],
-      caption: `╭─ ✦ 🎰 RESULTADO ✦\n│ ${r.join(' │ ')}\n│ ${premio ? '🎉 ¡Ganaste!' : '💥 Esta vez no hubo premio.'}\n╰─ 🍃 YuiBot-MD`,
+      caption: caja('🎰', 'Resultado', [['Rodillos', r.join(' │ '), '🎰'], ['Resultado', premio ? '🎉 ¡Ganaste!' : '💥 Esta vez no hubo premio.', '✨'], ['Saldo', formatoMonedas(saldo(numero)), '💰']], premio ? '¡Felicidades! 🏆' : 'Suerte en la próxima 🍀'),
     })
   },
 }

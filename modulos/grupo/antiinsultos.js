@@ -1,4 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const { caja } = require('../../lib/estilo')
 const { esAdminDeGrupo } = require('../../lib/moderacion')
 const { estaEnWhitelist } = require('../../lib/whitelist')
 const { isOwner } = require('../../lib/handler')
@@ -57,7 +58,17 @@ module.exports = {
     }
 
     return sock.sendMessage(jid, {
-      text: `🛡️ *ANTIINSULTOS*\n\nEstado: *${antiinsultos.estaActivo(jid) ? 'ON ✅' : 'OFF ❌'}*\nPalabras en lista: *${antiinsultos.leerPalabras().length}*\n\nantiinsultos on\nantiinsultos off\nantiinsultos add <palabra>\nantiinsultos del <palabra>\n\n📌 ${antiinsultos.MAX_AVISOS} avisos = expulsión`,
+      text: caja('🤬', 'Antiinsultos', [
+        ['Estado', antiinsultos.estaActivo(jid) ? 'ON ✅' : 'OFF ❌', '📡'],
+        ['Palabras en lista', antiinsultos.leerPalabras().length, '📚'],
+        '',
+        '📌 antiinsultos on',
+        '📌 antiinsultos off',
+        '📌 antiinsultos add <palabra>',
+        '📌 antiinsultos del <palabra>',
+        '',
+        `⚠️ ${antiinsultos.MAX_AVISOS} avisos = expulsión`,
+      ]),
     }, { quoted: msg })
   },
 

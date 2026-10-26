@@ -1,4 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const { caja } = require('../../lib/estilo')
 const { obtenerUsuario } = require('../../lib/db')
 
 module.exports = {
@@ -51,13 +52,13 @@ module.exports = {
     const medallas = ['🥇', '🥈', '🥉']
     const mentions = []
 
-    let texto = `⛧───「 RANKING DE XP 」───⛧\n\n`
+    const lineasTop = []
     top.forEach((fila, i) => {
       const posicion = medallas[i] || `${i + 1}.`
-      texto += `${posicion} @${fila.numero} — nivel ${fila.nivel} (${fila.xp} XP)\n`
+      lineasTop.push(`${posicion} @${fila.numero} — nivel ${fila.nivel} (${fila.xp} XP)`)
       mentions.push(fila.jid)
     })
-    texto += `\n╰─➤ _${config.BOT_NAME}_ 🥀`
+    const texto = caja('🏆', 'Ranking de XP', lineasTop, config.BOT_NAME)
 
     await sock.sendMessage(jid, { text: texto, mentions }, { quoted: msg })
   },

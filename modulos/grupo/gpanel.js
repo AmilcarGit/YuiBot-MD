@@ -1,4 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const { caja } = require('../../lib/estilo')
 const antiraid = require('../../lib/antiraid')
 const antifake = require('../../lib/antifake')
 const antibot = require('../../lib/antibot')
@@ -25,24 +26,20 @@ module.exports = {
     const raid = antiraid.obtenerConfig(jid)
     const fake = antifake.obtenerConfig(jid)
 
-    const texto = [
-      '🛡️ *PANEL DE MODERACIÓN DEL GRUPO*',
-      '',
-      `Antilink: *${estado(config.MODERACION?.ANTILINK?.ENABLED)}*`,
-      `Antiflood: *${estado(config.MODERACION?.ANTIFLOOD?.ENABLED)}*`,
-      `Antiraid: *${estado(raid.enabled)}* (${raid.limite} entradas / ${raid.ventanaSegundos}s)`,
-      `Antifake: *${estado(fake.enabled)}* (${fake.prefijos.join(', ')})`,
-      `Antibot: *${estado(antibot.estaActivo(jid))}*`,
-      `Antiinsultos: *${estado(antiinsultos.estaActivo(jid))}*`,
-      `Antiimagen: *${estado(media.image)}*`,
-      `Antisticker: *${estado(media.sticker)}*`,
-      `Antivideo: *${estado(media.video)}*`,
-      `Antiaudio: *${estado(media.audio)}*`,
-      `Antidocumento: *${estado(media.document)}*`,
-      `Bienvenida: *${estado(config.WELCOME_ENABLED)}*`,
-      '',
-      'Usa cada comando (ej: *antiraid on*, *antiimagen off*) para cambiar su estado.',
-    ].join('\n')
+    const texto = caja('🛡️', 'Panel de moderación', [
+      ['Antilink', estado(config.MODERACION?.ANTILINK?.ENABLED), '🔗'],
+      ['Antiflood', estado(config.MODERACION?.ANTIFLOOD?.ENABLED), '🌊'],
+      ['Antiraid', `${estado(raid.enabled)} (${raid.limite} entradas / ${raid.ventanaSegundos}s)`, '🚨'],
+      ['Antifake', `${estado(fake.enabled)} (${fake.prefijos.join(', ')})`, '🎭'],
+      ['Antibot', estado(antibot.estaActivo(jid)), '🤖'],
+      ['Antiinsultos', estado(antiinsultos.estaActivo(jid)), '🤬'],
+      ['Antiimagen', estado(media.image), '🖼️'],
+      ['Antisticker', estado(media.sticker), '🧩'],
+      ['Antivideo', estado(media.video), '🎬'],
+      ['Antiaudio', estado(media.audio), '🎧'],
+      ['Antidocumento', estado(media.document), '📄'],
+      ['Bienvenida', estado(config.WELCOME_ENABLED), '👋'],
+    ], 'Usa cada comando (ej: antiraid on, antiimagen off) para cambiar su estado.')
 
     return sock.sendMessage(jid, { text: texto }, { quoted: msg })
   },

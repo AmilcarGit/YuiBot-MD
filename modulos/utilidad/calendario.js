@@ -1,4 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const E = require('../../lib/estilo')
 function diasMes(anio, mes) {
   return new Date(anio, mes + 1, 0).getDate()
 }
@@ -13,7 +14,7 @@ module.exports = {
     const ahora = new Date()
     let anio = Number(args[0]) || ahora.getFullYear()
     let mes = args[1] ? Number(args[1]) - 1 : ahora.getMonth()
-    if (!Number.isInteger(anio) || anio < 1 || anio > 9999 || !Number.isInteger(mes) || mes < 0 || mes > 11) return sock.sendMessage(jid, { text: '❌ Usa: *calendario* o *calendario 2026 9*.' }, { quoted: msg })
+    if (!Number.isInteger(anio) || anio < 1 || anio > 9999 || !Number.isInteger(mes) || mes < 0 || mes > 11) return sock.sendMessage(jid, { text: '❌ Fecha no válida.\n\n📌 Ejemplo: calendario 2026 9' }, { quoted: msg })
 
     const nombreMes = new Date(anio, mes, 1).toLocaleDateString('es-PE', { month: 'long' })
     const primerDia = new Date(anio, mes, 1).getDay()
@@ -30,6 +31,6 @@ module.exports = {
     }
     if (semana.length) semanas.push(semana.concat(Array(7 - semana.length).fill('  ')).join(' '))
 
-    await sock.sendMessage(jid, { text: `╭─ ✦ 📅 CALENDARIO ✦\n│        ${nombreMes.toUpperCase()} ${anio}\n│ Lu Ma Mi Ju Vi Sa Do\n│ ${semanas.join('\n│ ')}\n╰─ 🍃 YuiBot-MD` }, { quoted: msg })
+    await sock.sendMessage(jid, { text: E.caja('📅', `${nombreMes} ${anio}`, ['Lu Ma Mi Ju Vi Sa Do', ...semanas], 'YuiBot-MD') }, { quoted: msg })
   },
 }

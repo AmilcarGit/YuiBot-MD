@@ -1,3 +1,4 @@
+const E = require('../../lib/estilo')
 const publicas = require('../../lib/publicas')
 
 function interpretar(args) {
@@ -26,7 +27,11 @@ module.exports = {
     try {
       const r = await publicas.divisa(datos.monto, datos.de, datos.a)
       await sock.sendMessage(jid, {
-        text: `💱 *Conversor de divisas*\n\n${r.monto.toLocaleString('es-PE')} ${r.de} = *${r.resultado.toLocaleString('es-PE', { maximumFractionDigits: 4 })} ${r.a}*\n\n📅 Tasa del ${r.fecha} (Banco Central Europeo)`,
+        text: E.caja('💱', 'Conversor de divisas', [
+          ['Monto', `${r.monto.toLocaleString('es-PE')} ${r.de}`, '💵'],
+          ['Resultado', `${r.resultado.toLocaleString('es-PE', { maximumFractionDigits: 4 })} ${r.a}`, '✅'],
+          ['Tasa del', r.fecha, '📅'],
+        ], 'Fuente: Banco Central Europeo'),
       }, { quoted: msg })
     } catch (error) {
       const texto = error.noEncontrado ? `❌ No reconozco esas monedas (${datos.de} → ${datos.a}). Usa códigos como USD, EUR, PEN, MXN.` : `❌ No se pudo convertir.\n\n> ${error.message}`

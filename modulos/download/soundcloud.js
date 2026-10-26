@@ -1,5 +1,6 @@
 const fetch = require('../../lib/http').fetchSeguro
 const delirius = require('../../lib/delirius')
+const { caja, espera, uso } = require('../../lib/estilo')
 const { descargarLocal, ytDlpDisponible } = require('../../lib/youtube')
 
 module.exports = {
@@ -14,7 +15,7 @@ module.exports = {
     const entrada = args.join(' ').trim()
 
     if (!entrada) {
-      return sock.sendMessage(jid, { text: `❌ Escribe una canción o un enlace de SoundCloud.\n\n📌 Ejemplo: ${prefijo}soundcloud Monaco Bad Bunny` }, { quoted: msg })
+      return sock.sendMessage(jid, { text: uso(prefijo, 'soundcloud', 'Monaco Bad Bunny', 'Escribe una canción o un enlace de SoundCloud.') }, { quoted: msg })
     }
 
     if (!(await ytDlpDisponible())) {
@@ -28,16 +29,15 @@ module.exports = {
         ;[pista] = await delirius.buscarSoundCloud(entrada)
       }
 
-      await sock.sendMessage(jid, { text: `⏳ Descargando audio...\n\n🎵 ${pista.titulo || pista.url}` }, { quoted: msg })
+      await sock.sendMessage(jid, { text: espera(`Descargando audio...\n\n🎵 ${pista.titulo || pista.url}`) }, { quoted: msg })
       const audio = await descargarLocal(pista.url, 'audio')
 
-      const caption =
-        `╭━━━〔 🟠 SOUNDCLOUD 〕━━━╮\n` +
-        `┃ 🎵 ${pista.titulo || audio.titulo}\n` +
-        `┃ 👤 ${pista.artista || audio.canal}\n` +
-        (pista.plays ? `┃ ▶️ ${pista.plays.toLocaleString('es-PE')} reproducciones\n` : '') +
-        `┃ 💾 ${(audio.buffer.length / 1048576).toFixed(1)} MB\n` +
-        `╰━━━━━━━━━━━━━━━━━━━━━━╯`
+      const caption = caja('🟠', 'SoundCloud', [
+        ['Título', String(pista.titulo || audio.titulo || 'Sin título').slice(0, 150), '🎵'],
+        ['Artista', pista.artista || audio.canal, '👤'],
+        ['Reproducciones', pista.plays ? pista.plays.toLocaleString('es-PE') : null, '▶️'],
+        ['Tamaño', `${(audio.buffer.length / 1048576).toFixed(1)} MB`, '💾'],
+      ], '🎧 Disfruta tu música')
 
       try {
         if (!pista.imagen) throw new Error('sin portada')

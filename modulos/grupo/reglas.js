@@ -1,4 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const { caja } = require('../../lib/estilo')
 const { esAdminDeGrupo } = require('../../lib/moderacion')
 const { obtenerReglas, establecerReglas, limpiarReglas } = require('../../lib/reglas')
 
@@ -20,7 +21,7 @@ module.exports = {
       const texto = obtenerReglas(jid)
       return sock.sendMessage(jid, {
         text: texto
-          ? `📜 *REGLAS DEL GRUPO*\n\n${texto}`
+          ? `${caja('📜', 'Reglas del grupo', [])}\n\n${texto}`
           : '📜 Este grupo todavía no tiene reglas configuradas.\n\nUn admin puede definirlas con:\n*reglas set <texto>*',
       }, { quoted: msg })
     }

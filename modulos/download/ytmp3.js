@@ -1,5 +1,6 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
 const fetch = require('../../lib/http').fetchSeguro // timeout por defecto (ver lib/http.js)
+const { caja, espera, uso } = require('../../lib/estilo')
 const { pedirAudio, pedirBusqueda, conFuentes, descargarLocal } = require('../../lib/youtube')
 const fs = require('fs')
 const os = require('os')
@@ -120,7 +121,7 @@ module.exports = {
     const entrada = args.join(' ').trim()
 
     if (!entrada) {
-      return sock.sendMessage(jid, { text: `❌ Escribe el nombre de una canción o un enlace de YouTube.\n\n📌 Ejemplos:\n.play Bad Bunny Monaco\n.play https://www.youtube.com/watch?v=ZFG0mHN-BNA` }, { quoted: msg })
+      return sock.sendMessage(jid, { text: `${uso('.', 'play', 'Bad Bunny Monaco', 'Escribe el nombre de una canción o un enlace de YouTube.')}\n📌 Ejemplo: .play https://www.youtube.com/watch?v=ZFG0mHN-BNA` }, { quoted: msg })
     }
 
     try {
@@ -143,7 +144,7 @@ module.exports = {
       }
 
       const tituloBusqueda = resultadoBusqueda?.title || youtubeUrl
-      await sock.sendMessage(jid, { text: `⏳ Descargando audio...\n\n🎵 ${tituloBusqueda}` }, { quoted: msg })
+      await sock.sendMessage(jid, { text: espera(`Descargando audio...\n\n🎵 ${tituloBusqueda}`) }, { quoted: msg })
 
       const { data, buffer } = await obtenerAudioDescargable(youtubeUrl, 3)
       const filename = `${(data.titulo || resultadoBusqueda?.title || 'youtube').replace(/[\\/:*?"<>|]/g, '_')}.mp3`
@@ -151,7 +152,13 @@ module.exports = {
 
       await sock.sendMessage(jid, { audio: buffer, mimetype: 'audio/mpeg', fileName: filename, ptt: false }, { quoted: msg })
 
-      const caption = `╭━━━〔 🎵 YOUTUBE AUDIO 〕━━━╮\n┃ 🎵 ${data.titulo || resultadoBusqueda?.title || 'Sin título'}\n┃ 👤 ${data.canal || resultadoBusqueda?.channel || 'Desconocido'}\n┃ ⏱️ ${data.duracion || resultadoBusqueda?.duration || 'Desconocida'}\n┃ 🎧 Calidad: ${data.datos.calidad || '192 kbps'}\n┃ 💾 Tamaño: ${pesoMB.toFixed(1)} MB\n╰━━━━━━━━━━━━━━━━━━━━━━╯`
+      const caption = caja('🎵', 'YouTube Audio', [
+        ['Título', String(data.titulo || resultadoBusqueda?.title || 'Sin título').slice(0, 150), '🎵'],
+        ['Canal', data.canal || resultadoBusqueda?.channel || 'Desconocido', '👤'],
+        ['Duración', data.duracion || resultadoBusqueda?.duration || 'Desconocida', '⏱️'],
+        ['Calidad', data.datos.calidad || '192 kbps', '🎧'],
+        ['Tamaño', `${pesoMB.toFixed(1)} MB`, '💾'],
+      ], '🎧 Disfruta tu música')
 
       await sock.sendMessage(jid, { text: caption }, { quoted: msg })
     } catch (error) {

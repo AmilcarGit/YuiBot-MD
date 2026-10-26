@@ -1,6 +1,7 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
 const fetch = require('../../lib/http').fetchSeguro // timeout por defecto (ver lib/http.js)
 const { APIS } = require('../../defaults')
+const { caja, espera, uso, aviso } = require('../../lib/estilo')
 
 const API_URL = 'https://dv-yer-api.online/movies'
 const LIMITE = 10
@@ -32,7 +33,7 @@ module.exports = {
     if (!query) {
       return sock.sendMessage(
         jid,
-        { text: `❌ Escribe qué película o serie quieres buscar.\n📌 Ejemplo: ${prefijo}pelicula Dragon Ball Z` },
+        { text: uso(prefijo, 'pelicula', 'Dragon Ball Z', 'Escribe qué película o serie quieres buscar.') },
         { quoted: msg }
       )
     }
@@ -51,16 +52,19 @@ module.exports = {
       const resultados = data.results
       const restantes = data.quota?.remaining_today
 
-      let texto = `⛧───「 Resultados: ${query} 」───⛧\n\n`
+      const filas = [['Búsqueda', String(query).slice(0, 60), '🔍'], '┃']
       resultados.forEach((item, index) => {
-        texto += `${index + 1}. *${item.title}*\n`
-        texto += `   ❖ tipo: ${item.type === 'movie' ? 'Película' : 'Serie'}\n`
-        texto += `   ❖ año: ${item.year || 'Desconocido'}\n\n`
+        filas.push(
+          `${index + 1}. *${String(item.title ?? 'Sin título').slice(0, 80)}*`,
+          ['Tipo', item.type === 'movie' ? 'Película' : 'Serie', '🎞️'],
+          ['Año', item.year || 'Desconocido', '📅'],
+          '┃'
+        )
       })
       if (restantes !== undefined) {
-        texto += `⚠️ _Búsquedas restantes hoy: ${restantes}/${data.quota.limit_per_day}_\n`
+        filas.push(aviso(`_Búsquedas restantes hoy: ${restantes}/${data.quota.limit_per_day}_`))
       }
-      texto += `╰─➤ _Responde con el número (1-${resultados.length}) para obtener el link de descarga_ 🥀`
+      const texto = caja('🎬', 'Resultados', filas, `Responde con el número (1-${resultados.length}) para obtener el link de descarga`)
 
       await sock.sendMessage(jid, { text: texto }, { quoted: msg })
 
@@ -90,7 +94,7 @@ module.exports = {
 
       const elegida = resultados[respuesta - 1]
 
-      await sock.sendMessage(jid, { text: `⏳ Obteniendo link de descarga de "${elegida.title}"...` }, { quoted: msg })
+      await sock.sendMessage(jid, { text: espera(`Obteniendo link de descarga de "${elegida.title}"...`) }, { quoted: msg })
 
       const respLink = await fetch(elegida.mediafire_url)
       if (!respLink.ok) throw new Error(`No se pudo obtener el link (HTTP ${respLink.status})`)
@@ -101,7 +105,7 @@ module.exports = {
       if (linkDescarga) {
         await sock.sendMessage(
           jid,
-          { text: `⛧───「 ${elegida.title} 」───⛧\n\n🔗 ${linkDescarga}\n\n╰─➤ _${config.BOT_NAME}_ 🥀` },
+          { text: caja('🎬', String(elegida.title ?? 'Película').slice(0, 60), [['Link', linkDescarga, '🔗']], config.BOT_NAME) },
           { quoted: msg }
         )
       } else {

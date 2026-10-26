@@ -50,7 +50,7 @@ module.exports = {
 
       await sock.sendMessage(
         jid,
-        { text: `⛧───「 QR leído 」───⛧\n\n${resultado.data}\n\n╰─➤ _${config.BOT_NAME}_ 🥀` },
+        { text: `🔳 *QR leído*\n\n${resultado.data}\n\n> ${config.BOT_NAME}` },
         { quoted: msg }
       )
     } catch (error) {

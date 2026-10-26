@@ -6,6 +6,8 @@ function carta() {
   return Math.floor(Math.random() * 10) + 1
 }
 
+const { caja } = require('../../lib/estilo')
+
 module.exports = {
   name: 'blackjack',
   aliases: [],
@@ -25,13 +27,13 @@ module.exports = {
           { id: '/blackjack 50', text: '🃏 50' },
           { id: '/blackjack 100', text: '🃏 100' },
         ],
-        caption: '╭─ ✦ 🃏 BLACKJACK ✦\n│ Juega contra Yui usando tus monedas.\n╰─ 🍃 YuiBot-MD',
+        caption: caja('🃏', 'Blackjack', [['Saldo', formatoMonedas(saldo(numero)), '💰'], ['Apuesta mínima', '20', '🎯'], ['Victoria', 'x2', '🏆'], ['Empate', 'devolución', '🤝']], 'Juega contra Yui con tus monedas ✨'),
       })
       return
     }
     const retirada = apostar(numero, apuesta)
     if (!retirada.ok) {
-      await sock.sendMessage(msg.key.remoteJid, { text: panel('🃏 BLACKJACK', [`❌ Saldo insuficiente`, `💰 Disponible: *${formatoMonedas(retirada.disponible)}*`]) }, { quoted: msg })
+      await sock.sendMessage(msg.key.remoteJid, { text: caja('🃏', 'Blackjack', [['Estado', '❌ Saldo insuficiente'], ['Disponible', formatoMonedas(retirada.disponible), '💰'], ['Necesitas', formatoMonedas(apuesta), '🎯']], 'Consigue más monedas con /daily') }, { quoted: msg })
       return
     }
     const jugador = carta() + carta()
@@ -57,7 +59,7 @@ module.exports = {
         { id: '/blackjack 20', text: '🃏 20' },
         { id: '/blackjack 100', text: '💎 100' },
       ],
-      caption: `╭─ ✦ 🃏 BLACKJACK ✦\n│ 👤 Tú: *${jugador}*  vs  🤖 Yui: *${yui}*\n│ ${resultado}\n╰─ 🍃 YuiBot-MD`,
+      caption: caja('🃏', 'Blackjack', [['Tú', jugador, '👤'], ['Yui', yui, '🤖'], ['Resultado', resultado, '🎯'], ['Saldo', formatoMonedas(saldo(numero)), '💰']], 'Gracias por jugar ✨'),
     })
   },
 }

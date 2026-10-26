@@ -2,6 +2,7 @@
 const fetch = require('../../lib/http').fetchSeguro // timeout por defecto (ver lib/http.js)
 const { APIS } = require('../../defaults')
 const { descargarInstagram } = require('../../lib/instagram')
+const { caja, espera, uso } = require('../../lib/estilo')
 
 const SEARCH_URL = 'https://orbitcloud.hidenfree.com/api/v1/search/instagramreels'
 const LIMITE_RESULTADOS = 10
@@ -28,7 +29,7 @@ module.exports = {
     if (!query) {
       return sock.sendMessage(
         jid,
-        { text: `❌ Escribe qué quieres buscar.\n📌 Ejemplo: ${prefijo}instagramreels gatito` },
+        { text: uso(prefijo, 'instagramreels', 'gatito', 'Escribe qué quieres buscar.') },
         { quoted: msg }
       )
     }
@@ -48,21 +49,11 @@ module.exports = {
 
       const resultados = data.results.slice(0, LIMITE_RESULTADOS)
 
-      let mensaje =
-        `╭━━━〔 📸 INSTAGRAM REELS 〕━━━╮\n` +
-        `┃ 🔍 Búsqueda: ${query}\n` +
-        `┃ 📊 Resultados: ${resultados.length}\n` +
-        `╰━━━━━━━━━━━━━━━━━━━━━━╯\n\n`
-
+      const filas = [['Búsqueda', truncar(query, 60), '🔍'], ['Resultados', resultados.length, '📊'], '┃']
       resultados.forEach((reel, index) => {
-        mensaje +=
-          `╭─〔 ${index + 1} 〕──────────\n` +
-          `│ 📝 ${truncar(reel.description, 90)}\n` +
-          `╰────────────────────\n\n`
+        filas.push(`${index + 1}. ${truncar(reel.description, 90)}`)
       })
-
-      mensaje += `╰─➤ _Responde con el número (1-${resultados.length}) para descargar ese reel_ 🥀\n`
-      mensaje += `\n🌐 Resultados vía Orbit API`
+      const mensaje = caja('📸', 'Instagram Reels', filas, `Responde con el número (1-${resultados.length}) para descargar ese reel · vía Orbit API`)
 
       await sock.sendMessage(jid, { text: mensaje }, { quoted: msg })
 
@@ -95,7 +86,7 @@ module.exports = {
         return sock.sendMessage(jid, { text: '❌ Ese resultado no tiene un enlace válido.' }, { quoted: msg })
       }
 
-      await sock.sendMessage(jid, { text: `⏳ Descargando reel elegido...\n\n🔗 ${elegido.url}` }, { quoted: msg })
+      await sock.sendMessage(jid, { text: espera(`Descargando reel elegido...\n\n🔗 ${elegido.url}`) }, { quoted: msg })
 
       const datosDescarga = await descargarInstagram(elegido.url)
       const { selected, title, username } = datosDescarga
@@ -106,13 +97,11 @@ module.exports = {
       const buffer = Buffer.from(await respArchivo.arrayBuffer())
       const pesoMB = buffer.length / (1024 * 1024)
 
-      const caption =
-        `╭━━━〔 📸 INSTAGRAM 〕━━━╮\n` +
-        `┃ 📝 ${title || truncar(elegido.description, 100)}\n` +
-        `┃ 👤 @${username || 'desconocido'}\n` +
-        `┃ 💾 Tamaño: ${pesoMB.toFixed(1)} MB\n` +
-        `╰━━━━━━━━━━━━━━━━━━━━━━╯\n` +
-        `🌐 Búsqueda vía Orbit API`
+      const caption = caja('📸', 'Instagram', [
+        ['Descripción', truncar(title || elegido.description, 150), '📝'],
+        ['Usuario', `@${username || 'desconocido'}`, '👤'],
+        ['Tamaño', `${pesoMB.toFixed(1)} MB`, '💾'],
+      ], '🌐 Búsqueda vía Orbit API')
 
       if (selected.type === 'video') {
         if (pesoMB <= LIMITE_VIDEO_MB) {

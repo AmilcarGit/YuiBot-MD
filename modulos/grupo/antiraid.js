@@ -1,4 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const { caja } = require('../../lib/estilo')
 const { esAdminDeGrupo } = require('../../lib/moderacion')
 const { obtenerConfig, guardarConfig, registrarEntradas, limpiarEntradas } = require('../../lib/antiraid')
 
@@ -52,7 +53,7 @@ module.exports = {
 
     if (accion === 'on' || accion === 'off') {
       const cfg = guardarConfig(jid, { enabled: accion === 'on' })
-      return sock.sendMessage(jid, { text: `🛡️ AntiRaid: *${cfg.enabled ? 'ON ✅' : 'OFF ❌'}*` }, { quoted: msg })
+      return sock.sendMessage(jid, { text: caja('🚨', 'Antiraid', [['Estado', cfg.enabled ? 'ON ✅' : 'OFF ❌', '📡']]) }, { quoted: msg })
     }
 
     if (accion === 'config') {
@@ -66,7 +67,14 @@ module.exports = {
 
     const cfg = obtenerConfig(jid)
     return sock.sendMessage(jid, {
-      text: `🛡️ *ANTIRAID*\n\nEstado: *${cfg.enabled ? 'ON' : 'OFF'}*\nLímite: *${cfg.limite} entradas / ${cfg.ventanaSegundos}s*\nCierre: *${cfg.minutosBloqueo} min*\n\nantiraid on|off\nantiraid config 5 20 5`,
+      text: caja('🚨', 'Antiraid', [
+        ['Estado', cfg.enabled ? 'ON ✅' : 'OFF ❌', '📡'],
+        ['Límite', `${cfg.limite} entradas / ${cfg.ventanaSegundos}s`, '👥'],
+        ['Cierre', `${cfg.minutosBloqueo} min`, '🔒'],
+        '',
+        '📌 antiraid on|off',
+        '📌 antiraid config 5 20 5',
+      ]),
     }, { quoted: msg })
   },
 
@@ -87,7 +95,10 @@ module.exports = {
       const nuevoCfg = guardarConfig(update.id, { bloqueadoHasta: ahora + cfg.minutosBloqueo * 60000 })
       limpiarEntradas(update.id)
       await sock.sendMessage(update.id, {
-        text: `🚨 *ANTIRAID ACTIVADO*\n\nDetecté *${cantidad} entradas* en pocos segundos.\nEl grupo fue cerrado por *${cfg.minutosBloqueo} minutos*.`,
+        text: caja('🚨', 'Antiraid activado', [
+          ['Detectadas', `${cantidad} entradas en pocos segundos`, '👥'],
+          ['Cierre', `grupo cerrado por ${cfg.minutosBloqueo} minutos`, '🔒'],
+        ]),
       })
       programarDesbloqueo(sock, update.id, nuevoCfg)
     } catch (error) {

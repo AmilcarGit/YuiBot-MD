@@ -1,5 +1,6 @@
 const fetch = require('../../lib/http').fetchSeguro
 const delirius = require('../../lib/delirius')
+const { caja, espera, uso } = require('../../lib/estilo')
 const { conFuentes, descargarLocal } = require('../../lib/youtube')
 
 const LIMITE_VIDEO_MB = 64
@@ -18,7 +19,7 @@ module.exports = {
     if (!link) {
       return sock.sendMessage(
         jid,
-        { text: `❌ Debes enviar un enlace de Facebook.\n\n📌 Ejemplo:\n${prefijo}facebook https://www.facebook.com/watch/?v=1234567890` },
+        { text: uso(prefijo, 'facebook', 'https://www.facebook.com/watch/?v=1234567890', 'Debes enviar un enlace de Facebook.') },
         { quoted: msg }
       )
     }
@@ -28,7 +29,7 @@ module.exports = {
     }
 
     try {
-      await sock.sendMessage(jid, { text: `⏳ Descargando de Facebook...\n\n🔗 ${link}` }, { quoted: msg })
+      await sock.sendMessage(jid, { text: espera(`Descargando de Facebook...\n\n🔗 ${link}`) }, { quoted: msg })
 
       // yt-dlp local primero (gratis); Delirius queda como respaldo
       const r = await conFuentes({
@@ -42,13 +43,12 @@ module.exports = {
       })
       const pesoMB = r.buffer.length / (1024 * 1024)
 
-      const caption =
-        `╭━━━〔 📘 FACEBOOK 〕━━━╮\n` +
-        `┃ 📝 ${r.titulo || 'Sin título'}\n` +
-        `┃ 👤 ${r.canal}\n` +
-        `┃ ⏱️ ${r.duracion}\n` +
-        `┃ 💾 Tamaño: ${pesoMB.toFixed(1)} MB\n` +
-        `╰━━━━━━━━━━━━━━━━━━━━━━╯`
+      const caption = caja('📘', 'Facebook', [
+        ['Título', String(r.titulo || 'Sin título').slice(0, 150), '📝'],
+        ['Canal', r.canal, '👤'],
+        ['Duración', r.duracion, '⏱️'],
+        ['Tamaño', `${pesoMB.toFixed(1)} MB`, '💾'],
+      ], '📥 Descargado de FACEBOOK')
 
       const contenido = pesoMB <= LIMITE_VIDEO_MB
         ? { video: r.buffer, mimetype: 'video/mp4', fileName: 'facebook.mp4', caption }

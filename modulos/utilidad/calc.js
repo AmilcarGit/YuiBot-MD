@@ -1,4 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const E = require('../../lib/estilo')
 const MAX_LENGTH = 180
 
 function evaluar(expresion) {
@@ -49,12 +50,12 @@ module.exports = {
   async execute(sock, msg, args, { config }) {
     const jid = msg.key.remoteJid
     if (!args.length) {
-      return sock.sendMessage(jid, { text: `╭─ ✦ 📦 CALC ✦\n│ Uso: *${config.PREFIXES[0]}calc 25 × 4*\n│ Funciones: sqrt, abs, sin, cos, tan, log, ln\n│ Extras: π, e, ^, %\n╰─ 🍃 YuiBot-MD` }, { quoted: msg })
+      return sock.sendMessage(jid, { text: E.caja('🧮', 'CALCULADORA', [['Uso', `${config.PREFIXES[0]}calc 25 × 4`], ['Funciones', 'sqrt, abs, sin, cos, tan, log, ln'], ['Extras', 'π, e, ^, %']], config.BOT_NAME) }, { quoted: msg })
     }
     try {
       const expresion = args.join(' ')
       const resultado = evaluar(expresion)
-      await sock.sendMessage(jid, { text: `╭─ ✦ 📦 CALC ✦\n│ 🧮 Operación: *${expresion}*\n│ ✅ Resultado: *${formato(resultado)}*\n╰─ 🍃 ${config.BOT_NAME}` }, { quoted: msg })
+      await sock.sendMessage(jid, { text: E.caja('🧮', 'CALCULADORA', [['Operación', expresion], ['Resultado', formato(resultado)]], config.BOT_NAME) }, { quoted: msg })
     } catch (error) {
       await sock.sendMessage(jid, { text: `❌ ${error.message}` }, { quoted: msg })
     }

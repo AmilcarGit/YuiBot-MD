@@ -1,4 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const { caja } = require('../../lib/estilo')
 module.exports = {
   name: 'tagall',
   aliases: ['everyone', 'all'],
@@ -34,12 +35,10 @@ module.exports = {
     const mensajeExtra = args.join(' ').trim()
     const mentions = metadata.participants.map((p) => p.id)
 
-    let texto = `⛧───「 Mención General 」───⛧\n\n`
-    if (mensajeExtra) texto += `${mensajeExtra}\n\n`
-    for (const p of metadata.participants) {
-      texto += `  ❖ @${p.id.split('@')[0]}\n`
-    }
-    texto += `\n╰─➤ _${metadata.subject}_ 🥀`
+    const texto = caja('📢', 'Mención general', [
+      mensajeExtra ? `💬 ${mensajeExtra}` : null,
+      ...metadata.participants.map((p) => `✦ @${p.id.split('@')[0]}`),
+    ], metadata.subject)
 
     await sock.sendMessage(jid, { text: texto, mentions }, { quoted: msg })
   },

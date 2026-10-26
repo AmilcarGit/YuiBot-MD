@@ -1,6 +1,7 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
 const { exec } = require('child_process')
 const { esProcesoSubbot } = require('../../lib/pm2')
+const { caja } = require('../../lib/estilo')
 
 function ejecutar(comando) {
   return new Promise((resolve) => {
@@ -55,13 +56,11 @@ module.exports = {
     const correctos = reinicios.filter((item) => item.ok)
     const fallidos = reinicios.filter((item) => !item.ok)
 
-    let texto = `✅ Actualización de subbots completada.\n\n`
-    texto += `🟢 Reiniciados: ${correctos.length}\n`
-    texto += `🔴 Fallidos: ${fallidos.length}`
-
-    if (fallidos.length) {
-      texto += `\n\n❌ ${fallidos.map((item) => item.nombre).join(', ')}`
-    }
+    const texto = caja('♻️', 'Subbots actualizados', [
+      ['Reiniciados', `🟢 ${correctos.length}`],
+      ['Fallidos', `🔴 ${fallidos.length}`],
+      fallidos.length ? ['Detalle', fallidos.map((item) => item.nombre).join(', '), '❌'] : null,
+    ], 'Actualización de subbots completada')
 
     await sock.sendMessage(jid, { text: texto }, { quoted: msg })
   },

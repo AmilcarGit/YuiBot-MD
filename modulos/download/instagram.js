@@ -1,6 +1,7 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
 const fetch = require('../../lib/http').fetchSeguro // timeout por defecto (ver lib/http.js)
 const { descargarInstagram } = require('../../lib/instagram')
+const { caja, espera, uso } = require('../../lib/estilo')
 const { conFuentes, descargarLocal } = require('../../lib/youtube')
 
 const LIMITE_VIDEO_MB = 64
@@ -19,11 +20,7 @@ module.exports = {
     if (!link) {
       return sock.sendMessage(
         jid,
-        {
-          text:
-            `❌ Debes enviar un enlace de Instagram.\n\n` +
-            `📌 Ejemplo:\n${prefijo}instagram https://www.instagram.com/reel/DCt2o8lMrsr/`
-        },
+        { text: uso(prefijo, 'instagram', 'https://www.instagram.com/reel/DCt2o8lMrsr/', 'Debes enviar un enlace de Instagram.') },
         { quoted: msg }
       )
     }
@@ -33,7 +30,7 @@ module.exports = {
     }
 
     try {
-      await sock.sendMessage(jid, { text: `⏳ Descargando de Instagram...\n\n🔗 ${link}` }, { quoted: msg })
+      await sock.sendMessage(jid, { text: espera(`Descargando de Instagram...\n\n🔗 ${link}`) }, { quoted: msg })
 
       // yt-dlp local primero (gratis); la API de antes queda como respaldo (también para fotos)
       const { buffer, selected, title, username } = await conFuentes({
@@ -55,12 +52,11 @@ module.exports = {
       })
       const pesoMB = buffer.length / (1024 * 1024)
 
-      const caption =
-        `╭━━━〔 📸 INSTAGRAM 〕━━━╮\n` +
-        `┃ 📝 ${title || 'Sin título'}\n` +
-        `┃ 👤 @${username || 'desconocido'}\n` +
-        `┃ 💾 Tamaño: ${pesoMB.toFixed(1)} MB\n` +
-        `╰━━━━━━━━━━━━━━━━━━━━━━╯`
+      const caption = caja('📸', 'Instagram', [
+        ['Descripción', String(title || 'Sin título').replace(/\s+/g, ' ').slice(0, 150), '📝'],
+        ['Usuario', `@${username || 'desconocido'}`, '👤'],
+        ['Tamaño', `${pesoMB.toFixed(1)} MB`, '💾'],
+      ], '📥 Descargado de INSTAGRAM')
 
       if (selected.type === 'video') {
         if (pesoMB <= LIMITE_VIDEO_MB) {

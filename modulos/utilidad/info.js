@@ -1,4 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const E = require('../../lib/estilo')
 module.exports = {
   name: 'info',
   aliases: [],
@@ -33,17 +34,17 @@ module.exports = {
     }
 
     const lineas = [
-      `👤 Nombre: *${nombre}*`,
-      `📱 Número: *${numero}*`,
-      `🆔 JID: *${usuarioJid}*`,
-      `💬 Tipo: *${grupo ? 'Grupo' : 'Privado'}*`,
+      ['Nombre', nombre, '👤'],
+      ['Número', numero, '📱'],
+      ['JID', usuarioJid, '🆔'],
+      ['Tipo', grupo ? 'Grupo' : 'Privado', '💬'],
     ]
 
     if (grupo) {
-      lineas.push(`👥 Grupo: *${grupoNombre}*`, `👨‍👩‍👧‍👦 Miembros: *${participantes}*`, `🆔 JID del grupo: *${jid}*`)
+      lineas.push(['Grupo', grupoNombre, '👥'], ['Miembros', participantes, '👨‍👩‍👧‍👦'], ['JID del grupo', jid, '🆔'])
     }
 
-    lineas.push(`🤖 Bot: *${config.BOT_NAME}*`)
-    await sock.sendMessage(jid, { text: `╭─ ✦ 👤 INFO ✦\n│ ${lineas.join('\n│ ')}\n╰─ 🍃 YuiBot-MD` }, { quoted: msg })
+    lineas.push(['Bot', config.BOT_NAME, '🤖'])
+    await sock.sendMessage(jid, { text: E.caja('👤', 'Info', lineas, 'YuiBot-MD') }, { quoted: msg })
   },
 }

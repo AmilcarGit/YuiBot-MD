@@ -1,4 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const { caja } = require('../../lib/estilo')
 const { esAdminDeGrupo } = require('../../lib/moderacion')
 const { isOwner, parseCommand } = require('../../lib/handler')
 const modoadmi = require('../../lib/modoadmi')
@@ -42,7 +43,12 @@ module.exports = {
     }
 
     return sock.sendMessage(jid, {
-      text: `🛡️ *MODO ADMIN*\n\nEstado: *${modoadmi.estaActivo(jid) ? 'ON 🔒' : 'OFF 🔓'}*\n\nmodoadmi on\nmodoadmi off`,
+      text: caja('🛡️', 'Modo admin', [
+        ['Estado', modoadmi.estaActivo(jid) ? 'ON 🔒' : 'OFF 🔓', '📡'],
+        '',
+        '📌 modoadmi on',
+        '📌 modoadmi off',
+      ]),
     }, { quoted: msg })
   },
 

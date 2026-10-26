@@ -1,3 +1,4 @@
+const E = require('../../lib/estilo')
 const fetch = require('../../lib/http').fetchSeguro
 const publicas = require('../../lib/publicas')
 
@@ -16,16 +17,14 @@ module.exports = {
 
     try {
       const p = await publicas.pais(consulta)
-      const caption =
-        `╭━━━〔 🌍 PAÍS 〕━━━╮\n` +
-        `┃ 🏳️ ${p.nombre}\n` +
-        `┃ 📜 ${p.oficial}\n` +
-        `┃ 🏛️ Capital: ${p.capital || '—'}\n` +
-        `┃ 👥 Población: ${p.poblacion.toLocaleString('es-PE')}\n` +
-        `┃ 🗺️ ${p.region}${p.area ? ` · ${p.area.toLocaleString('es-PE')} km²` : ''}\n` +
-        `┃ 💰 ${p.monedas.join(', ') || '—'}\n` +
-        `┃ 🗣️ ${p.idiomas.join(', ') || '—'}\n` +
-        `╰━━━━━━━━━━━━━━━━━━━╯`
+      const caption = E.caja('🌍', p.nombre, [
+        ['Nombre oficial', p.oficial, '📜'],
+        ['Capital', p.capital || '—', '🏛️'],
+        ['Población', p.poblacion.toLocaleString('es-PE'), '👥'],
+        ['Región', `${p.region}${p.area ? ` · ${p.area.toLocaleString('es-PE')} km²` : ''}`, '🗺️'],
+        ['Monedas', p.monedas.join(', ') || '—', '💰'],
+        ['Idiomas', p.idiomas.join(', ') || '—', '🗣️'],
+      ], 'YuiBot-MD')
 
       if (p.bandera) {
         const img = await fetch(p.bandera)

@@ -2,6 +2,8 @@
 const { numeroUsuario, saldo, apostar, pagar, apuestaDesdeArgs, formatoMonedas } = require('../../lib/juegos')
 const { enviarJuego } = require('../../lib/juegosVisual')
 
+const { caja, error, aviso } = require('../../lib/estilo')
+
 module.exports = {
   name: 'batalla',
   aliases: [],
@@ -18,7 +20,7 @@ module.exports = {
         titulo: 'Batalla',
         subtitulo: 'Desafía a otro jugador por monedas',
         datos: [`💰 Tu saldo: ${formatoMonedas(saldo(numero))}`, '🎯 Mínimo: 20 monedas', '🏆 El ganador se lleva el pozo'],
-        caption: '╭─ ✦ ⚔️ BATALLA ✦\n│ ▶️ Usa: */batalla @usuario 100*\n╰─ 🍃 YuiBot-MD',
+        caption: caja('⚔️', 'Batalla', [['Uso', '/batalla @usuario 100', '▶️'], ['Mínimo', '20 monedas', '🎯'], ['Premio', 'el ganador se lleva el pozo', '🏆']], 'Desafía a otro jugador ✨'),
         botones: [{ id: '/menu', text: '🍃 MENÚ' }],
       })
       return
@@ -28,7 +30,7 @@ module.exports = {
       await enviarJuego(sock, msg, {
         icono: '⚔️', titulo: 'Batalla', subtitulo: 'Desafío no válido',
         datos: ['❌ No puedes desafiarte a ti mismo', '👤 Menciona a otro jugador'],
-        caption: '⚠️ Elige un rival diferente',
+        caption: aviso('Elige un rival diferente'),
         botones: [{ id: '/menu', text: '🍃 MENÚ' }],
       })
       return
@@ -38,7 +40,7 @@ module.exports = {
       await enviarJuego(sock, msg, {
         icono: '💸', titulo: 'Batalla', subtitulo: 'No tienes suficientes monedas',
         datos: [`💰 Disponible: ${formatoMonedas(retiroJugador.disponible)}`, `🎯 Necesitas: ${formatoMonedas(apuesta)}`],
-        caption: '❌ Apuesta rechazada',
+        caption: error('Apuesta rechazada'),
         botones: [{ id: '/menu', text: '🍃 MENÚ' }],
       })
       return
@@ -49,7 +51,7 @@ module.exports = {
       await enviarJuego(sock, msg, {
         icono: '↩️', titulo: 'Batalla', subtitulo: 'El rival no tiene suficiente saldo',
         datos: [`👤 Rival: @${rival}`, `🎯 Apuesta: ${formatoMonedas(apuesta)}`, '💰 Tu apuesta fue devuelta'],
-        caption: '⚠️ La batalla fue cancelada',
+        caption: aviso('La batalla fue cancelada'),
         botones: [{ id: '/menu', text: '🍃 MENÚ' }],
       })
       return
@@ -63,7 +65,7 @@ module.exports = {
       titulo: 'Batalla',
       subtitulo: `Ganador: ${nombreGanador}`,
       datos: [`👤 Tú: @${numero}`, `⚔️ Rival: @${rival}`, `🏆 Premio: ${formatoMonedas(premio)}`, `💰 Saldo: ${formatoMonedas(saldo(numero))}`],
-      caption: ganador === numero ? '🎉 ¡Ganaste la batalla!' : '💥 El rival ganó esta vez',
+      caption: caja(ganador === numero ? '🏆' : '⚔️', 'Batalla', [['Resultado', ganador === numero ? '🎉 ¡Ganaste la batalla!' : '💥 El rival ganó esta vez', '⚔️'], ['Premio', formatoMonedas(premio), '🏆'], ['Saldo', formatoMonedas(saldo(numero)), '💰']], 'Buena pelea ✨'),
       botones: [{ id: '/menu', text: '🍃 MENÚ' }],
     })
   },

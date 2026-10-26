@@ -1,6 +1,7 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
 const fetch = require('../../lib/http').fetchSeguro // timeout por defecto (ver lib/http.js)
 const { APIS } = require('../../defaults')
+const { caja, espera, uso } = require('../../lib/estilo')
 
 const SEARCH_URL = 'https://orbitcloud.hidenfree.com/api/v1/tiktok-search'
 const LIMITE_RESULTADOS = 10
@@ -31,7 +32,7 @@ module.exports = {
     if (!query) {
       return sock.sendMessage(
         jid,
-        { text: `❌ Escribe qué quieres buscar.\n📌 Ejemplo: ${prefijo}tiktoksearch amor` },
+        { text: uso(prefijo, 'tiktoksearch', 'amor', 'Escribe qué quieres buscar.') },
         { quoted: msg }
       )
     }
@@ -51,25 +52,18 @@ module.exports = {
 
       const resultados = data.results.slice(0, LIMITE_RESULTADOS)
 
-      let mensaje =
-        `╭━━━〔 🎵 TIKTOK SEARCH 〕━━━╮\n` +
-        `┃ 🔍 Búsqueda: ${query}\n` +
-        `┃ 📊 Resultados: ${resultados.length}\n` +
-        `╰━━━━━━━━━━━━━━━━━━━━━━╯\n\n`
-
+      const filas = [['Búsqueda', truncar(query, 60), '🔍'], ['Resultados', resultados.length, '📊'], '┃']
       resultados.forEach((video, index) => {
-        mensaje +=
-          `╭─〔 ${index + 1} 〕──────────\n` +
-          `│ 📝 ${truncar(video.desc, 80)}\n` +
-          `│ 👤 @${video.author?.uniqueId || 'desconocido'}\n` +
-          `│ ⏱️ Duración: ${video.video?.duration ?? '?'}s\n` +
-          `│ ▶️ Reproducciones: ${formatearNumero(video.stats?.playCount)}\n` +
-          `│ ❤️ Likes: ${formatearNumero(video.stats?.diggCount)}\n` +
-          `╰────────────────────\n\n`
+        filas.push(
+          `${index + 1}. ${truncar(video.desc, 80)}`,
+          ['Autor', `@${video.author?.uniqueId || 'desconocido'}`, '👤'],
+          ['Duración', `${video.video?.duration ?? '?'}s`, '⏱️'],
+          ['Reproducciones', formatearNumero(video.stats?.playCount), '▶️'],
+          ['Likes', formatearNumero(video.stats?.diggCount), '❤️'],
+          '┃'
+        )
       })
-
-      mensaje += `╰─➤ _Responde con el número (1-${resultados.length}) para descargar ese video_ 🥀\n`
-      mensaje += `\n🌐 Resultados vía Orbit API`
+      const mensaje = caja('🎵', 'TikTok Search', filas, `Responde con el número (1-${resultados.length}) para descargar ese video · vía Orbit API`)
 
       await sock.sendMessage(jid, { text: mensaje }, { quoted: msg })
 
@@ -104,7 +98,7 @@ module.exports = {
         return sock.sendMessage(jid, { text: '❌ Ese resultado no tiene un video descargable.' }, { quoted: msg })
       }
 
-      await sock.sendMessage(jid, { text: `⏳ Descargando "${truncar(elegido.desc, 50)}"...` }, { quoted: msg })
+      await sock.sendMessage(jid, { text: espera(`Descargando "${truncar(elegido.desc, 50)}"...`) }, { quoted: msg })
 
       const archivo = await fetch(enlaceDescarga)
       if (!archivo.ok) throw new Error(`No se pudo descargar el video (HTTP ${archivo.status})`)
@@ -112,14 +106,12 @@ module.exports = {
       const buffer = Buffer.from(await archivo.arrayBuffer())
       const pesoMB = buffer.length / (1024 * 1024)
 
-      const caption =
-        `╭━━━〔 🎵 TIKTOK 〕━━━╮\n` +
-        `┃ 📝 ${truncar(elegido.desc, 100)}\n` +
-        `┃ 👤 @${elegido.author?.uniqueId || 'desconocido'}\n` +
-        `┃ 🎶 ${elegido.music?.title || 'Sin música'}\n` +
-        `┃ 💾 Tamaño: ${pesoMB.toFixed(1)} MB\n` +
-        `╰━━━━━━━━━━━━━━━━━━━━╯\n` +
-        `🌐 Vía Orbit API — créditos a @${elegido.author?.uniqueId || 'autor original'} en TikTok`
+      const caption = caja('🎵', 'TikTok', [
+        ['Descripción', truncar(elegido.desc, 120), '📝'],
+        ['Autor', `@${elegido.author?.uniqueId || 'desconocido'}`, '👤'],
+        ['Música', truncar(elegido.music?.title || 'Sin música', 60), '🎶'],
+        ['Tamaño', `${pesoMB.toFixed(1)} MB`, '💾'],
+      ], `🌐 Vía Orbit API — créditos a @${elegido.author?.uniqueId || 'autor original'} en TikTok`)
 
       if (pesoMB <= LIMITE_VIDEO_MB) {
         await sock.sendMessage(jid, { video: buffer, mimetype: 'video/mp4', caption }, { quoted: msg })

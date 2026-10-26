@@ -1,4 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const { caja } = require('../../lib/estilo')
 const { esAdminDeGrupo } = require('../../lib/moderacion')
 const { obtenerConfig, guardarConfig, numeroPermitido } = require('../../lib/antifake')
 
@@ -61,7 +62,16 @@ module.exports = {
     }
 
     return sock.sendMessage(jid, {
-      text: `*ANTIFAKE*\n\nEstado: *${cfg.enabled ? 'ON' : 'OFF'}*\nPrefijos permitidos: *${cfg.prefijos.join(', ')}*\n\nantifake on\nantifake off\nantifake add 52\nantifake remove 52\nantifake list`,
+      text: caja('🎭', 'Antifake', [
+        ['Estado', cfg.enabled ? 'ON ✅' : 'OFF ❌', '📡'],
+        ['Prefijos permitidos', cfg.prefijos.join(', '), '🌎'],
+        '',
+        '📌 antifake on',
+        '📌 antifake off',
+        '📌 antifake add 52',
+        '📌 antifake remove 52',
+        '📌 antifake list',
+      ]),
     }, { quoted: msg })
   },
 

@@ -1,4 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const { caja } = require('../../lib/estilo')
 const { esAdminDeGrupo } = require('../../lib/moderacion')
 const { obtenerConfig, guardarConfig, esHoraValida } = require('../../lib/horariogrupo')
 
@@ -52,7 +53,13 @@ module.exports = {
     }
 
     return sock.sendMessage(jid, {
-      text: `⏰ *HORARIO DEL GRUPO*\n\nEstado: *${cfg.enabled ? 'ON ✅' : 'OFF ❌'}*\nHorario: *${cfg.apertura} - ${cfg.cierre}* (hora del servidor)\n\nhorariogrupo on 08:00 23:00\nhorariogrupo off`,
+      text: caja('⏰', 'Horario del grupo', [
+        ['Estado', cfg.enabled ? 'ON ✅' : 'OFF ❌', '📡'],
+        ['Horario', `${cfg.apertura} - ${cfg.cierre} (hora del servidor)`, '🕒'],
+        '',
+        '📌 horariogrupo on 08:00 23:00',
+        '📌 horariogrupo off',
+      ]),
     }, { quoted: msg })
   },
 }

@@ -2,6 +2,8 @@
 const { numeroUsuario, saldo, apostar, pagar, apuestaDesdeArgs, formatoMonedas } = require('../../lib/juegos')
 const { enviarJuego } = require('../../lib/juegosVisual')
 
+const { caja, error } = require('../../lib/estilo')
+
 module.exports = {
   name: 'carrera',
   aliases: [],
@@ -17,7 +19,7 @@ module.exports = {
         titulo: 'Carrera',
         subtitulo: 'Elige un corredor y busca el premio x3',
         datos: [`💰 Saldo: ${formatoMonedas(saldo(numero))}`, '🎯 Mínimo: 20 monedas', '🏇 Corredores: 1 • 2 • 3 • 4'],
-        caption: '╭─ ✦ 🏇 CARRERA ✦\n│ ▶️ Ejemplo: */carrera 100 2*\n╰─ 🍃 YuiBot-MD',
+        caption: caja('🏇', 'Carrera', [['Ejemplo', '/carrera 100 2', '▶️'], ['Mínimo', '20 monedas', '🎯'], ['Corredores', '1 • 2 • 3 • 4', '🏇'], ['Premio', 'x3', '🏆']], 'Elige un corredor ✨'),
         botones: [
           { id: `/carrera ${apuesta || 20} 1`, text: '🏇 1' },
           { id: `/carrera ${apuesta || 20} 2`, text: '🏇 2' },
@@ -32,7 +34,7 @@ module.exports = {
       await enviarJuego(sock, msg, {
         icono: '💸', titulo: 'Carrera', subtitulo: 'Saldo insuficiente',
         datos: [`💰 Disponible: ${formatoMonedas(retirada.disponible)}`, `🎯 Necesitas: ${formatoMonedas(apuesta)}`],
-        caption: '❌ No se pudo entrar a la carrera',
+        caption: error('No se pudo entrar a la carrera'),
         botones: [{ id: `/carrera ${apuesta} ${corredor}`, text: '🏇 INTENTAR' }, { id: '/menu', text: '🍃 MENÚ' }],
       })
       return
@@ -46,7 +48,7 @@ module.exports = {
       titulo: 'Carrera',
       subtitulo: `Ganó el corredor ${ganador}`,
       datos: [`🎯 Elegiste: corredor ${corredor}`, gana ? `🏆 Premio: +${formatoMonedas(premio)}` : `💸 Pérdida: -${formatoMonedas(apuesta)}`, `💰 Saldo: ${formatoMonedas(saldo(numero))}`],
-      caption: gana ? '🎉 ¡Tu corredor llegó primero!' : '🏁 Esta carrera no fue tuya',
+      caption: caja(gana ? '🏆' : '🏁', 'Carrera', [['Ganó', `corredor ${ganador}`, '🏇'], ['Elegiste', `corredor ${corredor}`, '🎯'], ['Resultado', gana ? '🎉 ¡Tu corredor llegó primero!' : '🏁 Esta carrera no fue tuya', '✨'], ['Saldo', formatoMonedas(saldo(numero)), '💰']], gana ? '¡Felicidades! 🏆' : 'Suerte en la próxima 🍀'),
       botones: [
         { id: `/carrera ${apuesta} ${corredor}`, text: '🏇 REPETIR' },
         { id: `/carrera ${apuesta} ${ganador}`, text: `🏆 CORREDOR ${ganador}` },

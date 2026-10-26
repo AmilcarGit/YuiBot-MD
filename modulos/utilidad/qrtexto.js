@@ -1,4 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const E = require('../../lib/estilo')
 const fetch = require('../../lib/http').fetchSeguro // timeout por defecto (ver lib/http.js)
 module.exports = {
   name: 'qrtexto',
@@ -11,7 +12,7 @@ module.exports = {
 
     if (!texto) {
       return sock.sendMessage(jid, {
-        text: '❌ Escribe el texto que quieres convertir en QR.\n\nEjemplo: /qrtexto Hola YuiBot-MD'
+        text: '❌ Escribe el texto que quieres convertir en QR.\n\n📌 Ejemplo: /qrtexto Hola YuiBot-MD'
       }, { quoted: msg });
     }
 
@@ -33,7 +34,7 @@ module.exports = {
 
       await sock.sendMessage(jid, {
         image: buffer,
-        caption: `╭─〔 🔳 QR DE TEXTO 〕\n│ 📝 ${texto.length} caracteres\n│ 📦 Generado por YuiBot-MD\n╰────────────────────`
+        caption: E.caja('🔳', 'QR de texto', [['Caracteres', texto.length]], 'Generado por YuiBot-MD')
       }, { quoted: msg });
     } catch (error) {
       await sock.sendMessage(jid, {

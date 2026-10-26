@@ -13,7 +13,7 @@ const texto = args.join(' ').trim()
 
 if (!texto) {
 return await sock.sendMessage(msg.key.remoteJid, {
-text: '⛧───「 MINÚSCULAS 」───⛧\n\nEscribe el texto que quieres convertir.\n\nEjemplo:\n.minus HOLA MUNDO'
+text: '❌ Escribe el texto que quieres convertir.\n\n📌 Ejemplo: .minus HOLA MUNDO'
 })
 }
 

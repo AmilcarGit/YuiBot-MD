@@ -2,6 +2,8 @@
 const { numeroUsuario, saldo, apostar, pagar, apuestaDesdeArgs, formatoMonedas } = require('../../lib/juegos')
 const { enviarJuego } = require('../../lib/juegosVisual')
 
+const { caja, error } = require('../../lib/estilo')
+
 module.exports = {
   name: 'dados',
   aliases: [],
@@ -17,7 +19,7 @@ module.exports = {
         titulo: 'Dados',
         subtitulo: 'Elige el lado y pon a prueba tu suerte',
         datos: [`💰 Saldo: ${formatoMonedas(saldo(numero))}`, '🔻 Bajo: 2 a 6', '🔺 Alto: 8 a 12'],
-        caption: `╭─ ✦ 🎲 DADOS ✦\n│ 🎯 Apuesta mínima: *10*\n│ ▶️ Ejemplo: */dados 100 alto*\n╰─ 🍃 YuiBot-MD`,
+        caption: caja('🎲', 'Dados', [['Apuesta mínima', '10', '🎯'], ['Ejemplo', '/dados 100 alto', '▶️'], ['Premio', 'x2', '🏆']], 'Elige alto o bajo ✨'),
         botones: [
           { id: `/dados ${apuesta || 10} bajo`, text: '🔻 BAJO' },
           { id: `/dados ${apuesta || 10} alto`, text: '🔺 ALTO' },
@@ -33,7 +35,7 @@ module.exports = {
         titulo: 'Dados',
         subtitulo: 'No tienes suficientes monedas',
         datos: [`💰 Disponible: ${formatoMonedas(retirada.disponible)}`, `🎯 Necesitas: ${formatoMonedas(apuesta)}`],
-        caption: '❌ Apuesta rechazada',
+        caption: error('Apuesta rechazada'),
         botones: [{ id: `/dados ${apuesta} ${eleccion}`, text: '🎲 INTENTAR' }, { id: '/menu', text: '🍃 MENÚ' }],
       })
       return
@@ -49,7 +51,7 @@ module.exports = {
       titulo: 'Dados',
       subtitulo: `${a} + ${b} = ${total}`,
       datos: [`🎯 Elección: ${eleccion}`, gana ? `🏆 Premio: +${formatoMonedas(premio)}` : `💸 Pérdida: -${formatoMonedas(apuesta)}`, `💰 Saldo: ${formatoMonedas(saldo(numero))}`],
-      caption: gana ? '🎉 ¡Tu apuesta salió bien!' : '💥 Esta vez los dados no estuvieron de tu lado',
+      caption: caja(gana ? '🎉' : '💥', 'Dados', [['Dados', `${a} + ${b} = ${total}`, '🎲'], ['Elección', eleccion, '🎯'], ['Resultado', gana ? '🎉 ¡Tu apuesta salió bien!' : '💥 Los dados no estuvieron de tu lado', '✨'], ['Saldo', formatoMonedas(saldo(numero)), '💰']], gana ? '¡Felicidades! 🏆' : 'Suerte en la próxima 🍀'),
       botones: [
         { id: `/dados ${apuesta} ${eleccion}`, text: '🎲 REPETIR' },
         { id: `/dados ${apuesta} ${eleccion === 'alto' ? 'bajo' : 'alto'}`, text: eleccion === 'alto' ? '🔻 BAJO' : '🔺 ALTO' },

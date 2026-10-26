@@ -1,4 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const { caja } = require('../../lib/estilo')
 const fetch = require('../../lib/http').fetchSeguro // timeout por defecto (ver lib/http.js)
 module.exports = {
   name: 'infogrupo',
@@ -25,15 +26,13 @@ module.exports = {
     const admins = metadata.participants.filter((p) => p.admin === 'admin' || p.admin === 'superadmin').length
     const creado = metadata.creation ? new Date(metadata.creation * 1000).toLocaleDateString('es-PE') : 'Desconocida'
 
-    let texto = `⛧───「 ${metadata.subject} 」───⛧\n\n`
-    texto += `  ❖ id: ${jid.split('@')[0]}\n`
-    texto += `  ❖ miembros: ${totalMiembros}\n`
-    texto += `  ❖ administradores: ${admins}\n`
-    texto += `  ❖ creado: ${creado}\n`
-    if (metadata.desc) {
-      texto += `\n📝 _Descripción:_\n${metadata.desc}\n`
-    }
-    texto += `\n╰─➤ _${config.BOT_NAME}_ 🥀`
+    const texto = caja('👥', metadata.subject, [
+      ['ID', jid.split('@')[0], '🆔'],
+      ['Miembros', totalMiembros, '👤'],
+      ['Administradores', admins, '🛡️'],
+      ['Creado', creado, '📅'],
+      metadata.desc ? ['Descripción', `\n${metadata.desc}`, '📝'] : null,
+    ], config.BOT_NAME)
 
     let fotoUrl = null
     try {

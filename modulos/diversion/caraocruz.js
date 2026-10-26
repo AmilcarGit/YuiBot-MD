@@ -2,6 +2,8 @@
 const { numeroUsuario, saldo, apostar, pagar, apuestaDesdeArgs, formatoMonedas } = require('../../lib/juegos')
 const { enviarJuego } = require('../../lib/juegosVisual')
 
+const { caja, error } = require('../../lib/estilo')
+
 module.exports = {
   name: 'caraocruz',
   aliases: [],
@@ -17,7 +19,7 @@ module.exports = {
         titulo: 'Cara o Cruz',
         subtitulo: 'Dobla tu apuesta si aciertas',
         datos: [`💰 Saldo: ${formatoMonedas(saldo(numero))}`, '🎯 Mínimo: 10 monedas', '🪙 Elige cara o cruz'],
-        caption: '╭─ ✦ 🪙 CARA O CRUZ ✦\n│ ▶️ Ejemplo: */caraocruz 100 cara*\n╰─ 🍃 YuiBot-MD',
+        caption: caja('🪙', 'Cara o Cruz', [['Ejemplo', '/caraocruz 100 cara', '▶️'], ['Mínimo', '10 monedas', '🎯'], ['Premio', 'x2', '🏆']], 'Elige cara o cruz ✨'),
         botones: [
           { id: `/caraocruz ${apuesta || 10} cara`, text: '👑 CARA' },
           { id: `/caraocruz ${apuesta || 10} cruz`, text: '🪙 CRUZ' },
@@ -33,7 +35,7 @@ module.exports = {
         titulo: 'Cara o Cruz',
         subtitulo: 'Saldo insuficiente',
         datos: [`💰 Disponible: ${formatoMonedas(retirada.disponible)}`, `🎯 Necesitas: ${formatoMonedas(apuesta)}`],
-        caption: '❌ No se pudo realizar la apuesta',
+        caption: error('No se pudo realizar la apuesta'),
         botones: [{ id: `/caraocruz ${apuesta} ${eleccion}`, text: '🪙 INTENTAR' }, { id: '/menu', text: '🍃 MENÚ' }],
       })
       return
@@ -47,7 +49,7 @@ module.exports = {
       titulo: 'Cara o Cruz',
       subtitulo: `Salió ${resultado}`,
       datos: [`🎯 Elegiste: ${eleccion}`, gana ? `🏆 Premio: +${formatoMonedas(premio)}` : `💸 Pérdida: -${formatoMonedas(apuesta)}`, `💰 Saldo: ${formatoMonedas(saldo(numero))}`],
-      caption: gana ? '🎉 ¡Acertaste!' : '💥 No salió tu elección',
+      caption: caja(gana ? '🎉' : '💥', 'Cara o Cruz', [['Salió', resultado, '🪙'], ['Elegiste', eleccion, '🎯'], ['Resultado', gana ? '🎉 ¡Acertaste!' : '💥 No salió tu elección', '✨'], ['Saldo', formatoMonedas(saldo(numero)), '💰']], gana ? '¡Felicidades! 🏆' : 'Suerte en la próxima 🍀'),
       botones: [
         { id: `/caraocruz ${apuesta} ${eleccion}`, text: '🪙 REPETIR' },
         { id: `/caraocruz ${apuesta} ${eleccion === 'cara' ? 'cruz' : 'cara'}`, text: eleccion === 'cara' ? '🪙 CRUZ' : '👑 CARA' },

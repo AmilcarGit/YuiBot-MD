@@ -1,4 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const { caja } = require('../../lib/estilo')
 const { esAdminDeGrupo } = require('../../lib/moderacion')
 const { obtenerWhitelist, agregarAWhitelist, quitarDeWhitelist, limpiarWhitelist } = require('../../lib/whitelist')
 
@@ -47,9 +48,17 @@ module.exports = {
 
     if (['list', 'lista', 'ver'].includes(accion)) {
       const lista = obtenerWhitelist(jid)
-      const texto = lista.length ? lista.map((n, i) => `${i + 1}. +${n}`).join('\n') : 'Sin usuarios en whitelist.'
+      const items = lista.length ? lista.map((n, i) => `${i + 1}. +${n}`) : ['Sin usuarios en whitelist.']
       return sock.sendMessage(jid, {
-        text: `🛡️ *WHITELIST DEL GRUPO*\nTotal: ${lista.length}\n\n${texto}\n\nUso:\n• whitelist add @usuario\n• whitelist del @usuario\n• whitelist clear`,
+        text: caja('🛡️', 'Whitelist del grupo', [
+          ['Total', lista.length, '👥'],
+          '',
+          ...items,
+          '',
+          '📌 whitelist add @usuario',
+          '📌 whitelist del @usuario',
+          '📌 whitelist clear',
+        ]),
       }, { quoted: msg })
     }
 
@@ -65,7 +74,11 @@ module.exports = {
       }
       const resultado = agregarAWhitelist(jid, numero)
       return sock.sendMessage(jid, {
-        text: `${resultado.existed ? 'ℹ️ Ya estaba' : '✅ Agregado'} en whitelist: +${numero}\nTotal: ${resultado.total}`,
+        text: caja(resultado.existed ? 'ℹ️' : '✅', 'Whitelist', [
+          ['Estado', resultado.existed ? 'Ya estaba en whitelist' : 'Agregado a whitelist', '📋'],
+          ['Usuario', `@${numero}`, '👤'],
+          ['Total', resultado.total, '👥'],
+        ]),
         mentions: [`${numero}@s.whatsapp.net`],
       }, { quoted: msg })
     }
@@ -77,13 +90,22 @@ module.exports = {
       }
       const resultado = quitarDeWhitelist(jid, numero)
       return sock.sendMessage(jid, {
-        text: `${resultado.removed ? '✅ Removido' : 'ℹ️ No estaba'} de whitelist: +${numero}\nTotal: ${resultado.total}`,
+        text: caja(resultado.removed ? '✅' : 'ℹ️', 'Whitelist', [
+          ['Estado', resultado.removed ? 'Removido de whitelist' : 'No estaba en whitelist', '📋'],
+          ['Usuario', `@${numero}`, '👤'],
+          ['Total', resultado.total, '👥'],
+        ]),
         mentions: [`${numero}@s.whatsapp.net`],
       }, { quoted: msg })
     }
 
     return sock.sendMessage(jid, {
-      text: 'Uso:\n• whitelist list\n• whitelist add @usuario\n• whitelist del @usuario\n• whitelist clear',
+      text: caja('🛡️', 'Whitelist', [
+        '📌 whitelist list',
+        '📌 whitelist add @usuario',
+        '📌 whitelist del @usuario',
+        '📌 whitelist clear',
+      ]),
     }, { quoted: msg })
   },
 }

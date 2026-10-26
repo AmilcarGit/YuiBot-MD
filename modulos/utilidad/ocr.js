@@ -62,7 +62,7 @@ module.exports = {
 
       await sock.sendMessage(
         jid,
-        { text: `⛧───「 Texto extraído 」───⛧\n\n${texto}\n\n╰─➤ _${config.BOT_NAME}_ 🥀` },
+        { text: `📝 *Texto extraído*\n\n${texto}\n\n> ${config.BOT_NAME}` },
         { quoted: msg }
       )
     } catch (error) {

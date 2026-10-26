@@ -1,4 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const E = require('../../lib/estilo')
 const fetch = require('../../lib/http').fetchSeguro // timeout por defecto (ver lib/http.js)
 module.exports = {
   name: 'codigoqr',
@@ -11,7 +12,7 @@ module.exports = {
 
     if (!codigo) {
       return sock.sendMessage(jid, {
-        text: '❌ Escribe un enlace o código para convertirlo en QR.\n\nEjemplo: /codigoqr https://github.com/AmilcarGit/YuiBot-MD'
+        text: '❌ Escribe un enlace o código para convertirlo en QR.\n\n📌 Ejemplo: /codigoqr https://github.com/AmilcarGit/YuiBot-MD'
       }, { quoted: msg });
     }
 
@@ -33,7 +34,7 @@ module.exports = {
 
       await sock.sendMessage(jid, {
         image: buffer,
-        caption: `╭─〔 🔳 CÓDIGO QR 〕\n│ 🔗 ${codigo.length} caracteres\n│ 📦 Generado por YuiBot-MD\n╰────────────────────`
+        caption: E.caja('🔳', 'Código QR', [['Caracteres', codigo.length]], 'Generado por YuiBot-MD')
       }, { quoted: msg });
     } catch (error) {
       await sock.sendMessage(jid, {

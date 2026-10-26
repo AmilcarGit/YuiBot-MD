@@ -13,7 +13,7 @@ module.exports = {
     const objetivo = mencionado || (numero ? `${numero}@s.whatsapp.net` : null)
 
     if (!objetivo) {
-      return sock.sendMessage(jid, { text: '🚫 Usa: *block número* o responde/menciona al usuario.' }, { quoted: msg })
+      return sock.sendMessage(jid, { text: '❌ Usa: *block número* o responde/menciona al usuario.' }, { quoted: msg })
     }
 
     if (objetivo === jid && jid.endsWith('@s.whatsapp.net')) {

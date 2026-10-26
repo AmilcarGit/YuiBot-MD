@@ -13,7 +13,7 @@ const texto = args.join(' ').trim()
 
 if (!texto) {
 return await sock.sendMessage(msg.key.remoteJid, {
-text: '⛧───「 MAYÚSCULAS 」───⛧\n\nEscribe el texto que quieres convertir.\n\nEjemplo:\n.mayus hola mundo'
+text: '❌ Escribe el texto que quieres convertir.\n\n📌 Ejemplo: .mayus hola mundo'
 })
 }
 

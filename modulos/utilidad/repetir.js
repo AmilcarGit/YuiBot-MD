@@ -11,7 +11,7 @@ category: 'utilidad',
 async execute(sock, msg, args) {
 if (args.length < 2) {
 return await sock.sendMessage(msg.key.remoteJid, {
-text: '⛧───「 REPETIR 」───⛧\n\nUsa el comando así:\n.repetir 3 hola'
+text: '❌ Faltan datos.\n\n📌 Ejemplo: .repetir 3 hola'
 })
 }
 

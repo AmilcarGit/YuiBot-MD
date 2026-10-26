@@ -1,4 +1,6 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const { caja } = require('../../lib/estilo')
+
 module.exports = {
   name: 'ping',
   aliases: [],
@@ -10,6 +12,6 @@ module.exports = {
     const enviado = await sock.sendMessage(jid, { text: '🏓 Midiendo latencia...' })
     const latencia = Date.now() - inicio
     const calidad = latencia < 200 ? '🟢 Excelente' : latencia < 500 ? '🟡 Buena' : '🔴 Alta'
-    await sock.sendMessage(jid, { text: `╭─ ✦ 📡 PING ✦\n│ ⚡ Latencia: *${latencia} ms*\n│ 📶 Calidad: *${calidad}*\n╰─ 🍃 YuiBot-MD`, edit: enviado.key })
+    await sock.sendMessage(jid, { text: caja('📡', 'Ping', [['Latencia', `${latencia} ms`], ['Calidad', calidad]], 'YuiBot-MD'), edit: enviado.key })
   },
 }

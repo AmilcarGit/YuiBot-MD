@@ -1,4 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
+const E = require('../../lib/estilo')
 const fetch = require('../../lib/http').fetchSeguro // timeout por defecto (ver lib/http.js)
 module.exports = {
   name: 'clima',
@@ -33,14 +34,13 @@ module.exports = {
       const pais = area?.country?.[0]?.value || ''
       const descripcion = actual.lang_es?.[0]?.value || actual.weatherDesc?.[0]?.value || 'Desconocida'
 
-      const texto =
-        `⛧───「 Clima en ${nombreCiudad}${pais ? `, ${pais}` : ''} 」───⛧\n\n` +
-        `  ❖ condición: ${descripcion}\n` +
-        `  ❖ temperatura: ${actual.temp_C}°C (sensación ${actual.FeelsLikeC}°C)\n` +
-        `  ❖ humedad: ${actual.humidity}%\n` +
-        `  ❖ viento: ${actual.windspeedKmph} km/h\n` +
-        `  ❖ nubosidad: ${actual.cloudcover}%\n\n` +
-        `╰─➤ _${config.BOT_NAME}_ 🥀`
+      const texto = E.caja('🌤️', `Clima en ${nombreCiudad}${pais ? `, ${pais}` : ''}`, [
+        ['Condición', descripcion, '🌤️'],
+        ['Temperatura', `${actual.temp_C}°C (sensación ${actual.FeelsLikeC}°C)`, '🌡️'],
+        ['Humedad', `${actual.humidity}%`, '💧'],
+        ['Viento', `${actual.windspeedKmph} km/h`, '🌬️'],
+        ['Nubosidad', `${actual.cloudcover}%`, '☁️'],
+      ], config.BOT_NAME)
 
       await sock.sendMessage(jid, { text: texto }, { quoted: msg })
     } catch (error) {

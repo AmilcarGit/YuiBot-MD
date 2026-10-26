@@ -2,6 +2,7 @@
 const os = require('os')
 const { listarSubbots } = require('../../lib/subbots')
 const { gruposLiderados } = require('../../lib/red')
+const { caja } = require('../../lib/estilo')
 
 function formatearDuracion(segundos) {
   const d = Math.floor(segundos / 86400)
@@ -43,45 +44,35 @@ module.exports = {
 
     const tipoInstancia = esSubBot ? `🔗 Subbot (+${subbotNumero})` : '🌸 Principal'
 
-    let texto = `⛧───「 ${config.BOT_NAME} — Info 」───⛧\n\n`
-
-    texto += `📌 *General*\n`
-    texto += `  ❖ tipo: ${tipoInstancia}\n`
-    texto += `  ❖ versión: ${config.BOT_VERSION}\n`
-    texto += `  ❖ prefijos: ${config.PREFIXES.join(' ')}${config.ALLOW_NO_PREFIX ? ' (o sin prefijo)' : ''}\n`
-    texto += `  ❖ comandos: ${totalComandos}\n`
-    texto += `  ❖ categorías: ${totalCategorias}\n\n`
-
-    texto += `⏱️ *Actividad*\n`
-    texto += `  ❖ tiempo activo: ${formatearDuracion(process.uptime())}\n`
-    texto += `  ❖ hora del servidor: ${new Date().toLocaleString('es-PE')}\n\n`
-
-    texto += `💻 *Sistema*\n`
-    texto += `  ❖ plataforma: ${os.platform()} (${os.arch()})\n`
-    texto += `  ❖ node: ${process.version}\n`
-    texto += `  ❖ núcleos CPU: ${nucleos}\n`
-    texto += `  ❖ carga CPU (1 min): ${cargaCpu}\n\n`
-
-    texto += `🧠 *Memoria*\n`
-    texto += `  ❖ usada por el bot: ${formatearBytes(memProceso.rss)}\n`
-    texto += `  ❖ heap usado: ${formatearBytes(memProceso.heapUsed)} / ${formatearBytes(memProceso.heapTotal)}\n`
-    texto += `  ❖ RAM del servidor: ${formatearBytes(memUsadaSistema)} / ${formatearBytes(os.totalmem())} (${porcentajeRam}%)\n\n`
-
-    texto += `👑 *Owners*\n`
-    for (const o of config.OWNERS) {
-      texto += `  ❖ ${o.nombre} (${o.rango}) — +${o.numero}\n`
-    }
+    const filas = [
+      ['Tipo', tipoInstancia],
+      ['Versión', config.BOT_VERSION],
+      ['Prefijos', `${config.PREFIXES.join(' ')}${config.ALLOW_NO_PREFIX ? ' (o sin prefijo)' : ''}`],
+      ['Comandos', totalComandos],
+      ['Categorías', totalCategorias],
+      '┃',
+      ['Activo', formatearDuracion(process.uptime()), '⏱️'],
+      ['Hora', new Date().toLocaleString('es-PE'), '🕒'],
+      '┃',
+      ['Plataforma', `${os.platform()} (${os.arch()})`, '💻'],
+      ['Node', process.version, '💻'],
+      ['Núcleos CPU', nucleos, '💻'],
+      ['Carga CPU', cargaCpu, '💻'],
+      '┃',
+      ['RAM bot', formatearBytes(memProceso.rss), '🧠'],
+      ['Heap', `${formatearBytes(memProceso.heapUsed)} / ${formatearBytes(memProceso.heapTotal)}`, '🧠'],
+      ['RAM servidor', `${formatearBytes(memUsadaSistema)} / ${formatearBytes(os.totalmem())} (${porcentajeRam}%)`, '🧠'],
+      '┃',
+      ...config.OWNERS.map((o) => ['Owner', `${o.nombre} (${o.rango}) — +${o.numero}`, '👑']),
+    ]
 
     if (!esSubBot) {
       const subbots = listarSubbots()
       const gruposActivos = subbots.reduce((acc, numero) => acc + gruposLiderados(numero).length, 0)
-
-      texto += `\n🔗 *Subbots*\n`
-      texto += `  ❖ registrados: ${subbots.length}\n`
-      texto += `  ❖ grupos liderados en total: ${gruposActivos}\n`
+      filas.push('┃', ['Subbots', subbots.length, '🔗'], ['Grupos liderados', gruposActivos, '🔗'])
     }
 
-    texto += `\n╰─➤ _${config.BOT_NAME}_ 🥀`
+    const texto = caja('🤖', `${config.BOT_NAME} Info`, filas, config.BOT_NAME)
 
     await sock.sendMessage(jid, { text: texto }, { quoted: msg })
   },

@@ -13,7 +13,7 @@ const texto = args.join(' ').trim()
 
 if (!texto) {
 return await sock.sendMessage(msg.key.remoteJid, {
-text: '⛧───「 INVERTIR 」───⛧\n\nEscribe el texto que quieres invertir.\n\nEjemplo:\n.invertir hola mundo'
+text: '❌ Escribe el texto que quieres invertir.\n\n📌 Ejemplo: .invertir hola mundo'
 })
 }
 

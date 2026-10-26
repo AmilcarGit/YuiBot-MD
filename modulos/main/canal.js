@@ -14,7 +14,7 @@ module.exports = {
     if (!nl.ENABLED || !nl.URL) {
       const texto = args[0]?.toLowerCase() === 'setup'
         ? '⚙️ Para activarlo: edita NEWSLETTER en defaults.js con ENABLED: true y tu URL real (WhatsApp > tu canal > ⋮ > Compartir > Copiar enlace).'
-        : 'ℹ️ Todavía no hay un canal oficial configurado.'
+        : '⚠️ Todavía no hay un canal oficial configurado.'
       return sock.sendMessage(jid, { text: texto }, { quoted: msg })
     }
 
