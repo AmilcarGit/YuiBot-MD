@@ -6,6 +6,8 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 ## [Sin publicar]
 
 ### Añadido
+- **Niveles y logros** (`lib/logros.js`): 14 logros con insignias (bronce, plata, oro, diamante) y premio en monedas, avisados automáticamente en el grupo al desbloquearse; `.logros` muestra el avance. La XP ahora guarda **racha de días** y **XP semanal**; `.topsemana` es el ranking de la semana (lunes a domingo, hora de Perú). Compartido entre el principal y los subbots. 9 pruebas.
+- **Tarjeta de `.perfil` rediseñada**: panel de cristal, avatar con anillo de progreso de nivel, rango, barra de XP, posición global, mensajes/monedas/reputación/racha e insignias dibujadas. Sin emojis dentro de la imagen (no se ven en el canvas de Termux), ajusta nombres largos y funciona aunque falle el fondo o el avatar.
 - **Rediseño visual**: nuevo `lib/estilo.js` (`caja`, `fila`, `negrita`, `versalitas`, `uso`…) y ~130 comandos con respuestas en cajas `╭━━〔 ✨ 𝗧𝗜́𝗧𝗨𝗟𝗢 〕━━⬣` con emojis. Los textos que se copian (códigos, tokens, enlaces, mayus/minus, salida de eval/exec) siguen limpios.
 - **`.tts` gratis y sin API key** (`lib/tts.js`): 11 voces con nombre vía StreamElements (con respaldo en Google) y 12 idiomas vía Google; acepta texto citado; `.voces` muestra la lista. Se eliminó la dependencia de lempi. 6 pruebas.
 - **Administración de grupos** (`lib/adminGrupo.js`): `.cerrar`/`.abrir`, `.linkgrupo` (`-r` restablece), `.nombregrupo`, `.descgrupo`, `.hidetag`, `.admins` y advertencias con `.warn`/`.unwarn`/`.warns` (expulsión automática al llegar al máximo, 3 por defecto). Solo admins u owners; los que cambian ajustes avisan si el bot no es admin. 9 pruebas.

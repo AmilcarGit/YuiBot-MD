@@ -18,6 +18,7 @@ const { obtenerRangoExacto } = require('./lib/roles');
 const { limpiarPreKeysAntiguas, respaldarSesion } = require('./lib/mantenimiento');
 const { iniciarHeartbeat, actualizarGruposPrincipal, ID_PRINCIPAL } = require('./lib/red');
 const recordatorios = require('./lib/recordatorios');
+const logros = require('./lib/logros');
 const alertasRed = require('./lib/alertasRed');
 const { crearControladorReconexion } = require('./lib/reconexion');
 const { resolverVersionWA } = require('./lib/versionWA');
@@ -398,6 +399,17 @@ async function startBot() {
           if (rangoNuevo) {
             await sock.sendMessage(jid, {
               text: `🏅 @${numeroRemitente} desbloqueó el rango *"${rangoNuevo.nombre}"* al llegar a nivel ${rangoNuevo.nivel}.`,
+              mentions: [remitente],
+            });
+          }
+        }
+
+        if (resultadoXp) {
+          const nuevosLogros = logros.evaluar(numeroRemitente);
+          if (nuevosLogros.length) {
+            const premio = nuevosLogros.reduce((t, l) => t + l.premio, 0);
+            await sock.sendMessage(jid, {
+              text: `🏅 @${numeroRemitente} desbloqueó: ${nuevosLogros.map((l) => `${l.icono} *${l.nombre}*`).join(', ')}\n💰 +${premio} monedas de premio`,
               mentions: [remitente],
             });
           }

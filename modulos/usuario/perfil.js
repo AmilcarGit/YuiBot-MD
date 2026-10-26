@@ -1,5 +1,7 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
-const { obtenerUsuario } = require('../../lib/db')
+const { obtenerUsuario, calcularNivel, xpParaNivel } = require('../../lib/db')
+const { obtenerRangoPorNivel } = require('../../lib/roles')
+const logros = require('../../lib/logros')
 const { caja } = require('../../lib/estilo')
 const { generarTarjetaPerfil } = require('../../lib/perfilCard')
 
@@ -30,19 +32,40 @@ module.exports = {
     }
 
     try {
+      logros.evaluar(numero)
+      const actual = obtenerUsuario(numero) || datos || {}
+      const xp = actual.xp || 0
+      const nivel = Math.max(1, calcularNivel(xp))
+      const base = xpParaNivel(nivel)
+      const lista = logros.progreso(actual)
+      const obtenidos = lista.filter((l) => l.desbloqueado)
+
       const imagen = await generarTarjetaPerfil({
         numero,
-        nombre: datos?.nombre || 'Sin registrar',
-        genero: datos?.genero || null,
-        edad: datos?.edad || null,
+        nombre: actual.nombre || 'Sin registrar',
+        genero: actual.genero || null,
+        edad: actual.edad || null,
         avatar,
         background: config.PROFILE_BACKGROUND,
         botName: config.BOT_NAME,
+        nivel,
+        xp,
+        progreso: Math.max(0, xp - base),
+        necesario: Math.max(1, xpParaNivel(nivel + 1) - base),
+        rango: obtenerRangoPorNivel(nivel)?.nombre || 'Novato',
+        posicion: logros.posicionGlobal(numero),
+        mensajes: actual.mensajes || 0,
+        monedas: actual.monedas || 0,
+        reputacion: actual.reputacion || 0,
+        racha: actual.racha || 0,
+        insignias: obtenidos.map((l) => ({ color: logros.COLORES_TIER[l.tier] })),
+        logrosObtenidos: obtenidos.length,
+        totalLogros: lista.length,
       })
 
       const caption = datos
-        ? caja('👤', 'Perfil', [['Nombre', datos.nombre], ['Género', datos.genero], ['Edad', datos.edad]], `${prefijo}reg para actualizar tus datos`)
-        : caja('👤', 'Perfil', [['Estado', 'Sin registrar']], `Usa ${prefijo}reg para registrarte`)
+        ? caja('👤', 'Perfil', [['Nombre', datos.nombre], ['Género', datos.genero], ['Edad', datos.edad], ['Nivel', nivel, '⭐'], ['Logros', `${obtenidos.length}/${lista.length}`, '🏅']], `${prefijo}logros para ver tus insignias · ${prefijo}reg para actualizar tus datos`)
+        : caja('👤', 'Perfil', [['Estado', 'Sin registrar'], ['Nivel', nivel, '⭐'], ['Logros', `${obtenidos.length}/${lista.length}`, '🏅']], `Usa ${prefijo}reg para registrarte`)
 
       await sock.sendMessage(jid, { image: imagen, caption }, { quoted: msg })
     } catch (error) {
