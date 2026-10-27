@@ -20,7 +20,7 @@ const LIMITE_MENSAJE = 3400 // caracteres por mensaje (WhatsApp admite más, per
 const MAX_RESULTADOS = 15
 
 const ORDEN_CATEGORIAS = [
-  'main', 'usuario', 'grupo', 'diversion', 'rpg', 'download', 'media', 'imagenes',
+  'main', 'usuario', 'grupo', 'diversion', 'deportes', 'rpg', 'download', 'media', 'imagenes',
   'utilidad', 'herramientas', 'audio', 'ia', 'escuela', 'sistema', 'subbot', 'owner',
 ]
 
@@ -29,6 +29,7 @@ const CATEGORIAS = {
   usuario:      { emoji: '👤', titulo: 'USUARIO',      descripcion: 'Tu perfil y registro',                      alias: ['cuenta', 'usuarios'] },
   grupo:        { emoji: '🛡️', titulo: 'GRUPO',        descripcion: 'Moderación y administración de grupos',     alias: ['grupos', 'admin', 'moderacion'] },
   diversion:    { emoji: '🎮', titulo: 'DIVERSIÓN',    descripcion: 'Juegos, apuestas y economía',               alias: ['juegos', 'economia', 'games', 'fun'] },
+  deportes:     { emoji: '⚽', titulo: 'DEPORTES',     descripcion: 'Fútbol en vivo, tablas y alertas de goles', alias: ['futbol', 'sports', 'deporte'] },
   rpg:          { emoji: '⚔️', titulo: 'RPG',          descripcion: 'Aventura: duelos, jefes y misiones',        alias: ['aventura'] },
   download:     { emoji: '📥', titulo: 'DESCARGAS',    descripcion: 'YouTube, TikTok, Instagram y más',          alias: ['descargas', 'descargar', 'dl'] },
   media:        { emoji: '🎨', titulo: 'MULTIMEDIA',   descripcion: 'Stickers y búsqueda de imágenes',           alias: ['multimedia', 'stickers'] },
@@ -37,7 +38,7 @@ const CATEGORIAS = {
   herramientas: { emoji: '🧪', titulo: 'HERRAMIENTAS', descripcion: 'Para desarrolladores: DNS, hash, JSON…',    alias: ['dev', 'tools', 'developer'] },
   audio:        { emoji: '🎧', titulo: 'AUDIO',        descripcion: 'Edita y analiza audios',                    alias: ['audios'] },
   ia:           { emoji: '🤖', titulo: 'IA',           descripcion: 'Conversa con Yui',                          alias: ['yui', 'ai'] },
-  escuela:      { emoji: '📚', titulo: 'ESCUELA',      descripcion: 'Organiza tus tareas',                       alias: ['school'] },
+  escuela:      { emoji: '📚', titulo: 'ESCUELA',      descripcion: 'Tareas, horario, notas y exámenes',                       alias: ['school'] },
   sistema:      { emoji: '📊', titulo: 'SISTEMA',      descripcion: 'Estado, estadísticas y soporte',            alias: ['system', 'soporte'] },
   subbot:       { emoji: '🔗', titulo: 'SUBBOTS',      descripcion: 'Crea y administra tu propio bot',           alias: ['subbots', 'sub'] },
   owner:        { emoji: '👑', titulo: 'OWNER',        descripcion: 'Solo para los dueños del bot',              alias: ['owners', 'dueno'] },
