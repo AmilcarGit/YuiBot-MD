@@ -18,7 +18,7 @@ module.exports = {
       return responder(caja('👁️', 'Ver una vez', [
         'Responde a una foto, video o audio de "ver una vez" con:',
         `${P}verunavez   (o ${P}vv)`,
-        'Te lo envío a tu chat privado, así nadie más lo ve.',
+        'Te lo envío a tu privado, sin avisar en el chat.',
         `${P}vv aqui   → lo muestro en este mismo chat`,
       ], 'Funciona con lo que llegó a este chat'))
     }
@@ -32,7 +32,6 @@ module.exports = {
       const buffer = await vista.descargar(media)
       await sock.sendMessage(destino, vista.aContenido(media, buffer, '👁️ Revelado'), privado ? {} : { quoted: msg })
       try { await sock.sendMessage(jid, { react: { text: '👁️', key: msg.key } }) } catch { /* no es crítico */ }
-      if (privado) await responder('📩 Te lo envié a tu privado.')
     } catch (error) {
       console.error('[VERUNAVEZ]', error)
       await responder(`❌ No pude revelarlo: ${error.message || 'error desconocido'}\n\n_Si ya lo abrieron, WhatsApp puede haberlo borrado de sus servidores._`)

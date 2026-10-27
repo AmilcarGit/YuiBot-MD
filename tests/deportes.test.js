@@ -362,13 +362,13 @@ test('.verunavez revela en el chat, por privado, o explica qué hacer', async ()
   const original = vista.descargar
   vista.descargar = async () => Buffer.from('foto')
   try {
-    // Por defecto, en un grupo va al privado de quien lo pidió y avisa en el chat
+    // Por defecto, en un grupo va al privado de quien lo pidió sin avisar en el chat
     const sock2 = crearSock()
     const destinos = []
     sock2.sendMessage = async (j, c) => { if (!c.react) destinos.push([j, c]) }
     await comando.execute(sock2, citar({ viewOnceMessage: { message: { audioMessage: { ptt: true } } } }), [], { config })
     assert.equal(destinos[0][0], '51900000001@s.whatsapp.net')
-    assert.equal(destinos[1][0], 'g@g.us')
+    assert.equal(destinos.length, 1) // sin aviso en el chat
 
     // Con LID: usa el teléfono real (participantAlt), no el número del LID
     const sockLid = crearSock()
