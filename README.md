@@ -111,7 +111,7 @@ Está diseñado para ser **modular** (cada comando es un archivo), **resistente*
 - Niveles y logros: 14 insignias con premio en monedas (`.logros`), racha de días, ranking semanal (`.topsemana`) y tarjeta de `.perfil` rediseñada con nivel, barra de XP, rango, estadísticas e insignias
 - Escuela: tareas guardadas con fecha de entrega (`.tarea`), horario (`.misclases`), libreta de notas con promedios (`.libreta`, `.promediar`, `.notaminima`), exámenes con aviso automático (`.misexamenes`), `.pomodoro` y calculadoras (`.ecuacion`, `.fraccion`, `.mcm`, `.factorizar`, `.porcentaje`, `.unidades`, `.tablamult`)
 - Fútbol en vivo (categoría Deportes): `.marcador`, `.envivo`, `.tablaliga`, `.fixture`, `.infopartido` y **alertas automáticas** de goles, rojas y resultado final con `.seguirequipo`; 20 ligas y torneos (datos de ESPN, gratis y sin API key)
-- `.verunavez` (`.vv`): revela fotos, videos y audios de "ver una vez" al responderles, en el chat o por privado
+- `.verunavez` (`.vv`): revela fotos, videos y audios de "ver una vez" al responderles, y te los envía a tu privado (`vv aqui` para verlos en el chat)
 - Funciones únicas: reputación compartida entre bots (`.rep`, `.toprep`), `.afk`, `.recordar` (persistente por bot) y `.red` con alertas al owner cuando un subbot se cae
 
 </td>

@@ -1,6 +1,6 @@
 const { caja } = require('../../lib/estilo')
 const alertas = require('../../lib/alertasFutbol')
-const { enviarConBotones } = require('./_comun')
+const { enviarConBotones } = require('../../lib/deportesUI')
 
 module.exports = {
   name: 'misequipos',

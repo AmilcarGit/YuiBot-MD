@@ -2,7 +2,7 @@
 const { caja } = require('../../lib/estilo')
 const futbol = require('../../lib/futbol')
 const alertas = require('../../lib/alertasFutbol')
-const { enviarConBotones, errorRed } = require('./_comun')
+const { enviarConBotones, errorRed } = require('../../lib/deportesUI')
 
 module.exports = {
   name: 'seguirequipo',

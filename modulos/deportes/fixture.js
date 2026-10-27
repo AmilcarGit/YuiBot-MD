@@ -1,7 +1,7 @@
 // .fixture <liga|equipo> — próximos partidos (7 días).
 const { caja } = require('../../lib/estilo')
 const futbol = require('../../lib/futbol')
-const { enviarConLista, enviarConBotones, botonesLiga, errorRed } = require('./_comun')
+const { enviarConLista, enviarConBotones, botonesLiga, errorRed } = require('../../lib/deportesUI')
 
 const DIA_MS = 86400000
 

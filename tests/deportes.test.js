@@ -119,6 +119,22 @@ test('obtenerPartidos pide el rango de fechas y tolera ligas sin datos (404)', a
   } finally { red.restaurar() }
 })
 
+test('obtenerPartidos prueba otros formatos de fecha si ESPN responde HTTP 400', async () => {
+  const original = globalThis.fetch
+  const llamadas = []
+  futbol._reiniciarVariante()
+  globalThis.fetch = async (url) => {
+    llamadas.push(String(url)); futbol._limpiarCache()
+    if (/dates=\d{8}-\d{8}/.test(url)) return { ok: false, status: 400, text: async () => 'bad range', json: async () => ({}), headers: new Headers() }
+    return { ok: true, status: 200, json: async () => ({ events: [evento({ id: '9' })] }), headers: new Headers() }
+  }
+  try {
+    const ps = await futbol.obtenerPartidos('laliga')
+    assert.equal(ps.length, 1) // eventos repetidos entre días se unen
+    assert.ok(llamadas.some((u) => /dates=\d{8}$/.test(u)))
+  } finally { globalThis.fetch = original; futbol._limpiarCache(); futbol._reiniciarVariante() }
+})
+
 test('variasLigas ignora las que fallan y las vacías', async () => {
   const red = simularRed([['eng.1/', { events: [evento()] }], ['esp.1/', new Error('boom')], ['ita.1/', { events: [] }]])
   const log = console.error; console.error = () => {}
@@ -346,16 +362,27 @@ test('.verunavez revela en el chat, por privado, o explica qué hacer', async ()
   const original = vista.descargar
   vista.descargar = async () => Buffer.from('foto')
   try {
-    const sock = crearSock()
-    await comando.execute(sock, citar({ viewOnceMessage: { message: { imageMessage: { caption: 'secreto' } } } }), [], { config })
-    assert.ok(Buffer.isBuffer(sock.enviados[0].image) && sock.enviados[0].caption.includes('Revelado'))
-
+    // Por defecto, en un grupo va al privado de quien lo pidió y avisa en el chat
     const sock2 = crearSock()
     const destinos = []
-    sock2.sendMessage = async (j, c) => { if (!c.react) destinos.push(j) }
-    await comando.execute(sock2, citar({ viewOnceMessage: { message: { audioMessage: { ptt: true } } } }), ['priv'], { config })
-    assert.equal(destinos[0], '51900000001@s.whatsapp.net') // al privado de quien lo pidió
-    assert.equal(destinos[1], 'g@g.us') // y avisa en el chat
+    sock2.sendMessage = async (j, c) => { if (!c.react) destinos.push([j, c]) }
+    await comando.execute(sock2, citar({ viewOnceMessage: { message: { audioMessage: { ptt: true } } } }), [], { config })
+    assert.equal(destinos[0][0], '51900000001@s.whatsapp.net')
+    assert.equal(destinos[1][0], 'g@g.us')
+
+    // Con LID: usa el teléfono real (participantAlt), no el número del LID
+    const sockLid = crearSock()
+    const dLid = []
+    sockLid.sendMessage = async (j, c) => { if (!c.react) dLid.push(j) }
+    const msgLid = citar({ viewOnceMessage: { message: { imageMessage: {} } } })
+    msgLid.key.participant = '279882198204437@lid'; msgLid.key.participantAlt = '51911111111@s.whatsapp.net'
+    await comando.execute(sockLid, msgLid, [], { config })
+    assert.equal(dLid[0], '51911111111@s.whatsapp.net')
+
+    // Con "aqui" se muestra en el mismo chat
+    const sock = crearSock()
+    await comando.execute(sock, citar({ viewOnceMessage: { message: { imageMessage: { caption: 'secreto' } } } }), ['aqui'], { config })
+    assert.ok(Buffer.isBuffer(sock.enviados[0].image) && sock.enviados[0].caption.includes('Revelado'))
 
     const sock3 = crearSock()
     await comando.execute(sock3, { key: { remoteJid: 'g@g.us' }, message: { conversation: '.vv' } }, [], { config })

@@ -1,7 +1,7 @@
 // .marcador [liga] — partidos de hoy con marcador en vivo.
 const { caja } = require('../../lib/estilo')
 const futbol = require('../../lib/futbol')
-const { enviarConLista, enviarConBotones, botonesLiga, errorRed } = require('./_comun')
+const { enviarConLista, enviarConBotones, botonesLiga, errorRed } = require('../../lib/deportesUI')
 
 module.exports = {
   name: 'marcador',

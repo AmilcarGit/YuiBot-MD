@@ -1,7 +1,7 @@
 // .tablaliga <liga> — tabla de posiciones.
 const { caja } = require('../../lib/estilo')
 const futbol = require('../../lib/futbol')
-const { enviarConLista, enviarConBotones, errorRed } = require('./_comun')
+const { enviarConLista, enviarConBotones, errorRed } = require('../../lib/deportesUI')
 
 module.exports = {
   name: 'tablaliga',

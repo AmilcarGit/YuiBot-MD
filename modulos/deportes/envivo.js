@@ -1,7 +1,7 @@
 // .envivo — todos los partidos que se están jugando ahora.
 const { caja } = require('../../lib/estilo')
 const futbol = require('../../lib/futbol')
-const { enviarConBotones, errorRed } = require('./_comun')
+const { enviarConBotones, errorRed } = require('../../lib/deportesUI')
 
 module.exports = {
   name: 'envivo',

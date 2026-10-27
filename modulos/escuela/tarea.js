@@ -6,6 +6,7 @@ const { enviarConRespaldo } = require('../../lib/whatsapp/interactivos')
 const recordatorios = require('../../lib/recordatorios')
 const resumenDiario = require('../../lib/resumenDiario')
 const escuela = require('../../lib/escuela')
+const { jidPrivado } = require('../../lib/jids')
 const ui = require('../../lib/tareasUI')
 
 const MIN = 60000
@@ -21,7 +22,7 @@ function entrega(texto) {
   return fecha ? fecha.getTime() : null
 }
 
-function crearAvisos({ idBot, numero, tarea, P, ahora = Date.now() }) {
+function crearAvisos({ idBot, numero, jid = `${numero}@s.whatsapp.net`, tarea, P, ahora = Date.now() }) {
   if (!tarea.entrega) return []
   const ids = []
   for (const a of AVISOS) {
@@ -29,7 +30,7 @@ function crearAvisos({ idBot, numero, tarea, P, ahora = Date.now() }) {
     if (cuando <= ahora) continue
     try {
       const r = recordatorios.crear({
-        idBot, jid: `${numero}@s.whatsapp.net`, numero, cuando,
+        idBot, jid, numero, cuando,
         texto: `📚 Entrega *${a.etiqueta}*: *${tarea.materia}* — ${tarea.texto}`,
         botones: [{ text: '✅ Completar', id: `${P}tarea completar #${tarea.id}` }, { text: '📋 Mis tareas', id: `${P}tarea lista` }],
       })
@@ -62,6 +63,7 @@ module.exports = {
     const idBot = esSubBot ? String(subbotNumero) : 'principal'
     const datos = escuela.abrir(numero)
     const tareas = datos.ficha.tareas
+    datos.ficha.jidPrivado = jidPrivado(msg, sock) // a dónde llegan sus avisos privados
     const accion = (args[0] || '').toLowerCase()
     const ahora = Date.now()
 
@@ -101,7 +103,7 @@ module.exports = {
       const venc = entrega(fechaTexto)
       if (fechaTexto && !venc) return responder('❌ No entendí la fecha. Usa dd/mm (ej. 20/11), hoy o mañana.')
       const tarea = { id: datos.id(), materia: partes[0].slice(0, 40), texto: partes.slice(1).join(' - ').slice(0, 200), hecha: false, entrega: venc, creada: ahora, avisos: [] }
-      tarea.avisos = crearAvisos({ idBot, numero, tarea, P, ahora })
+      tarea.avisos = crearAvisos({ idBot, numero, jid: datos.ficha.jidPrivado, tarea, P, ahora })
       tareas.push(tarea)
       datos.guardar()
       reaccionar(sock, msg, '📝')

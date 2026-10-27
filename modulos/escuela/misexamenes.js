@@ -3,6 +3,7 @@ const { caja } = require('../../lib/estilo')
 const { interpretarFecha, describirDuracion, formatearFechaPeru } = require('../../lib/fechas')
 const recordatorios = require('../../lib/recordatorios')
 const escuela = require('../../lib/escuela')
+const { jidPrivado } = require('../../lib/jids')
 
 const DIA_MS = 86400000
 const esDia = (t) => /^(hoy|ma[ñn]ana|\d{1,2}[\/-]\d{1,2}([\/-]\d{2,4})?)$/i.test(t)
@@ -20,9 +21,8 @@ function leerExamen(args) {
   return { materia: materia.slice(0, 40), cuando, tema: args.slice(finTema).join(' ').slice(0, 120) }
 }
 
-function crearAvisos({ idBot, numero, examen, ahora = Date.now() }) {
-  const ids = []
-  const jid = `${numero}@s.whatsapp.net` // los avisos van a su privado
+function crearAvisos({ idBot, numero, jid = `${numero}@s.whatsapp.net`, examen, ahora = Date.now() }) {
+  const ids = [] // los avisos van a su privado
   for (const [antes, etiqueta] of [[DIA_MS, 'mañana'], [3600000, 'en 1 hora']]) {
     const cuando = examen.cuando.getTime() - antes
     if (cuando <= ahora) continue
@@ -60,7 +60,7 @@ module.exports = {
       if (!leido) return responder(`❌ No entendí.\n\n📌 Ejemplo: ${P}misexamenes add Matemática 15/11 08:00 Álgebra\n(la hora y el tema son opcionales; también "mañana" o "hoy")`)
       if (leido.cuando.getTime() < Date.now()) return responder('❌ Esa fecha ya pasó.')
       if (examenes.length >= escuela.LIMITES.examenes) return responder(`❌ Máximo ${escuela.LIMITES.examenes} exámenes. Borra alguno.`)
-      const avisos = crearAvisos({ idBot, numero, examen: leido })
+      const avisos = crearAvisos({ idBot, numero, jid: jidPrivado(msg, sock), examen: leido })
       examenes.push({ id: datos.id(), materia: leido.materia, cuando: leido.cuando.getTime(), tema: leido.tema, avisos })
       datos.guardar()
       return responder(caja('📖', 'Examen agendado', [

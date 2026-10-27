@@ -1,7 +1,7 @@
 // .infopartido <equipo> — detalle de su partido (goles, expulsiones, estadio).
 const { caja } = require('../../lib/estilo')
 const futbol = require('../../lib/futbol')
-const { enviarConBotones, errorRed } = require('./_comun')
+const { enviarConBotones, errorRed } = require('../../lib/deportesUI')
 
 // Prefiere el que se juega ahora, luego el de hoy y por último el más cercano.
 function elegirPartido(partidos, ahora = Date.now()) {
