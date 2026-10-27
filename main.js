@@ -18,6 +18,7 @@ const { obtenerRangoExacto } = require('./lib/roles');
 const { limpiarPreKeysAntiguas, respaldarSesion } = require('./lib/mantenimiento');
 const { iniciarHeartbeat, actualizarGruposPrincipal, ID_PRINCIPAL } = require('./lib/red');
 const recordatorios = require('./lib/recordatorios');
+const resumenDiario = require('./lib/resumenDiario');
 const logros = require('./lib/logros');
 const alertasRed = require('./lib/alertasRed');
 const { crearControladorReconexion } = require('./lib/reconexion');
@@ -231,6 +232,7 @@ async function startBot() {
       detenerHeartbeatPrincipal = iniciarHeartbeat(ID_PRINCIPAL);
 
       recordatorios.iniciar(sock, 'principal');
+      resumenDiario.iniciar(sock, 'principal', config.PREFIXES[0]);
       if (detenerAlertasRed) detenerAlertasRed();
       detenerAlertasRed = alertasRed.iniciar(sock, config.OWNERS);
 

@@ -27,15 +27,17 @@ function desnegrita(texto) {
 
 function bot() {
   const enviados = []
-  return { enviados, sendMessage: async (j, c) => { enviados.push(desnegrita(c.text)) } }
+  const todos = []
+  return { enviados, sendMessage: async (j, c) => { if (c.react) return; enviados.push(desnegrita(c.text)); todos.push(c) }, todos }
 }
 let contador = 0
 function usuario() {
   const numero = `5198800${String(++contador).padStart(4, '0')}`
   return { numero, msg: { key: { remoteJid: 'g@g.us', participant: `${numero}@s.whatsapp.net` }, message: {} } }
 }
+let ultimoSock = null
 const ejecutar = (nombre, u, args, extra = {}) => {
-  const sock = bot()
+  const sock = (ultimoSock = bot())
   return cmd(nombre).execute(sock, u.msg, args, { config, ...extra }).then(() => sock.enviados)
 }
 
@@ -128,7 +130,7 @@ test('.tarea guarda, lista, completa, elimina y limpia por persona', async () =>
   r = await ejecutar('tarea', u, ['completar', '1'])
   assert.ok(r[0].includes('Completaste'))
   r = await ejecutar('tarea', u, ['completar', '9'])
-  assert.ok(r[0].includes('número'))
+  assert.ok(r[0].includes('No encontré'))
   r = await ejecutar('tarea', otro, ['lista'])
   assert.ok(!r[0].includes('TUS TAREAS')) // las tareas son de cada persona
   r = await ejecutar('tarea', u, ['limpiar'])
@@ -251,4 +253,120 @@ test('comandos de matemática responden bien y con errores claros', async () => 
   const tabla = (await ejecutar('tablamult', u, ['7']))[0]
   assert.ok(tabla.includes('7 × 12 = *84*'))
   assert.ok((await ejecutar('tablamult', u, ['x']))[0].includes('❌'))
+})
+
+// ── .tarea interactiva ────────────────────────────────────────────────
+const ui = require('../lib/tareasUI')
+const resumenDiario = require('../lib/resumenDiario')
+
+test('buscarTarea acepta #id estable y posición', () => {
+  const t = [{ id: 7, materia: 'A' }, { id: 9, materia: 'B' }]
+  assert.equal(ui.buscarTarea(t, '#9').indice, 1)
+  assert.equal(ui.buscarTarea(t, '1').tarea.id, 7)
+  for (const mala of ['#1', '3', '0', 'x', '', undefined]) assert.equal(ui.buscarTarea(t, mala), null)
+})
+
+test('la lista desplegable respeta los límites de WhatsApp', () => {
+  const ahora = Date.now()
+  const tareas = Array.from({ length: 20 }, (_, i) => ({ id: i + 1, materia: `Materia larguísima número ${i}`, texto: 'x'.repeat(200), hecha: i % 5 === 0, entrega: i % 2 ? ahora + (i + 1) * 3600000 : null }))
+  const secciones = ui.seccionesLista(tareas, '!', ahora)
+  const filas = secciones.flatMap((s) => s.rows)
+  assert.ok(filas.length <= 10)
+  for (const s of secciones) assert.ok(s.title.length <= 24)
+  for (const f of filas) assert.ok(f.title.length <= 24 && f.description.length <= 72 && f.id.startsWith('!tarea '))
+  assert.ok(!filas.some((f) => f.id === '!tarea ver #1')) // la #1 está hecha
+  // pendientes con fecha primero
+  assert.equal(secciones[0].rows[0].id, '!tarea ver #2')
+})
+
+test('.tarea sin tareas ofrece ayuda con botón de copiar plantilla', async () => {
+  const u = usuario()
+  await ejecutar('tarea', u, [])
+  const c = ultimoSock.todos[0]
+  assert.ok(c.buttons.some((b) => b.copy && b.copy.includes('tarea agregar')))
+  assert.ok(ultimoSock.enviados[0].includes('AGREGAR TAREA'))
+})
+
+test('.tarea con tareas envía lista desplegable y cae a botones y texto si falla', async () => {
+  const u = usuario()
+  await ejecutar('tarea', u, ['agregar', 'Arte', '-', 'Dibujo'])
+  await ejecutar('tarea', u, [])
+  const c = ultimoSock.todos[0]
+  assert.ok(c.buttons[0].sections.length >= 1)
+
+  const sock = { enviados: [], sendMessage: async (j, c2) => { if (c2.react) return; if (c2.buttons?.[0]?.sections) throw new Error('sin listas'); sock.enviados.push(c2) } }
+  const log = console.error; console.error = () => {}
+  try { await cmd('tarea').execute(sock, u.msg, [], { config }) } finally { console.error = log }
+  assert.ok(sock.enviados[0].buttons.every((b) => b.id))
+
+  const sock2 = { enviados: [], sendMessage: async (j, c2) => { if (c2.react) return; if (c2.buttons) throw new Error('sin botones'); sock2.enviados.push(c2) } }
+  console.error = () => {}
+  try { await cmd('tarea').execute(sock2, u.msg, [], { config }) } finally { console.error = log }
+  assert.ok(sock2.enviados[0].text.includes('Arte') && !sock2.enviados[0].buttons)
+})
+
+test('.tarea ver/completar/eliminar por #id con botones y avisos automáticos', async () => {
+  const u = usuario()
+  const mañana = new Date(Date.now() + 3 * 86400000)
+  const fecha = `${String(mañana.getUTCDate()).padStart(2, '0')}/${String(mañana.getUTCMonth() + 1).padStart(2, '0')}`
+  await ejecutar('tarea', u, ['agregar', 'Física', '-', 'Informe', '|', fecha], { esSubBot: true, subbotNumero: '5222' })
+  const tarjeta = ultimoSock.todos[0]
+  assert.ok(tarjeta.buttons.some((b) => b.id.includes('completar #')))
+  const avisos = recordatorios.listarDe(u.numero)
+  assert.equal(avisos.length, 2) // el día anterior 18:00 y el mismo día 7:00
+  assert.ok(avisos.every((a) => a.idBot === '5222' && a.botones?.length === 2 && a.jid === `${u.numero}@s.whatsapp.net`))
+
+  const id = tarjeta.buttons.find((b) => b.id.includes('completar #')).id.split('#')[1]
+  await ejecutar('tarea', u, ['ver', `#${id}`])
+  assert.ok(ultimoSock.enviados[0].includes('FÍSICA') || ultimoSock.enviados[0].includes('Física'))
+  await ejecutar('tarea', u, ['completar', `#${id}`])
+  assert.ok(ultimoSock.enviados[0].includes('Completaste'))
+  assert.equal(recordatorios.listarDe(u.numero).length, 0) // al completar se cancelan los avisos
+  await ejecutar('tarea', u, ['completar', `#${id}`])
+  assert.ok(ultimoSock.enviados[0].includes('ya estaba'))
+  await ejecutar('tarea', u, ['eliminar', `#${id}`])
+  assert.ok(ultimoSock.enviados[0].includes('Eliminada'))
+  await ejecutar('tarea', u, ['ver', '#999'])
+  assert.ok(ultimoSock.enviados[0].includes('No encontré'))
+})
+
+test('el recordatorio con botones cae a texto simple si WhatsApp los rechaza', async () => {
+  const u = usuario()
+  recordatorios.crear({ idBot: 'principal', jid: 'x@s.whatsapp.net', numero: u.numero, texto: 'hola', cuando: Date.now() - 5, botones: [{ text: 'OK', id: '!x' }] })
+  const intentos = []
+  const sock = { sendMessage: async (j, c) => { intentos.push(c); if (c.buttons) throw new Error('no') } }
+  assert.equal(await recordatorios.procesar(sock, 'principal'), 1)
+  assert.equal(intentos.length, 2)
+  assert.ok(!intentos[1].buttons)
+})
+
+test('resumen diario: contenido, activación y envío una sola vez al día', async () => {
+  const u = usuario()
+  const ahora = Date.UTC(2026, 9, 26, 13, 0) // lunes 08:00 en Perú
+  const d = escuela.abrir(u.numero)
+  assert.equal(resumenDiario.construirResumen(d.ficha, ahora), null) // nada que contar
+  d.ficha.horario.push({ dia: 1, inicio: '08:00', fin: '09:00', materia: 'Matemática' })
+  d.ficha.tareas.push({ id: 1, materia: 'Arte', texto: 'Dibujo', hecha: false, entrega: ahora + 86400000 })
+  d.ficha.examenes.push({ id: 2, materia: 'Historia', cuando: ahora + 2 * 86400000, tema: '' })
+  d.guardar()
+  const r = resumenDiario.construirResumen(escuela.abrir(u.numero).ficha, ahora, '!')
+  const plano = desnegrita(r.texto)
+  assert.ok(plano.includes('Matemática') && plano.includes('Arte') && plano.includes('Historia'))
+  assert.equal(r.botones.length, 3)
+
+  await ejecutar('tarea', u, ['resumen', 'on'])
+  assert.ok(ultimoSock.enviados[0].includes('7:00'))
+  assert.equal(escuela.abrir(u.numero).ficha.resumenBot, 'principal')
+
+  const enviados = []
+  const sock = { sendMessage: async (j, c) => { enviados.push([j, c]) } }
+  assert.equal(await resumenDiario.procesar(sock, 'principal', Date.UTC(2026, 9, 26, 11, 0)), 0) // 06:00: muy temprano
+  assert.equal(await resumenDiario.procesar(sock, 'otro-bot', ahora), 0) // lo manda solo el bot donde se activó
+  assert.equal(await resumenDiario.procesar(sock, 'principal', Date.UTC(2026, 9, 26, 18, 0)), 0) // 13:00: pasó la ventana
+  assert.equal(await resumenDiario.procesar(sock, 'principal', ahora), 1)
+  assert.equal(enviados[0][0], `${u.numero}@s.whatsapp.net`)
+  assert.equal(await resumenDiario.procesar(sock, 'principal', ahora + 60000), 0) // ya se envió hoy
+
+  await ejecutar('tarea', u, ['resumen', 'off'])
+  assert.equal(escuela.abrir(u.numero).ficha.resumenDiario, false)
 })
