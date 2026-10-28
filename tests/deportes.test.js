@@ -357,6 +357,33 @@ test('descargar junta los trozos y falla si viene vacío', async () => {
   await assert.rejects(vista.descargar({ tipo: 'image', mensaje: {} }, async () => (async function* () {})()), /ya no está disponible/)
 })
 
+test('.vv usa el "ver una vez" guardado cuando la cita viene sin clave, y lo explica si no lo tiene', async () => {
+  vista._guardados.clear()
+  const clave = Buffer.from('clave')
+  const original = { key: { remoteJid: 'g@g.us', id: 'ORIG1' }, message: { viewOnceMessageV2: { message: { imageMessage: { caption: 'foto', mediaKey: clave, viewOnce: true } } } } }
+  assert.equal(vista.guardar(original), true)
+  assert.equal(vista.guardar({ key: { remoteJid: 'g@g.us', id: 'N1' }, message: { imageMessage: { mediaKey: clave } } }), false, 'una foto normal no se guarda')
+  assert.equal(vista.guardar({ key: { remoteJid: 'g@g.us', id: 'N2' }, message: { viewOnceMessage: { message: { imageMessage: {} } } } }), false, 'sin clave no sirve')
+
+  const respuesta = (id) => ({ ...citar({ viewOnceMessage: { message: { imageMessage: { caption: 'foto' } } } }), })
+  const conId = (id) => { const m = respuesta(); m.message.extendedTextMessage.contextInfo.stanzaId = id; return m }
+  const media = vista.extraerMedia(conId('ORIG1'))
+  assert.ok(!media.sinClave && media.mensaje.mediaKey === clave, 'toma la copia guardada')
+  assert.equal(vista.extraerMedia(conId('OTRO')).sinClave, true)
+
+  const comando = require('../modulos/media/verunavez')
+  const antes = vista.descargar
+  vista.descargar = async () => Buffer.from('foto')
+  try {
+    const sock = crearSock()
+    await comando.execute(sock, conId('ORIG1'), ['aqui'], { config })
+    assert.ok(Buffer.isBuffer(sock.enviados[0].image))
+    const sock2 = crearSock()
+    await comando.execute(sock2, conId('OTRO'), [], { config })
+    assert.ok(desnegrita(sock2.enviados[0].text).includes('no estaba conectado'))
+  } finally { vista.descargar = antes }
+})
+
 test('.verunavez revela en el chat, por privado, o explica qué hacer', async () => {
   const comando = require('../modulos/media/verunavez')
   const original = vista.descargar
@@ -366,7 +393,7 @@ test('.verunavez revela en el chat, por privado, o explica qué hacer', async ()
     const sock2 = crearSock()
     const destinos = []
     sock2.sendMessage = async (j, c) => { if (!c.react) destinos.push([j, c]) }
-    await comando.execute(sock2, citar({ viewOnceMessage: { message: { audioMessage: { ptt: true } } } }), [], { config })
+    await comando.execute(sock2, citar({ viewOnceMessage: { message: { audioMessage: { ptt: true, mediaKey: Buffer.from('k') } } } }), [], { config })
     assert.equal(destinos[0][0], '51900000001@s.whatsapp.net')
     assert.equal(destinos.length, 1) // sin aviso en el chat
 
@@ -374,14 +401,14 @@ test('.verunavez revela en el chat, por privado, o explica qué hacer', async ()
     const sockLid = crearSock()
     const dLid = []
     sockLid.sendMessage = async (j, c) => { if (!c.react) dLid.push(j) }
-    const msgLid = citar({ viewOnceMessage: { message: { imageMessage: {} } } })
+    const msgLid = citar({ viewOnceMessage: { message: { imageMessage: { mediaKey: Buffer.from('k') } } } })
     msgLid.key.participant = '279882198204437@lid'; msgLid.key.participantAlt = '51911111111@s.whatsapp.net'
     await comando.execute(sockLid, msgLid, [], { config })
     assert.equal(dLid[0], '51911111111@s.whatsapp.net')
 
     // Con "aqui" se muestra en el mismo chat
     const sock = crearSock()
-    await comando.execute(sock, citar({ viewOnceMessage: { message: { imageMessage: { caption: 'secreto' } } } }), ['aqui'], { config })
+    await comando.execute(sock, citar({ viewOnceMessage: { message: { imageMessage: { caption: 'secreto', mediaKey: Buffer.from('k') } } } }), ['aqui'], { config })
     assert.ok(Buffer.isBuffer(sock.enviados[0].image) && sock.enviados[0].caption.includes('Revelado'))
 
     const sock3 = crearSock()
@@ -392,7 +419,7 @@ test('.verunavez revela en el chat, por privado, o explica qué hacer', async ()
 
     vista.descargar = async () => { throw new Error('sin archivo') }
     const log = console.error; console.error = () => {}
-    try { await comando.execute(sock3, citar({ viewOnceMessage: { message: { imageMessage: {} } } }), [], { config }) } finally { console.error = log }
+    try { await comando.execute(sock3, citar({ viewOnceMessage: { message: { imageMessage: { mediaKey: Buffer.from('k') } } } }), [], { config }) } finally { console.error = log }
     assert.ok(sock3.enviados[2].text.includes('No pude revelarlo'))
   } finally { vista.descargar = original }
 })

@@ -29,6 +29,7 @@ const estadisticas = require('./lib/estadisticas');
 const resiliencia = require('./lib/resiliencia');
 const { crearColaEnvio } = require('./lib/colaEnvio');
 const proteccion = require('./lib/proteccion');
+const verUnaVez = require('./lib/verUnaVez');
 const config = require('./defaults');
 const iaConfig = require('./config/ia.json');
 
@@ -365,6 +366,7 @@ async function startBot() {
   // por cada mensaje del lote (ver más abajo).
   const procesarMensaje = async (msg) => {
     if (!msg?.message) return;
+    try { verUnaVez.guardar(msg); } catch { /* .vv lo necesita, pero nunca debe romper un mensaje */ }
 
     const jid = msg.key.remoteJid;
 

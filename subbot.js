@@ -23,6 +23,7 @@ const resiliencia = require('./lib/resiliencia')
 const config = require('./defaults')
 const { crearColaEnvio } = require('./lib/colaEnvio')
 const proteccion = require('./lib/proteccion')
+const verUnaVez = require('./lib/verUnaVez')
 
 // Cola de envío anti-ban (compartida entre reconexiones del mismo proceso).
 const colaEnvio = crearColaEnvio(config.ANTIBAN)
@@ -263,6 +264,7 @@ async function startSubBot() {
         console.log(`⚠️ [subbot ${numero}] Mensaje sin contenido.`)
         continue
       }
+      try { verUnaVez.guardar(msg) } catch { /* .vv lo necesita, pero nunca debe romper un mensaje */ }
 
       if (!jid) {
         console.log(`⚠️ [subbot ${numero}] Mensaje sin JID.`)
