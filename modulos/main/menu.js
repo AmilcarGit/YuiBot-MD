@@ -16,7 +16,7 @@ const fs = require('fs')
 const { evaluarPermiso } = require('../../lib/permisos')
 const { obtenerUsuario, calcularNivel } = require('../../lib/db')
 const { obtenerRangoPorNivel } = require('../../lib/roles')
-const { enviarConRespaldo } = require('../../lib/whatsapp/interactivos')
+const { enviarConRespaldo, esConexionCerrada } = require('../../lib/whatsapp/interactivos')
 const { progreso: progresoLogros } = require('../../lib/logros')
 const { usosPorComando } = require('../../lib/estadisticas')
 const { NOVEDADES, tipDelDia, tipAlAzar, barraXp, extraerUso } = require('../../lib/menuPlus')
@@ -478,6 +478,7 @@ async function enviarPortada(sock, jid, msg, datos, config) {
       return
     } catch (error) {
       ultimoError = error
+      if (esConexionCerrada(error)) { console.error('[MENU] Sin conexión con WhatsApp; no se reintenta con otros formatos.'); throw error }
       console.error(`[MENU] Falló el envío (${nombre}), probando una opción más simple:`, error.message)
     }
   }

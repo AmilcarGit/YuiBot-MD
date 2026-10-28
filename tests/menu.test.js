@@ -330,3 +330,15 @@ test('cada comando de NOVEDADES existe de verdad y los consejos nombran comandos
   recorrerAlias(path.join(__dirname, '..', 'modulos'))
   for (const tip of plus.TIPS) for (const m of tip.matchAll(/\*\{P\}([a-záéíóúñ0-9]+)/gi)) assert.ok(nombres.has(m[1]) || aliases.has(m[1]), `el consejo menciona .${m[1]} que no existe`)
 })
+
+test('si la conexión está caída no se reintentan otros formatos (portada y categorías)', async () => {
+  const caida = () => { const e = new Error('Connection Closed'); e.output = { statusCode: 428 }; return e }
+  for (const args of [[], ['grupo']]) {
+    const sock = crearSock()
+    let intentos = 0
+    sock.sendMessage = async () => { intentos++; throw caida() }
+    const log = console.error; console.error = () => {}
+    try { await assert.rejects(ejecutar(args, DESCONOCIDO, sock, { MENU_IMAGES: [] }), /Connection Closed/) } finally { console.error = log }
+    assert.equal(intentos, 1, 'un solo intento')
+  }
+})
