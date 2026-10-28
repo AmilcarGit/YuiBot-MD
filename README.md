@@ -242,7 +242,7 @@ Cualquier persona puede tener su propio bot usando tu servidor:
 
 ## 📜 Comandos
 
-El bot trae **215 comandos** organizados por categoría. Usa `.menu` para ver las categorías, `.menu <categoría>` (ej. `.menu juegos`) para sus comandos, `.menu <palabra>` para buscar y `.menu todo` para la lista completa. Solo ves los comandos que puedes usar.
+El bot trae **215 comandos** organizados por categoría. Usa `.menu` para la portada (tu nivel, barra de XP, racha, logros, novedades y un consejo del día) y toca **📂 Abrir menú**: arriba están los accesos rápidos y debajo todos los comandos, que se ejecutan al tocarlos. Además: `.menu <categoría>` (ej. `.menu juegos`, con lista para tocar y botones a la categoría anterior/siguiente), `.menu <palabra>` para buscar, `.menu novedades`, `.menu populares` (lo más usado), `.menu categorias`, `.menu azar` (un comando sorpresa), `.menu consejo` y `.menu todo`. Cada comando tiene su ficha con cómo se usa, cuántas veces se usó y comandos parecidos. Solo ves los comandos que puedes usar.
 
 | Categoría | Ejemplos |
 |---|---|

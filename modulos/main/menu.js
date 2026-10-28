@@ -5,6 +5,7 @@
 //   .menu <categoría>    → comandos de esa categoría (ej: .menu grupo, .menu juegos)
 //   .menu <palabra>      → busca comandos por nombre, alias o descripción (ej: .menu sticker)
 //   .menu <comando>      → ficha de un comando (alias, permisos, ejemplo)
+//   .menu novedades     → lo último que se agregó (también populares, categorias, azar, consejo)
 //   .menu todo           → la lista completa, repartida en varios mensajes
 //
 // Solo se muestran los comandos que quien lo pide puede usar (los de owner no
@@ -15,6 +16,10 @@ const fs = require('fs')
 const { evaluarPermiso } = require('../../lib/permisos')
 const { obtenerUsuario, calcularNivel } = require('../../lib/db')
 const { obtenerRangoPorNivel } = require('../../lib/roles')
+const { enviarConRespaldo } = require('../../lib/whatsapp/interactivos')
+const { progreso: progresoLogros } = require('../../lib/logros')
+const { usosPorComando } = require('../../lib/estadisticas')
+const { NOVEDADES, tipDelDia, tipAlAzar, barraXp, extraerUso } = require('../../lib/menuPlus')
 
 const LIMITE_MENSAJE = 3400 // caracteres por mensaje (WhatsApp admite más, pero así se lee mejor)
 const MAX_RESULTADOS = 15
@@ -31,14 +36,14 @@ const CATEGORIAS = {
   diversion:    { emoji: '🎮', titulo: 'DIVERSIÓN',    descripcion: 'Juegos, apuestas y economía',               alias: ['juegos', 'economia', 'games', 'fun'] },
   deportes:     { emoji: '⚽', titulo: 'DEPORTES',     descripcion: 'Fútbol en vivo, tablas y alertas de goles', alias: ['futbol', 'sports', 'deporte'] },
   rpg:          { emoji: '⚔️', titulo: 'RPG',          descripcion: 'Aventura: duelos, jefes y misiones',        alias: ['aventura'] },
-  download:     { emoji: '📥', titulo: 'DESCARGAS',    descripcion: 'YouTube, TikTok, Instagram y más',          alias: ['descargas', 'descargar', 'dl'] },
+  download:     { emoji: '📥', titulo: 'DESCARGAS',    descripcion: 'Redes, archivos y páginas: TikTok, X, MediaFire…', alias: ['descargas', 'descargar'] },
   media:        { emoji: '🎨', titulo: 'MULTIMEDIA',   descripcion: 'Stickers y búsqueda de imágenes',           alias: ['multimedia', 'stickers'] },
   imagenes:     { emoji: '🖼️', titulo: 'IMÁGENES',     descripcion: 'Crea imágenes y memes con texto o avatares', alias: ['imagen', 'memes'] },
-  utilidad:     { emoji: '🛠️', titulo: 'UTILIDADES',   descripcion: 'Clima, traductor, OCR, QR y más',           alias: ['utilidades', 'util', 'utils'] },
+  utilidad:     { emoji: '🛠️', titulo: 'UTILIDADES',   descripcion: 'Clima, traductor, divisas, OCR, QR y voz',   alias: ['utilidades', 'util', 'utils'] },
   herramientas: { emoji: '🧪', titulo: 'HERRAMIENTAS', descripcion: 'Para desarrolladores: DNS, hash, JSON…',    alias: ['dev', 'tools', 'developer'] },
   audio:        { emoji: '🎧', titulo: 'AUDIO',        descripcion: 'Edita y analiza audios',                    alias: ['audios'] },
   ia:           { emoji: '🤖', titulo: 'IA',           descripcion: 'Conversa con Yui',                          alias: ['yui', 'ai'] },
-  escuela:      { emoji: '📚', titulo: 'ESCUELA',      descripcion: 'Tareas, horario, notas y exámenes',                       alias: ['school'] },
+  escuela:      { emoji: '📚', titulo: 'ESCUELA',      descripcion: 'Tareas, horario, notas y exámenes',                alias: ['school'] },
   sistema:      { emoji: '📊', titulo: 'SISTEMA',      descripcion: 'Estado, estadísticas y soporte',            alias: ['system', 'soporte'] },
   subbot:       { emoji: '🔗', titulo: 'SUBBOTS',      descripcion: 'Crea y administra tu propio bot',           alias: ['subbots', 'sub'] },
   owner:        { emoji: '👑', titulo: 'OWNER',        descripcion: 'Solo para los dueños del bot',              alias: ['owners', 'dueno'] },
@@ -195,11 +200,36 @@ function obtenerPerfil(msg) {
     const numero = jid.split('@')[0].split(':')[0]
     const usuario = obtenerUsuario(numero)
     if (!usuario || (usuario.xp === undefined && usuario.monedas === undefined)) return null
-    const nivel = Math.max(1, usuario.nivel || calcularNivel(usuario.xp || 0))
-    return { nivel, rango: obtenerRangoPorNivel(nivel)?.nombre || 'Novato', monedas: usuario.monedas || 0 }
+    const xp = usuario.xp || 0
+    const nivel = Math.max(1, usuario.nivel || calcularNivel(xp))
+    const logros = progresoLogros(usuario)
+    return {
+      nivel, xp, rango: obtenerRangoPorNivel(nivel)?.nombre || 'Novato', monedas: usuario.monedas || 0,
+      racha: usuario.racha || 0, logros: logros.filter((l) => l.desbloqueado).length, totalLogros: logros.length,
+    }
   } catch {
     return null
   }
+}
+
+/** Novedades que existen y que esta persona puede usar (las más recientes primero). */
+function novedadesVisibles(visibles) {
+  const porNombre = new Map()
+  for (const [clave, lista] of visibles) for (const cmd of lista) porNombre.set(cmd.name, { cmd, clave })
+  return NOVEDADES.map((n) => porNombre.get(n)).filter(Boolean)
+}
+
+/** Comandos más usados (según las estadísticas) que esta persona puede usar. */
+function popularesVisibles(visibles, limite = 10) {
+  let usos = {}
+  try { usos = usosPorComando() } catch { /* sin estadísticas */ }
+  const porNombre = new Map()
+  for (const [clave, lista] of visibles) for (const cmd of lista) porNombre.set(cmd.name, { cmd, clave })
+  return Object.entries(usos)
+    .filter(([nombre, n]) => n > 0 && porNombre.has(nombre))
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, limite)
+    .map(([nombre, n]) => ({ ...porNombre.get(nombre), usos: n }))
 }
 
 function construirPortada({ msg, config, esSubBot, visibles, totalComandos, prefijo, conIndice = true }) {
@@ -207,25 +237,34 @@ function construirPortada({ msg, config, esSubBot, visibles, totalComandos, pref
   const { hora, fecha } = obtenerHoraPeru()
   const perfil = obtenerPerfil(msg)
   const totalVisibles = [...visibles.values()].reduce((suma, lista) => suma + lista.length, 0)
+  const nuevos = novedadesVisibles(visibles).slice(0, 4)
 
   let t = '╭━━━━━━━━━━━━━━━━━━━━━━━━╮\n'
   t += `┃     🌸 *${negrita(config.BOT_NAME || 'YuiBot-MD')}* 🌸\n`
   t += '╰━━━━━━━━━━━━━━━━━━━━━━━━╯\n\n'
-  t += `${obtenerSaludo()}, *${nombreUsuario}* ✨\n`
-  t += `˚₊· ͟͟͞͞➳ ${FRASES[Math.floor(Math.random() * FRASES.length)]}\n\n`
+  t += `${obtenerSaludo()}, *${nombreUsuario}* ✨\n\n`
+
+  if (perfil) {
+    const { barra, actual, span } = barraXp(perfil.xp, perfil.nivel)
+    t += `╭─❖ 「 🏅 ${negrita('TU PERFIL')} 」 ❖─╮\n`
+    t += `│ 🎖️ Nv. *${perfil.nivel}* ${perfil.rango} · 💰 *${perfil.monedas}*\n`
+    t += `│ ✨ ${barra} *${actual}/${span}*\n`
+    t += `│ 🔥 Racha *${perfil.racha}* día${perfil.racha === 1 ? '' : 's'} · 🏆 *${perfil.logros}/${perfil.totalLogros}*\n`
+    t += '╰────────────────────────╯\n\n'
+  }
 
   t += `╭─❖ 「 📌 ${negrita('INFORMACIÓN')} 」 ❖─╮\n`
-  t += `│ 🤖 ${negrita('Tipo')} » ${esSubBot ? '🔗 SubBot' : '🌸 Bot Principal'}\n`
-  t += `│ ⚡ ${negrita('Prefijo')} » *${prefijo}*\n`
-  t += `│ 📦 ${negrita('Comandos')} » *${totalVisibles}* para ti (${totalComandos} en total)\n`
-  t += `│ ⏱️ ${negrita('Activo')} » *${obtenerUptime()}*\n`
-  t += `│ 🕐 ${negrita('Perú')} » *${hora}* · ${fecha}\n`
-  if (perfil) t += `│ 🏅 ${negrita('Tú')} » Nv. *${perfil.nivel}* ${perfil.rango} · 💰 *${perfil.monedas}*\n`
+  t += `│ 🤖 ${esSubBot ? '🔗 SubBot' : '🌸 Bot Principal'} · ⚡ Prefijo *${prefijo}*\n`
+  t += `│ 📦 *${totalVisibles}* comandos para ti (${totalComandos} en total)\n`
+  t += `│ ⏱️ Activo *${obtenerUptime()}* · 🕐 *${hora}*\n`
+  t += `│ 📅 ${fecha}\n`
   t += '╰────────────────────────╯\n\n'
 
+  if (nuevos.length) t += `🆕 ${negrita('Novedades')}: ${nuevos.map(({ cmd }) => `*${prefijo}${cmd.name}*`).join(' · ')}\n`
+  t += `💡 ${tipDelDia(prefijo)}\n\n`
+
   if (!conIndice) {
-    t += `👇 Toca *📂 Abrir menú*, elige un comando y se ejecuta solo.\n`
-    t += `🔍 *${prefijo}menu <palabra>* para buscar`
+    t += `👇 Toca *📂 Abrir menú*: elige un comando y se ejecuta solo.`
     return t
   }
 
@@ -239,6 +278,7 @@ function construirPortada({ msg, config, esSubBot, visibles, totalComandos, pref
 
   t += `💡 *${prefijo}menu <categoría>* ver sus comandos\n`
   t += `🔍 *${prefijo}menu <palabra>* buscar (ej: ${prefijo}menu sticker)\n`
+  t += `🆕 *${prefijo}menu novedades* · 🔥 *${prefijo}menu populares* · 🎲 *${prefijo}menu azar*\n`
   t += `📋 *${prefijo}menu todo* lista completa`
   return t
 }
@@ -253,7 +293,7 @@ function construirPaginasCategoria(clave, lista, prefijo) {
     t += `│ 📌 *${lista.length} comandos*${partes.length > 1 ? ` · página ${i + 1}/${partes.length}` : ''}\n`
     t += '╰────────────────────────╯\n\n'
     t += cuerpo
-    if (i === partes.length - 1) t += `\n↩️ *${prefijo}menu* volver al inicio`
+    if (i === partes.length - 1) t += `\n👇 Toca *▶️ Elegir comando* para ejecutarlo\n↩️ *${prefijo}menu* volver al inicio`
     return t
   })
 }
@@ -271,7 +311,7 @@ function construirTodo(visibles, prefijo) {
   )
 }
 
-function construirFicha(cmd, claveCategoria, prefijo) {
+function construirFicha(cmd, claveCategoria, prefijo, usos = 0, parecidos = []) {
   const info = infoCategoria(claveCategoria)
   let t = `╭─❖ 「 ✧ ${negrita(prefijo + cmd.name)} 」 ❖─╮\n`
   if (cmd.description) t += `│ 📝 ${cmd.description}\n`
@@ -279,8 +319,10 @@ function construirFicha(cmd, claveCategoria, prefijo) {
   if (cmd.aliases?.length) t += `│ 🔁 ${negrita('Alias')} » ${cmd.aliases.map((a) => prefijo + a).join(' · ')}\n`
   if (cmd.ownerOnly) t += `│ 🔒 ${negrita('Permiso')} » Solo owners del bot\n`
   else if (cmd.subbotOwnerOnly) t += `│ 🔒 ${negrita('Permiso')} » Dueño del subbot u owners\n`
-  t += `│ ▶️ ${negrita('Ejemplo')} » ${prefijo}${cmd.name}\n`
+  t += `│ ▶️ ${negrita('Uso')} » ${extraerUso(cmd, prefijo)}\n`
+  if (usos > 0) t += `│ 📈 ${negrita('Usado')} » ${usos} ${usos === 1 ? 'vez' : 'veces'}\n`
   t += '╰────────────────────────╯\n'
+  if (parecidos.length) t += `\n✨ ${negrita('Del mismo grupo')}: ${parecidos.map((n) => `*${prefijo}${n}*`).join(' · ')}\n`
   t += `\n↩️ *${prefijo}menu* volver al inicio`
   return t
 }
@@ -320,27 +362,51 @@ function construirResultados(termino, resultados, prefijo) {
     t += '\n'
   }
   if (todos.length > MAX_RESULTADOS) t += `\n…y ${todos.length - MAX_RESULTADOS} más. Sé más específico para afinar la búsqueda.\n`
-  t += `\n↩️ *${prefijo}menu* volver al inicio`
+  t += `\n👇 Toca *▶️ Elegir comando* para ejecutarlo\n↩️ *${prefijo}menu* volver al inicio`
   return t
 }
 
 // ───────────────────────── envío ─────────────────────────
 
-/** Una sección por categoría y una fila por comando; al tocarla se ejecuta ese comando. */
+const filaComando = (cmd, clave, prefijo, extra = '') => ({
+  title: recortar(`${prefijo}${cmd.name}`, 24),
+  description: recortar(`${extra}${cmd.description || infoCategoria(clave).descripcion}`, 72),
+  id: `${prefijo}${cmd.name}`,
+})
+
+/** Accesos rápidos al inicio de la lista: llevan a otras partes del menú (ids distintos a los de los comandos). */
+function seccionRapida(visibles, prefijo) {
+  const rows = []
+  if (novedadesVisibles(visibles).length) rows.push({ title: '🆕 Novedades', description: 'Lo último que agregué al bot', id: `${prefijo}menu novedades` })
+  if (popularesVisibles(visibles, 1).length) rows.push({ title: '🔥 Más usados', description: 'Lo que más usa la gente', id: `${prefijo}menu populares` })
+  rows.push({ title: '🗂️ Categorías', description: 'Elige por tema', id: `${prefijo}menu categorias` })
+  rows.push({ title: '🎲 Sorpréndeme', description: 'Un comando al azar para descubrir', id: `${prefijo}menu azar` })
+  rows.push({ title: '💡 Consejo del día', description: 'Un truco para sacarle más provecho', id: `${prefijo}menu consejo` })
+  rows.push({ title: '🔎 Buscar', description: `Cómo buscar con ${prefijo}menu <palabra>`, id: `${prefijo}menu buscar` })
+  rows.push({ title: '📋 Menú completo', description: 'Todos los comandos en texto', id: `${prefijo}menu todo` })
+  return { title: '⚡ Accesos rápidos', rows }
+}
+
+/** Una sección rápida, y luego una por categoría con una fila por comando; al tocarla se ejecuta. */
 function construirSecciones(visibles, prefijo) {
-  const secciones = []
+  const secciones = [seccionRapida(visibles, prefijo)]
   for (const [clave, lista] of visibles) {
     const info = infoCategoria(clave)
-    secciones.push({
-      title: recortar(`${info.emoji} ${info.titulo}`, 24),
-      rows: lista.map((cmd) => ({
-        title: recortar(`${prefijo}${cmd.name}`, 24),
-        description: recortar(cmd.description || info.descripcion, 72),
-        id: `${prefijo}${cmd.name}`,
-      })),
-    })
+    secciones.push({ title: recortar(`${info.emoji} ${info.titulo}`, 24), rows: lista.map((cmd) => filaComando(cmd, clave, prefijo)) })
   }
   return secciones
+}
+
+/** Filas para saltar a la categoría anterior/siguiente o volver a la portada. */
+function seccionNavegacion(clave, visibles, prefijo) {
+  const claves = [...visibles.keys()]
+  const i = claves.indexOf(clave)
+  const rows = []
+  if (i > 0) { const a = infoCategoria(claves[i - 1]); rows.push({ title: recortar(`⬅️ ${a.titulo}`, 24), description: a.descripcion.slice(0, 72), id: `${prefijo}menu ${claves[i - 1]}` }) }
+  if (i >= 0 && i < claves.length - 1) { const s = infoCategoria(claves[i + 1]); rows.push({ title: recortar(`➡️ ${s.titulo}`, 24), description: s.descripcion.slice(0, 72), id: `${prefijo}menu ${claves[i + 1]}` }) }
+  rows.push({ title: '🏠 Inicio', description: 'Volver a la portada del menú', id: `${prefijo}menu portada` })
+  rows.push({ title: '🗂️ Categorías', description: 'Ver todas las categorías', id: `${prefijo}menu categorias` })
+  return { title: '🧭 Navegar', rows }
 }
 
 const cacheMedios = new Map() // ruta → { mtimeMs, buffer }
@@ -366,8 +432,8 @@ function botonesRapidos(esGrupo, visibles, prefijo) {
 }
 
 /**
- * Portada en UN solo mensaje: imagen/gif + una cajita desplegable con todos los
- * comandos (single_select). Si algo falla, baja de nivel: botones rápidos →
+ * Portada en UN solo mensaje: imagen/gif + una cajita desplegable con accesos rápidos y
+ * todos los comandos (single_select). Si algo falla, baja de nivel: botones rápidos →
  * medio + texto → solo texto, siempre con el índice de categorías.
  */
 async function enviarPortada(sock, jid, msg, datos, config) {
@@ -418,16 +484,115 @@ async function enviarPortada(sock, jid, msg, datos, config) {
   throw ultimoError
 }
 
-async function enviarTextos(sock, jid, msg, textos) {
-  for (const texto of textos) {
-    await sock.sendMessage(jid, { text: texto }, { quoted: msg })
+/** Texto con lista desplegable y/o botones; si WhatsApp los rechaza (o están apagados) cae a texto. */
+function enviarInteractivo(sock, jid, msg, config, { texto, tituloLista = '▶️ Elegir comando', secciones = null, botones = [] }) {
+  const pie = `${config.BOT_NAME || 'YuiBot-MD'} • ${(config.PREFIXES && config.PREFIXES[0]) || '.'}menu`
+  const intentos = []
+  if (secciones && config.MENU_LISTA !== false) intentos.push(['lista', { text: texto, footer: pie, buttons: [{ text: tituloLista, sections: secciones }] }])
+  if (botones.length && config.MENU_BOTONES !== false) intentos.push(['botones', { text: texto, footer: pie, buttons: botones.slice(0, 3) }])
+  intentos.push(['texto', { text: texto }])
+  return enviarConRespaldo(sock, jid, intentos, { quoted: msg }, 'MENU')
+}
+
+async function enviarTextos(sock, jid, msg, textos, final = null, config = {}) {
+  const ultimo = textos.length - 1
+  for (const [i, texto] of textos.entries()) {
+    if (final && i === ultimo) await enviarInteractivo(sock, jid, msg, config, { texto, ...final })
+    else await sock.sendMessage(jid, { text: texto }, { quoted: msg })
   }
+}
+
+// ───────────────────────── subcomandos ─────────────────────────
+
+const SUBCOMANDOS = {
+  novedades: ['novedades', 'novedad', 'nuevo', 'nuevos', 'new'],
+  populares: ['populares', 'popular', 'masusados', 'mas usados', 'tendencias'],
+  categorias: ['categorias', 'categoria', 'indice', 'categories'],
+  azar: ['azar', 'random', 'sorprendeme', 'aleatorio'],
+  consejo: ['consejo', 'tip', 'truco', 'consejos'],
+  buscar: ['buscar', 'search', 'buscador'],
+  portada: ['portada', 'inicio'], // (la palabra "inicio" también es alias de la categoría main: aquí gana la portada)
+}
+
+function resolverSubcomando(termino) {
+  const t = normalizar(termino)
+  return Object.keys(SUBCOMANDOS).find((k) => SUBCOMANDOS[k].includes(t)) || null
+}
+
+async function subNovedades(ctx) {
+  const { sock, jid, msg, config, visibles, prefijo } = ctx
+  const lista = novedadesVisibles(visibles)
+  if (!lista.length) return sock.sendMessage(jid, { text: '🆕 Aún no hay novedades para ti.' }, { quoted: msg })
+  let t = `╭─❖ 「 🆕 ${negrita('NOVEDADES')} 」 ❖─╮\n│ Lo último que agregué · ${lista.length}\n╰────────────────────────╯\n\n`
+  for (const { cmd } of lista.slice(0, 15)) t += bloqueComando(cmd, prefijo)
+  t += `👇 Toca *▶️ Elegir comando* para probarlo\n↩️ *${prefijo}menu* volver al inicio`
+  return enviarInteractivo(sock, jid, msg, config, { texto: t, secciones: [{ title: '🆕 Novedades', rows: lista.slice(0, 15).map(({ cmd, clave }) => filaComando(cmd, clave, prefijo)) }] })
+}
+
+async function subPopulares(ctx) {
+  const { sock, jid, msg, config, visibles, prefijo } = ctx
+  const lista = popularesVisibles(visibles)
+  if (!lista.length) return sock.sendMessage(jid, { text: `🔥 Todavía no hay estadísticas de uso. Usa el bot un rato y vuelve.\n\n↩️ *${prefijo}menu* volver al inicio` }, { quoted: msg })
+  const medallas = ['🥇', '🥈', '🥉']
+  let t = `╭─❖ 「 🔥 ${negrita('MÁS USADOS')} 」 ❖─╮\n│ Lo que más usa la gente\n╰────────────────────────╯\n\n`
+  lista.forEach(({ cmd, usos }, i) => { t += `${medallas[i] || `${i + 1}.`} *${prefijo}${cmd.name}* · ${usos} ${usos === 1 ? 'uso' : 'usos'}\n` })
+  t += `\n👇 Toca *▶️ Elegir comando* para ejecutarlo\n↩️ *${prefijo}menu* volver al inicio`
+  return enviarInteractivo(sock, jid, msg, config, { texto: t, secciones: [{ title: '🔥 Más usados', rows: lista.map(({ cmd, clave, usos }) => filaComando(cmd, clave, prefijo, `${usos} usos · `)) }] })
+}
+
+async function subCategorias(ctx) {
+  const { sock, jid, msg, config, visibles, prefijo } = ctx
+  let t = `╭─❖ 「 🗂️ ${negrita('CATEGORÍAS')} 」 ❖─╮\n│ Elige un tema\n╰────────────────────────╯\n\n`
+  const rows = []
+  for (const [clave, lista] of visibles) {
+    const info = infoCategoria(clave)
+    t += `${info.emoji} *${info.titulo}* · ${lista.length}\n    _${info.descripcion}_\n`
+    rows.push({ title: recortar(`${info.emoji} ${info.titulo}`, 24), description: recortar(`${lista.length} comandos · ${info.descripcion}`, 72), id: `${prefijo}menu ${clave}` })
+  }
+  t += `\n👇 Toca *🗂️ Elegir categoría*`
+  return enviarInteractivo(sock, jid, msg, config, { texto: t, tituloLista: '🗂️ Elegir categoría', secciones: [{ title: 'Categorías', rows }] })
+}
+
+async function subAzar(ctx) {
+  const { sock, jid, msg, config, visibles, prefijo } = ctx
+  const todos = [...visibles.entries()].flatMap(([clave, lista]) => lista.filter((c) => !c.ownerOnly && !c.subbotOwnerOnly).map((cmd) => ({ cmd, clave })))
+  if (!todos.length) return sock.sendMessage(jid, { text: '🎲 No hay comandos para mostrar.' }, { quoted: msg })
+  const { cmd, clave } = todos[Math.floor(Math.random() * todos.length)]
+  return enviarFicha(ctx, cmd, clave, `🎲 *Tu comando sorpresa:*\n\n`)
+}
+
+async function subConsejo(ctx, anterior = '') {
+  const { sock, jid, msg, config, prefijo } = ctx
+  const texto = `💡 ${negrita('CONSEJO')}\n\n${tipAlAzar(prefijo, anterior)}\n\n↩️ *${prefijo}menu* volver al inicio`
+  return enviarInteractivo(sock, jid, msg, config, { texto, botones: [{ text: '💡 Otro consejo', id: `${prefijo}menu consejo` }, { text: '↩️ Menú', id: `${prefijo}menu` }] })
+}
+
+function subBuscar({ sock, jid, msg, prefijo }) {
+  return sock.sendMessage(jid, {
+    text: `🔎 ${negrita('BUSCAR COMANDOS')}\n\nEscribe *${prefijo}menu* seguido de lo que buscas:\n✧ *${prefijo}menu sticker*\n✧ *${prefijo}menu descargar*\n✧ *${prefijo}menu tarea*\n\nBusco en nombres, alias y descripciones, y si te equivocas al escribir te sugiero el correcto.`,
+  }, { quoted: msg })
+}
+
+async function enviarFicha(ctx, cmd, clave, encabezado = '') {
+  const { sock, jid, msg, config, visibles, prefijo } = ctx
+  let usos = 0
+  try { usos = usosPorComando()[cmd.name] || 0 } catch { /* sin estadísticas */ }
+  const parecidos = (visibles.get(clave) || []).filter((c) => c.name !== cmd.name && !c.ownerOnly).slice(0, 3).map((c) => c.name)
+  const info = infoCategoria(clave)
+  return enviarInteractivo(sock, jid, msg, config, {
+    texto: `${encabezado}${construirFicha(cmd, clave, prefijo, usos, parecidos)}`,
+    botones: [
+      { text: `${info.emoji} ${info.titulo.charAt(0)}${info.titulo.slice(1).toLowerCase()}`.slice(0, 20), id: `${prefijo}menu ${clave}` },
+      { text: '🎲 Otro al azar', id: `${prefijo}menu azar` },
+      { text: '↩️ Menú', id: `${prefijo}menu` },
+    ],
+  })
 }
 
 module.exports = {
   name: 'menu',
   aliases: ['ayuda', 'help'],
-  description: 'Menú por categorías: .menu <categoría>, .menu <palabra> para buscar o .menu todo',
+  description: 'Menú por categorías: .menu <categoría>, .menu <palabra> para buscar, .menu novedades, populares o azar',
   category: 'main',
 
   async execute(sock, msg, args, { categories, commands, config, esSubBot, subbotNumero }) {
@@ -437,12 +602,22 @@ module.exports = {
     const termino = args.join(' ').trim()
 
     const visibles = comandosVisibles(categories, { sock, msg, config, esSubBot: Boolean(esSubBot), subbotNumero })
+    const ctx = { sock, jid, msg, config, visibles, prefijo }
 
     // ── .menu (portada)
-    if (!termino) {
+    const sub = termino ? resolverSubcomando(termino) : 'portada'
+    if (sub === 'portada') {
       const totalComandos = [...new Set(commands.values())].length
       return enviarPortada(sock, jid, msg, { msg, config, esSubBot, visibles, totalComandos, prefijo, esGrupo }, config)
     }
+
+    // ── .menu novedades / populares / categorias / azar / consejo / buscar
+    if (sub === 'novedades') return subNovedades(ctx)
+    if (sub === 'populares') return subPopulares(ctx)
+    if (sub === 'categorias') return subCategorias(ctx)
+    if (sub === 'azar') return subAzar(ctx)
+    if (sub === 'consejo') return subConsejo(ctx)
+    if (sub === 'buscar') return subBuscar(ctx)
 
     // ── .menu todo
     if (['todo', 'todos', 'all', 'full', 'completo'].includes(normalizar(termino))) {
@@ -456,7 +631,11 @@ module.exports = {
       if (!lista) {
         return sock.sendMessage(jid, { text: `🔒 No tienes acceso a los comandos de *${infoCategoria(clave).titulo}*.\n\n↩️ *${prefijo}menu* volver al inicio` }, { quoted: msg })
       }
-      return enviarTextos(sock, jid, msg, construirPaginasCategoria(clave, lista, prefijo))
+      const secciones = [
+        { title: recortar(`${infoCategoria(clave).emoji} ${infoCategoria(clave).titulo}`, 24), rows: lista.map((cmd) => filaComando(cmd, clave, prefijo)) },
+        seccionNavegacion(clave, visibles, prefijo),
+      ]
+      return enviarTextos(sock, jid, msg, construirPaginasCategoria(clave, lista, prefijo), { secciones }, config)
     }
 
     // ── .menu <comando> o .menu <palabra>
@@ -464,11 +643,15 @@ module.exports = {
 
     if (resultados.exactos.length === 1) {
       const { cmd, clave: claveCmd } = resultados.exactos[0]
-      return sock.sendMessage(jid, { text: construirFicha(cmd, claveCmd, prefijo) }, { quoted: msg })
+      return enviarFicha(ctx, cmd, claveCmd)
     }
 
-    if (resultados.exactos.length + resultados.parciales.length > 0) {
-      return sock.sendMessage(jid, { text: construirResultados(termino, resultados, prefijo) }, { quoted: msg })
+    const todos = [...resultados.exactos, ...resultados.parciales]
+    if (todos.length > 0) {
+      return enviarInteractivo(sock, jid, msg, config, {
+        texto: construirResultados(termino, resultados, prefijo),
+        secciones: [{ title: '🔍 Resultados', rows: todos.slice(0, MAX_RESULTADOS).map(({ cmd, clave: c }) => filaComando(cmd, c, prefijo)) }],
+      })
     }
 
     const parecidos = sugerencias(termino, visibles)
@@ -479,5 +662,5 @@ module.exports = {
   },
 
   // Funciones internas expuestas solo para las pruebas.
-  _internos: { negrita, normalizar, recortar, distancia, partirBloques, resolverCategoria, ordenarCategorias, construirSecciones, CATEGORIAS, ORDEN_CATEGORIAS },
+  _internos: { negrita, normalizar, recortar, distancia, partirBloques, resolverCategoria, resolverSubcomando, ordenarCategorias, construirSecciones, construirPortada, CATEGORIAS, ORDEN_CATEGORIAS },
 }
