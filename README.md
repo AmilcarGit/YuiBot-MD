@@ -7,7 +7,7 @@
 [![CI](https://img.shields.io/github/actions/workflow/status/AmilcarGit/YuiBot-MD/ci.yml?branch=main&style=for-the-badge&logo=githubactions&logoColor=white&label=CI)](https://github.com/AmilcarGit/YuiBot-MD/actions/workflows/ci.yml)
 [![Node.js](https://img.shields.io/badge/Node.js-%E2%89%A5%2020-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
 [![WhatsApp](https://img.shields.io/badge/WhatsApp-Multi--Device-25D366?style=for-the-badge&logo=whatsapp&logoColor=white)](https://www.whatsapp.com/)
-[![Comandos](https://img.shields.io/badge/Comandos-215-ff69b4?style=for-the-badge)](#-comandos)
+[![Comandos](https://img.shields.io/badge/Comandos-226-ff69b4?style=for-the-badge)](#-comandos)
 [![PM2](https://img.shields.io/badge/PM2-ready-2B037A?style=for-the-badge&logo=pm2&logoColor=white)](#-producción-con-pm2)
 [![Licencia](https://img.shields.io/badge/Licencia-MIT-blue?style=for-the-badge)](LICENSE)
 
@@ -242,7 +242,7 @@ Cualquier persona puede tener su propio bot usando tu servidor:
 
 ## 📜 Comandos
 
-El bot trae **215 comandos** organizados por categoría. Usa `.menu` para la portada (tu nivel, barra de XP, racha, logros, novedades y un consejo del día) y toca **📂 Abrir menú**: arriba están los accesos rápidos y debajo todos los comandos, que se ejecutan al tocarlos. Además: `.menu <categoría>` (ej. `.menu juegos`, con lista para tocar y botones a la categoría anterior/siguiente), `.menu <palabra>` para buscar, `.menu novedades`, `.menu populares` (lo más usado), `.menu categorias`, `.menu azar` (un comando sorpresa), `.menu consejo` y `.menu todo`. Cada comando tiene su ficha con cómo se usa, cuántas veces se usó y comandos parecidos. Solo ves los comandos que puedes usar.
+El bot trae **226 comandos** organizados por categoría. Usa `.menu` para la portada (tu nivel, barra de XP, racha, logros, novedades y un consejo del día) y toca **📂 Abrir menú**: arriba están los accesos rápidos y debajo todos los comandos, que se ejecutan al tocarlos. Además: `.menu <categoría>` (ej. `.menu juegos`, con lista para tocar y botones a la categoría anterior/siguiente), `.menu <palabra>` para buscar, `.menu novedades`, `.menu populares` (lo más usado), `.menu categorias`, `.menu azar` (un comando sorpresa), `.menu consejo` y `.menu todo`. Cada comando tiene su ficha con cómo se usa, cuántas veces se usó y comandos parecidos. Solo ves los comandos que puedes usar.
 
 | Categoría | Ejemplos |
 |---|---|
