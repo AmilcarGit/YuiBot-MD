@@ -30,6 +30,10 @@ const resiliencia = require('./lib/resiliencia');
 const { crearColaEnvio } = require('./lib/colaEnvio');
 const proteccion = require('./lib/proteccion');
 const verUnaVez = require('./lib/verUnaVez');
+const { crearCacheGrupos } = require('./lib/cacheGrupos');
+const { crearLimiteComandos } = require('./lib/limiteComandos');
+const cacheGrupos = crearCacheGrupos();
+const limiteComandos = crearLimiteComandos();
 const config = require('./defaults');
 const iaConfig = require('./config/ia.json');
 
@@ -155,13 +159,16 @@ async function startBot() {
 
   const usePairingCode = !yaVinculado && metodoElegido;
 
+  let cachedGroupMetadata = async () => undefined; // se conecta al socket justo después de crearlo
   const sock = makeWASocket({
     version,
     auth: state,
     logger: pino({ level: 'silent' }),
     printQRInTerminal: false,
+    cachedGroupMetadata: (jid) => cachedGroupMetadata(jid),
   });
   colaEnvio.envolver(sock);
+  cachedGroupMetadata = cacheGrupos.instalar(sock);
 
   const { commands, categories, hooks } = loadCommands();
   printBanner({ totalComandos: [...new Set(commands.values())].length });
@@ -454,6 +461,15 @@ async function startBot() {
       return;
     }
 
+    const limite = limiteComandos.revisar(numeroRemitente, parsed.commandName, parsed.args.join(' '), {
+      eximir: msg.key.fromMe || config.OWNERS.some((o) => o.numero === numeroRemitente),
+      config: config.LIMITE_COMANDOS,
+    });
+    if (!limite.ok) {
+      if (limite.avisar) await sock.sendMessage(jid, { text: '⏳ Vas muy rápido, espera unos segundos y vuelve a intentar.' }, { quoted: msg });
+      return;
+    }
+
     try {
       await command.execute(sock, msg, parsed.args, { commands, categories, config, commandName: parsed.commandName });
       resiliencia.registrarExito(parsed.commandName);
@@ -464,6 +480,8 @@ async function startBot() {
       await sock.sendMessage(jid, {
         text: '⚠️ Ocurrió un error ejecutando ese comando.',
       });
+    } finally {
+      limite.liberar();
     }
   };
 

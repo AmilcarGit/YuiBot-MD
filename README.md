@@ -106,7 +106,7 @@ Está diseñado para ser **modular** (cada comando es un archivo), **resistente*
 - Generador de comandos incluido
 - Menú en un solo mensaje con lista desplegable, descargas gratis con yt-dlp (YouTube, TikTok, Instagram, Facebook) y APIs de Delirius
 - Interactivos nativos de WhatsApp: encuestas, eventos, contactos, ubicación y álbumes
-- Protección por bot: `.anticall`, `.antiprivado` y cola de envío anti-ban (`ANTIBAN`, `PROTECCION`, `DESCARGAS`, `MENU_LISTA` en `defaults.js`)
+- Protección por bot: `.anticall`, `.antiprivado` y cola de envío anti-ban (`ANTIBAN`, `LIMITE_COMANDOS`, `PROTECCION`, `DESCARGAS`, `MENU_LISTA` en `defaults.js`)
 - Administración de grupos: `.cerrar`, `.abrir`, `.linkgrupo`, `.nombregrupo`, `.descgrupo`, `.hidetag`, `.admins` y sistema de advertencias (`.warn`, `.unwarn`, `.warns`; a las 3 se expulsa, configurable en `MODERACION.WARNS.MAX`)
 - Niveles y logros: 14 insignias con premio en monedas (`.logros`), racha de días, ranking semanal (`.topsemana`) y tarjeta de `.perfil` rediseñada con nivel, barra de XP, rango, estadísticas e insignias
 - Escuela: tareas guardadas con fecha de entrega (`.tarea`), horario (`.misclases`), libreta de notas con promedios (`.libreta`, `.promediar`, `.notaminima`), exámenes con aviso automático (`.misexamenes`), `.pomodoro` y calculadoras (`.ecuacion`, `.fraccion`, `.mcm`, `.factorizar`, `.porcentaje`, `.unidades`, `.tablamult`)

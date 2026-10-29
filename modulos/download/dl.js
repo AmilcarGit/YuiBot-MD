@@ -1,6 +1,7 @@
 const dw = require('../../lib/descargaWeb')
 const { descargarYEnviar, mensajeError } = require('../../lib/comandosDescarga')
-const { caja, uso, espera } = require('../../lib/estilo')
+const { caja, uso } = require('../../lib/estilo')
+const { conReaccion } = require('../../lib/reaccion')
 const { descargarLocal, ytDlpDisponible } = require('../../lib/youtube')
 
 module.exports = {
@@ -34,12 +35,13 @@ module.exports = {
     if (!dw.urlSegura(url)) return sock.sendMessage(jid, { text: '❌ Ese enlace no es válido o apunta a una dirección privada.' }, { quoted: msg })
     try {
       if (!(await ytDlpDisponible())) throw new Error('No reconozco ese sitio y yt-dlp no está instalado (en Termux: `pkg install yt-dlp ffmpeg`)')
-      await sock.sendMessage(jid, { text: espera('Intentando descargar con yt-dlp...') }, { quoted: msg })
-      const r = await descargarLocal(url, audio ? 'audio' : 'video')
-      await dw.enviarResultado(sock, msg, jid, {
-        kind: 'medios', titulo: r.titulo, autor: r.canal,
-        medios: [{ tipo: audio ? 'audio' : 'video', buffer: r.buffer, nombre: audio ? 'audio.mp3' : 'video.mp4' }],
-      }, { sitioInfo: { emoji: '🌐', nombre: 'Descarga' } })
+      await conReaccion(sock, msg, async () => {
+        const r = await descargarLocal(url, audio ? 'audio' : 'video')
+        await dw.enviarResultado(sock, msg, jid, {
+          kind: 'medios', titulo: r.titulo, autor: r.canal,
+          medios: [{ tipo: audio ? 'audio' : 'video', buffer: r.buffer, nombre: audio ? 'audio.mp3' : 'video.mp4' }],
+        }, { sitioInfo: { emoji: '🌐', nombre: 'Descarga' } })
+      })
     } catch (error) {
       console.error('[DL]', error)
       await sock.sendMessage(jid, { text: mensajeError(error) }, { quoted: msg })

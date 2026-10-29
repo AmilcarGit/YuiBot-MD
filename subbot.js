@@ -24,6 +24,10 @@ const config = require('./defaults')
 const { crearColaEnvio } = require('./lib/colaEnvio')
 const proteccion = require('./lib/proteccion')
 const verUnaVez = require('./lib/verUnaVez')
+const { crearCacheGrupos } = require('./lib/cacheGrupos')
+const { crearLimiteComandos } = require('./lib/limiteComandos')
+const cacheGrupos = crearCacheGrupos()
+const limiteComandos = crearLimiteComandos()
 
 // Cola de envío anti-ban (compartida entre reconexiones del mismo proceso).
 const colaEnvio = crearColaEnvio(config.ANTIBAN)
@@ -141,13 +145,16 @@ async function startSubBot() {
 
   const yaVinculado = state.creds.registered
 
+  let cachedGroupMetadata = async () => undefined // se conecta al socket justo después de crearlo
   const sock = makeWASocket({
     version,
     auth: state,
     logger: pino({ level: 'silent' }),
     printQRInTerminal: false,
+    cachedGroupMetadata: (jid) => cachedGroupMetadata(jid),
   })
   colaEnvio.envolver(sock)
+  cachedGroupMetadata = cacheGrupos.instalar(sock)
 
   socketActivo = sock
 
@@ -342,6 +349,15 @@ async function startSubBot() {
         continue
       }
 
+      const limite = limiteComandos.revisar(`${numero}:${numeroRemitente}`, parsed.commandName, parsed.args.join(' '), {
+        eximir: key.fromMe || config.OWNERS.some((o) => o.numero === numeroRemitente),
+        config: config.LIMITE_COMANDOS,
+      })
+      if (!limite.ok) {
+        if (limite.avisar) await sock.sendMessage(jid, { text: '⏳ Vas muy rápido, espera unos segundos y vuelve a intentar.' }, { quoted: msg }).catch(() => {})
+        continue
+      }
+
       try {
         await command.execute(sock, msg, parsed.args, { commands, categories, config: configSubbot, esSubBot: true, subbotNumero: numero, commandName: parsed.commandName })
         resiliencia.registrarExito(parsed.commandName)
@@ -352,6 +368,8 @@ async function startSubBot() {
         console.error(`❌ SUBBOT ${numero}\n   ${configSubbot.PREFIXES[0] || ''}${parsed.commandName} → error:`, err)
         // Igual que el bot principal: avisar al usuario en vez de dejarlo sin respuesta.
         await sock.sendMessage(jid, { text: '⚠️ Ocurrió un error ejecutando ese comando.' }).catch(() => {})
+      } finally {
+        limite.liberar()
       }
     }
   })

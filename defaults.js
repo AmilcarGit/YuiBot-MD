@@ -28,7 +28,9 @@ module.exports = {
     MAX_INSISTENCIAS: 5, // mensajes privados (1 h) antes de bloquear, si .antiprivado bloquear está activo
     COMANDOS_PRIVADO_PERMITIDOS: ['code'], // comandos que funcionan en privado aun con antiprivado
   },
-  ANTIBAN: { ENABLED: true, MIN_CHAT_MS: 700, JITTER_MS: 300, MIN_GLOBAL_MS: 120, MAX_COLA_CHAT: 40 },
+  ANTIBAN: { ENABLED: true, MIN_CHAT_MS: 500, JITTER_MS: 250, MIN_GLOBAL_MS: 100, MAX_COLA_CHAT: 40 },
+  // Máximo de comandos por persona en una ventana (los owners no tienen límite). Evita ráfagas de respuestas.
+  LIMITE_COMANDOS: { ENABLED: true, MAX: 6, VENTANA_MS: 10000, AVISO_MS: 30000 },
   // Logs de consola. LOG_MENSAJES imprime el texto de cada mensaje que recibe
   // el bot (útil para depurar, pero ruidoso y guarda conversaciones en los
   // logs de PM2); ponlo en false para registrar solo eventos del bot.
