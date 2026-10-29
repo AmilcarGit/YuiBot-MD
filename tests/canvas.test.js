@@ -84,3 +84,49 @@ test('sin ninguna librería instalada el error dice cómo arreglarlo', () => {
     (error) => error.code === 'CANVAS_NO_DISPONIBLE' && /npm install @napi-rs\/canvas/.test(error.message)
   )
 })
+
+// ── Fuentes propias, emojis y lienzo HD (con la librería real si está disponible) ──
+const fs = require('fs')
+const path = require('path')
+
+test('las fuentes incluidas existen en assets/fonts', () => {
+  for (const f of ['Poppins-Regular.ttf', 'Poppins-Bold.ttf', 'Poppins-Italic.ttf', 'Poppins-BoldItalic.ttf', 'DejaVuSans.ttf', 'DejaVuSans-Bold.ttf']) {
+    assert.ok(fs.statSync(path.join(__dirname, '..', 'assets', 'fonts', f)).size > 50000, f)
+  }
+})
+
+test('sinEmoji quita emojis a color pero conserva letras, acentos y símbolos que sí se dibujan', () => {
+  const { sinEmoji } = cargar({ napi: true })
+  assert.equal(sinEmoji('🍃 YuiBot-MD'), 'YuiBot-MD')
+  assert.equal(sinEmoji('Amílcar 🔥 Peña ✨'), 'Amílcar Peña ')
+  assert.equal(sinEmoji('✦ Nivel ▰▰▱ ⚔ ♡'), '✦ Nivel ▰▰▱ ⚔ ♡')
+  assert.equal(sinEmoji('👨‍👩‍👧 familia 🇵🇪'), ' familia '.replace(/^ /, ''))
+})
+
+test('createCanvasHD duplica los píxeles y pide fuentes propias; el texto sin emojis', () => {
+  let real
+  try { real = require('/opt/npm-tools/node_modules/@napi-rs/canvas') } catch { return } // sin la librería real, se omite
+  const original = Module._load
+  Module._load = function (peticion, ...resto) { return peticion === '@napi-rs/canvas' ? real : original.call(this, peticion, ...resto) }
+  let lienzo
+  try { delete require.cache[RUTA]; lienzo = require('../lib/canvas') } finally { Module._load = original; delete require.cache[RUTA] }
+  const hd = lienzo.createCanvasHD(300, 100)
+  assert.equal(hd.width, 600)
+  assert.equal(hd.height, 200)
+  const ctx = hd.getContext('2d')
+  assert.equal(hd.getContext('2d'), ctx, 'mismo contexto en cada llamada')
+  ctx.font = 'bold 20px sans-serif'
+  assert.ok(ctx.font.includes('YuiSans'), ctx.font)
+  assert.equal(ctx.measureText('🍃 Hola').width, ctx.measureText('Hola').width, 'los emojis no cuentan')
+  assert.equal(lienzo.createCanvas(50, 40).width, 50, 'createCanvas sigue a tamaño real')
+})
+
+test('dibujarIcono usa un símbolo dibujable y nunca el emoji', () => {
+  const { dibujarIcono } = cargar({ napi: true })
+  const textos = []
+  const ctx = { save() {}, restore() {}, beginPath() {}, arc() {}, fill() {}, stroke() {}, fillText: (t) => textos.push(t) }
+  dibujarIcono(ctx, '🎲', 0, 0, 100)
+  dibujarIcono(ctx, '⚔️', 0, 0, 100)
+  dibujarIcono(ctx, '🦄', 0, 0, 100) // desconocido → ✦
+  assert.deepEqual(textos, ['♦', '⚔', '✦'])
+})
