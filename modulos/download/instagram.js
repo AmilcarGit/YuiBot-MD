@@ -1,12 +1,13 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
 const fetch = require('../../lib/http').fetchSeguro // timeout por defecto (ver lib/http.js)
 const { descargarInstagram } = require('../../lib/instagram')
-const { caja, espera, uso } = require('../../lib/estilo')
+const { caja, uso } = require('../../lib/estilo')
+const { iniciar, fallar, conEstado } = require('../../lib/reaccion')
 const { conFuentes, descargarLocal } = require('../../lib/youtube')
 
 const LIMITE_VIDEO_MB = 64
 
-module.exports = {
+module.exports = conEstado({
   name: 'instagram',
   aliases: ['ig', 'igdl'],
   description: 'Descarga un video o reel de Instagram',
@@ -30,7 +31,7 @@ module.exports = {
     }
 
     try {
-      await sock.sendMessage(jid, { text: espera(`Descargando de Instagram...\n\n🔗 ${link}`) }, { quoted: msg })
+      await iniciar(sock, msg)
 
       // yt-dlp local primero (gratis); la API de antes queda como respaldo (también para fotos)
       const { buffer, selected, title, username } = await conFuentes({
@@ -77,6 +78,7 @@ module.exports = {
       }
 
     } catch (error) {
+      await fallar(sock, msg)
       console.error('[INSTAGRAM]', error)
       await sock.sendMessage(
         jid,
@@ -85,4 +87,4 @@ module.exports = {
       )
     }
   },
-}
+})

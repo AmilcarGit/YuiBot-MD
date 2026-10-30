@@ -1,5 +1,6 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
 const { caja, negrita } = require('../../lib/estilo')
+const { iniciar, fallar, conEstado } = require('../../lib/reaccion')
 const fetch = require('../../lib/http').fetchSeguro // timeout por defecto (ver lib/http.js)
 const { pedirBusqueda, pedirVideo } = require('../../lib/youtube')
 const fs = require('fs')
@@ -137,7 +138,7 @@ async function obtenerVideoDescargable(url, intentos = 3) {
   throw ultimoError || new Error('No se pudo obtener el video')
 }
 
-module.exports = {
+module.exports = conEstado({
   name: 'yts',
   aliases: ['ytsearch'],
   description: 'Busca videos en YouTube (responde con un número para descargar)',
@@ -161,7 +162,7 @@ module.exports = {
     }
 
     try {
-      await sock.sendMessage(jid, { text: `🔎 Buscando en YouTube...\n\n> ${query}` }, { quoted: msg })
+      await iniciar(sock, msg)
 
       const data = await pedirBusqueda(query)
       const videos = data.datos.results.videos
@@ -225,7 +226,7 @@ module.exports = {
         return sock.sendMessage(jid, { text: '❌ Ese resultado no tiene un enlace válido.' }, { quoted: msg })
       }
 
-      await sock.sendMessage(jid, { text: caja('🎬', 'Descargando video', [['Título', String(elegido.title || 'video').slice(0, 200)]], 'Esto puede tardar un poco ⏳') }, { quoted: msg })
+      await iniciar(sock, msg)
 
       const { dataVideo, buffer } = await obtenerVideoDescargable(elegido.url, 3)
       const filename = dataVideo.datos.archivo || `${dataVideo.titulo || 'youtube'}.mp4`
@@ -244,6 +245,7 @@ module.exports = {
       }
 
     } catch (error) {
+      await fallar(sock, msg)
       console.error('[YTS]', error)
       await sock.sendMessage(
         jid,
@@ -252,4 +254,4 @@ module.exports = {
       )
     }
   }
-}
+})

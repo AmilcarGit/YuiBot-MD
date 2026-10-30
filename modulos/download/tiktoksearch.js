@@ -1,7 +1,8 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
 const fetch = require('../../lib/http').fetchSeguro // timeout por defecto (ver lib/http.js)
 const { APIS } = require('../../defaults')
-const { caja, espera, uso } = require('../../lib/estilo')
+const { caja, uso } = require('../../lib/estilo')
+const { iniciar, fallar, conEstado } = require('../../lib/reaccion')
 
 const SEARCH_URL = 'https://orbitcloud.hidenfree.com/api/v1/tiktok-search'
 const LIMITE_RESULTADOS = 10
@@ -18,7 +19,7 @@ function formatearNumero(numero) {
   return (numero ?? 0).toLocaleString('es')
 }
 
-module.exports = {
+module.exports = conEstado({
   name: 'tiktoksearch',
   aliases: ['ttsearch', 'ttbuscar'],
   description: 'Busca videos de TikTok por palabra clave (vía Orbit API)',
@@ -38,7 +39,7 @@ module.exports = {
     }
 
     try {
-      await sock.sendMessage(jid, { text: `🔎 Buscando en TikTok...\n\n> ${query}` }, { quoted: msg })
+      await iniciar(sock, msg)
 
       const url = `${SEARCH_URL}?apikey=${encodeURIComponent(APIS.ORBIT_KEY)}&query=${encodeURIComponent(query)}`
       const resp = await fetch(url)
@@ -98,7 +99,7 @@ module.exports = {
         return sock.sendMessage(jid, { text: '❌ Ese resultado no tiene un video descargable.' }, { quoted: msg })
       }
 
-      await sock.sendMessage(jid, { text: espera(`Descargando "${truncar(elegido.desc, 50)}"...`) }, { quoted: msg })
+      await iniciar(sock, msg)
 
       const archivo = await fetch(enlaceDescarga)
       if (!archivo.ok) throw new Error(`No se pudo descargar el video (HTTP ${archivo.status})`)
@@ -123,6 +124,7 @@ module.exports = {
         )
       }
     } catch (error) {
+      await fallar(sock, msg)
       console.error('[TIKTOKSEARCH]', error)
       await sock.sendMessage(
         jid,
@@ -131,4 +133,4 @@ module.exports = {
       )
     }
   },
-}
+})

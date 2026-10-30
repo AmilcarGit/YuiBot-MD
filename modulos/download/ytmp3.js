@@ -1,6 +1,7 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
 const fetch = require('../../lib/http').fetchSeguro // timeout por defecto (ver lib/http.js)
-const { caja, espera, uso } = require('../../lib/estilo')
+const { caja, uso } = require('../../lib/estilo')
+const { iniciar, fallar, conEstado } = require('../../lib/reaccion')
 const { pedirAudio, pedirBusqueda, conFuentes, descargarLocal } = require('../../lib/youtube')
 const fs = require('fs')
 const os = require('os')
@@ -110,7 +111,7 @@ async function obtenerAudioDescargable(url, intentos = 3) {
   throw ultimoError || new Error('No se pudo obtener el audio')
 }
 
-module.exports = {
+module.exports = conEstado({
   name: 'ytmp3',
   aliases: ['play', 'ytaudio'],
   description: 'Descarga audio (MP3) de YouTube por enlace o nombre',
@@ -130,7 +131,7 @@ module.exports = {
       const esUrlYoutube = entrada.includes('youtube.com/') || entrada.includes('youtu.be/')
 
       if (!esUrlYoutube) {
-        await sock.sendMessage(jid, { text: `🔎 Buscando en YouTube...\n\n> ${entrada}` }, { quoted: msg })
+        await iniciar(sock, msg)
         const dataBusqueda = await pedirBusqueda(entrada)
         const videos = dataBusqueda?.datos?.results?.videos || []
         if (!videos.length) return sock.sendMessage(jid, { text: `❌ No encontré resultados para:\n\n> ${entrada}` }, { quoted: msg })
@@ -144,7 +145,7 @@ module.exports = {
       }
 
       const tituloBusqueda = resultadoBusqueda?.title || youtubeUrl
-      await sock.sendMessage(jid, { text: espera(`Descargando audio...\n\n🎵 ${tituloBusqueda}`) }, { quoted: msg })
+      await iniciar(sock, msg)
 
       const { data, buffer } = await obtenerAudioDescargable(youtubeUrl, 3)
       const filename = `${(data.titulo || resultadoBusqueda?.title || 'youtube').replace(/[\\/:*?"<>|]/g, '_')}.mp3`
@@ -162,8 +163,9 @@ module.exports = {
 
       await sock.sendMessage(jid, { text: caption }, { quoted: msg })
     } catch (error) {
+      await fallar(sock, msg)
       console.error('[PLAY/YTMP3]', error)
       await sock.sendMessage(jid, { text: `❌ No se pudo descargar el audio.\n\n> ${error.message || 'Error desconocido'}` }, { quoted: msg })
     }
   }
-}
+})

@@ -1,7 +1,8 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
 const fetch = require('../../lib/http').fetchSeguro // timeout por defecto (ver lib/http.js)
 const { pedirTikTok } = require('../../lib/tiktok')
-const { caja, espera, uso } = require('../../lib/estilo')
+const { caja, uso } = require('../../lib/estilo')
+const { iniciar, fallar, conEstado } = require('../../lib/reaccion')
 const { conFuentes, descargarLocal } = require('../../lib/youtube')
 const { generateWAMessageFromContent, prepareWAMessageMedia, proto } = require('@whiskeysockets/baileys')
 
@@ -87,7 +88,7 @@ async function enviarTikTokConBotones(sock, jid, msg, data, link, buffer, captio
   await sock.relayMessage(jid, mensaje.message, { messageId: mensaje.key.id })
 }
 
-module.exports = {
+module.exports = conEstado({
   name: 'tiktok',
   aliases: ['tt', 'ttdl'],
   description: 'Descarga videos de TikTok',
@@ -111,7 +112,7 @@ module.exports = {
     }
 
     try {
-      await sock.sendMessage(jid, { text: espera(`Descargando TikTok...\n\n🔗 ${link}`) }, { quoted: msg })
+      await iniciar(sock, msg)
 
       // yt-dlp local primero (gratis); la API de antes queda como respaldo
       const data = await conFuentes({
@@ -163,6 +164,7 @@ module.exports = {
         )
       }
     } catch (error) {
+      await fallar(sock, msg)
       console.error('[TIKTOK]', error)
       await sock.sendMessage(
         jid,
@@ -171,4 +173,4 @@ module.exports = {
       )
     }
   },
-}
+})

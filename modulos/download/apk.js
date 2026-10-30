@@ -1,7 +1,8 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
 const fetch = require('../../lib/http').fetchSeguro // timeout por defecto (ver lib/http.js)
 const { APIS } = require('../../defaults')
-const { caja, espera, uso, negrita } = require('../../lib/estilo')
+const { caja, uso, negrita } = require('../../lib/estilo')
+const { iniciar, fallar, conEstado } = require('../../lib/reaccion')
 
 const cortar = (t, n) => { const s = String(t ?? '').replace(/\s+/g, ' ').trim(); return s.length > n ? `${s.slice(0, n - 1)}…` : s }
 
@@ -14,7 +15,7 @@ function formatearTamano(bytes) {
   return `${mb.toFixed(1)} MB`
 }
 
-module.exports = {
+module.exports = conEstado({
   name: 'apk',
   aliases: ['app', 'aptoide'],
   description: 'Busca aplicaciones Android en Aptoide',
@@ -89,7 +90,7 @@ module.exports = {
 
       const elegida = items[respuesta - 1]
 
-      await sock.sendMessage(jid, { text: espera(`Descargando ${elegida.name}...`) }, { quoted: msg })
+      await iniciar(sock, msg)
 
       const respApk = await fetch(elegida.apk)
       if (!respApk.ok) throw new Error(`No se pudo descargar el APK (HTTP ${respApk.status})`)
@@ -111,6 +112,7 @@ module.exports = {
         { quoted: msg }
       )
     } catch (error) {
+      await fallar(sock, msg)
       console.error('[APK]', error)
       await sock.sendMessage(
         jid,
@@ -119,4 +121,4 @@ module.exports = {
       )
     }
   },
-}
+})

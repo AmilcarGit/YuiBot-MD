@@ -1,10 +1,11 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
 const { caja, negrita } = require('../../lib/estilo')
+const { iniciar, fallar, conEstado } = require('../../lib/reaccion')
 const fetch = require('../../lib/http').fetchSeguro // timeout por defecto (ver lib/http.js)
 const { pedirVideo, pedirBusqueda, conFuentes, descargarLocal } = require('../../lib/youtube')
 const LIMITE_VIDEO_MB = 3000
 
-module.exports = {
+module.exports = conEstado({
   name: 'ytv',
   aliases: ['ytvideo', 'video'],
   description: 'Descarga un video de YouTube por enlace o nombre',
@@ -96,13 +97,7 @@ module.exports = {
       const titulo =
         resultadoBusqueda?.title || youtubeUrl
 
-      await sock.sendMessage(
-        jid,
-        {
-          text: caja('🎬', 'Descargando video', [['Título', String(titulo).slice(0, 200)]], 'Esto puede tardar un poco ⏳')
-        },
-        { quoted: msg }
-      )
+      await iniciar(sock, msg)
 
       // yt-dlp local primero (gratis); la API de antes queda como respaldo
       const data = await conFuentes({
@@ -165,6 +160,7 @@ module.exports = {
       }
 
     } catch (error) {
+      await fallar(sock, msg)
       console.error('[YTV]', error)
 
       await sock.sendMessage(
@@ -178,4 +174,4 @@ module.exports = {
       )
     }
   }
-}
+})

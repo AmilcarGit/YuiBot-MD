@@ -1,11 +1,12 @@
 const fetch = require('../../lib/http').fetchSeguro
 const delirius = require('../../lib/delirius')
-const { caja, espera, uso } = require('../../lib/estilo')
+const { caja, uso } = require('../../lib/estilo')
+const { iniciar, fallar, conEstado } = require('../../lib/reaccion')
 const { conFuentes, descargarLocal } = require('../../lib/youtube')
 
 const LIMITE_VIDEO_MB = 64
 
-module.exports = {
+module.exports = conEstado({
   name: 'facebook',
   aliases: ['fb', 'fbdl'],
   description: 'Descarga un video o reel público de Facebook',
@@ -29,7 +30,7 @@ module.exports = {
     }
 
     try {
-      await sock.sendMessage(jid, { text: espera(`Descargando de Facebook...\n\n🔗 ${link}`) }, { quoted: msg })
+      await iniciar(sock, msg)
 
       // yt-dlp local primero (gratis); Delirius queda como respaldo
       const r = await conFuentes({
@@ -56,6 +57,7 @@ module.exports = {
 
       await sock.sendMessage(jid, contenido, { quoted: msg })
     } catch (error) {
+      await fallar(sock, msg)
       console.error('[FACEBOOK]', error)
       await sock.sendMessage(
         jid,
@@ -64,4 +66,4 @@ module.exports = {
       )
     }
   },
-}
+})

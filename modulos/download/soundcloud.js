@@ -1,9 +1,10 @@
 const fetch = require('../../lib/http').fetchSeguro
 const delirius = require('../../lib/delirius')
-const { caja, espera, uso } = require('../../lib/estilo')
+const { caja, uso } = require('../../lib/estilo')
+const { iniciar, fallar, conEstado } = require('../../lib/reaccion')
 const { descargarLocal, ytDlpDisponible } = require('../../lib/youtube')
 
-module.exports = {
+module.exports = conEstado({
   name: 'soundcloud',
   aliases: ['sc', 'scdl'],
   description: 'Busca en SoundCloud y envía el audio: .soundcloud <canción o enlace> (requiere yt-dlp)',
@@ -25,11 +26,11 @@ module.exports = {
     try {
       let pista = { url: entrada }
       if (!/soundcloud\.com\//i.test(entrada)) {
-        await sock.sendMessage(jid, { text: `🔎 Buscando en SoundCloud...\n\n> ${entrada}` }, { quoted: msg })
+        await iniciar(sock, msg)
         ;[pista] = await delirius.buscarSoundCloud(entrada)
       }
 
-      await sock.sendMessage(jid, { text: espera(`Descargando audio...\n\n🎵 ${pista.titulo || pista.url}`) }, { quoted: msg })
+      await iniciar(sock, msg)
       const audio = await descargarLocal(pista.url, 'audio')
 
       const caption = caja('🟠', 'SoundCloud', [
@@ -51,8 +52,9 @@ module.exports = {
       const nombre = (pista.titulo || audio.titulo).replace(/[\\/:*?"<>|]/g, '_')
       await sock.sendMessage(jid, { audio: audio.buffer, mimetype: 'audio/mpeg', fileName: `${nombre}.mp3`, ptt: false }, { quoted: msg })
     } catch (error) {
+      await fallar(sock, msg)
       console.error('[SOUNDCLOUD]', error)
       await sock.sendMessage(jid, { text: `❌ No se pudo descargar de SoundCloud.\n\n> ${error.message || 'Error desconocido'}` }, { quoted: msg })
     }
   },
-}
+})

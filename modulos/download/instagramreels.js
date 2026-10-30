@@ -2,7 +2,8 @@
 const fetch = require('../../lib/http').fetchSeguro // timeout por defecto (ver lib/http.js)
 const { APIS } = require('../../defaults')
 const { descargarInstagram } = require('../../lib/instagram')
-const { caja, espera, uso } = require('../../lib/estilo')
+const { caja, uso } = require('../../lib/estilo')
+const { iniciar, fallar, conEstado } = require('../../lib/reaccion')
 
 const SEARCH_URL = 'https://orbitcloud.hidenfree.com/api/v1/search/instagramreels'
 const LIMITE_RESULTADOS = 10
@@ -15,7 +16,7 @@ function truncar(texto, max) {
   return limpio.length > max ? `${limpio.slice(0, max)}...` : limpio
 }
 
-module.exports = {
+module.exports = conEstado({
   name: 'instagramreels',
   aliases: ['igreels', 'igsearch'],
   description: 'Busca reels de Instagram por palabra clave y descarga el que elijas',
@@ -35,7 +36,7 @@ module.exports = {
     }
 
     try {
-      await sock.sendMessage(jid, { text: `🔎 Buscando reels de Instagram...\n\n> ${query}` }, { quoted: msg })
+      await iniciar(sock, msg)
 
       const url = `${SEARCH_URL}?apikey=${encodeURIComponent(APIS.ORBIT_KEY)}&query=${encodeURIComponent(query)}`
       const resp = await fetch(url)
@@ -86,7 +87,7 @@ module.exports = {
         return sock.sendMessage(jid, { text: '❌ Ese resultado no tiene un enlace válido.' }, { quoted: msg })
       }
 
-      await sock.sendMessage(jid, { text: espera(`Descargando reel elegido...\n\n🔗 ${elegido.url}`) }, { quoted: msg })
+      await iniciar(sock, msg)
 
       const datosDescarga = await descargarInstagram(elegido.url)
       const { selected, title, username } = datosDescarga
@@ -121,6 +122,7 @@ module.exports = {
         await sock.sendMessage(jid, { image: buffer, caption }, { quoted: msg })
       }
     } catch (error) {
+      await fallar(sock, msg)
       console.error('[INSTAGRAMREELS]', error)
       await sock.sendMessage(
         jid,
@@ -129,4 +131,4 @@ module.exports = {
       )
     }
   },
-}
+})

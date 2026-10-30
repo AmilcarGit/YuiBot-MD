@@ -6,7 +6,7 @@ const { caja } = require('../../lib/estilo')
 module.exports = {
   name: 'granja',
   aliases: ['huerto', 'cultivo'],
-  description: 'Tu granja de 3 parcelas: .granja plantar <papa|maiz|tomate|fresa|cacao> y luego .granja cosechar',
+  description: 'Tu granja (3 parcelas, más con mejoras): .granja plantar <papa|maiz|tomate|fresa|cacao> y luego .granja cosechar',
   category: 'diversion',
 
   async execute(sock, msg, args, { config }) {
@@ -28,13 +28,13 @@ module.exports = {
     if (['plantar', 'sembrar'].includes(accion)) {
       const clave = T.resolverCultivo(args[1])
       if (!clave) {
-        const lista = Object.values(T.CULTIVOS).map((c) => `${c.icono} ${c.nombre}: ${T.formatoTiempo(c.tiempo)} → ~${c.pago} monedas`).join('\n')
+        const lista = Object.values(T.CULTIVOS).map((c) => `${c.icono} ${c.nombre}: ${T.formatoTiempo(T.tiempoCrecimiento(numero, c.tiempo))} → ~${c.pago} monedas`).join('\n')
         return enviarConBotones(sock, jid, msg, config, `🌱 Elige qué plantar:\n\n${lista}\n\n▶️ Ejemplo: *${P}granja plantar fresa*`, Object.keys(T.CULTIVOS).slice(0, 3).map((k) => ({ text: `${T.CULTIVOS[k].icono} ${T.CULTIVOS[k].nombre}`, id: `${P}granja plantar ${k}` })))
       }
       const cantidad = Number.isInteger(Number(args[2])) && Number(args[2]) > 0 ? Number(args[2]) : null
       const r = T.plantar(numero, clave, cantidad)
-      if (!r.ok) return enviarConBotones(sock, jid, msg, config, `🚜 Tus ${T.PARCELAS} parcelas están ocupadas. Cosecha primero con *${P}granja cosechar*.`, [{ text: '🌾 Mi granja', id: `${P}granja` }])
-      return enviarConBotones(sock, jid, msg, config, caja('🌱', 'A sembrar', [['Plantaste', `${r.plantadas}× ${r.cultivo.nombre} ${r.cultivo.icono}`, '🌱'], ['Listo en', T.formatoTiempo(r.cultivo.tiempo), '⏳']], `Cosecha con ${P}granja cosechar`), [{ text: '🧺 Cosechar', id: `${P}granja cosechar` }, { text: '🌾 Mi granja', id: `${P}granja` }])
+      if (!r.ok) return enviarConBotones(sock, jid, msg, config, `🚜 Tus ${T.parcelasDe(numero)} parcelas están ocupadas. Cosecha primero con *${P}granja cosechar*.`, [{ text: '🌾 Mi granja', id: `${P}granja` }])
+      return enviarConBotones(sock, jid, msg, config, caja('🌱', 'A sembrar', [['Plantaste', `${r.plantadas}× ${r.cultivo.nombre} ${r.cultivo.icono}`, '🌱'], ['Listo en', T.formatoTiempo(r.tiempo), '⏳']], `Cosecha con ${P}granja cosechar`), [{ text: '🧺 Cosechar', id: `${P}granja cosechar` }, { text: '🌾 Mi granja', id: `${P}granja` }])
     }
 
     const g = T.estadoGranja(numero)
