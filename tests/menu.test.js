@@ -314,7 +314,8 @@ test('menuPlus: barra de XP, uso extraído y consejos', () => {
   assert.equal(plus.barraXp(999999, 1).barra, '▰'.repeat(10))
   assert.equal(plus.extraerUso({ name: 'dl', aliases: ['bajarlink'], description: 'Descarga: .dl <enlace> [audio]' }, '!'), '!dl <enlace> [audio]')
   assert.equal(plus.extraerUso({ name: 'ping', aliases: [], description: 'Mide la latencia' }, '.'), '.ping')
-  assert.ok(plus.tipDelDia('!').includes('!') && !plus.tipDelDia('!').includes('{P}'))
+  assert.ok(!plus.tipDelDia('!').includes('{P}'))
+  assert.ok(plus.TIPS.filter((t) => t.includes('{P}')).every((t) => t.replace(/\{P\}/g, '!').includes('!') && !t.replace(/\{P\}/g, '!').includes('{P}')))
   assert.equal(plus.tipDelDia('.', 0), plus.tipDelDia('.', 1000)) // mismo día, mismo consejo
   for (const t of plus.TIPS) assert.ok(t.length < 170, t)
   assert.notEqual(plus.tipAlAzar('.', plus.tipAlAzar('.')), undefined)
