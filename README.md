@@ -7,7 +7,7 @@
 [![CI](https://img.shields.io/github/actions/workflow/status/AmilcarGit/YuiBot-MD/ci.yml?branch=main&style=for-the-badge&logo=githubactions&logoColor=white&label=CI)](https://github.com/AmilcarGit/YuiBot-MD/actions/workflows/ci.yml)
 [![Node.js](https://img.shields.io/badge/Node.js-%E2%89%A5%2020-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
 [![WhatsApp](https://img.shields.io/badge/WhatsApp-Multi--Device-25D366?style=for-the-badge&logo=whatsapp&logoColor=white)](https://www.whatsapp.com/)
-[![Comandos](https://img.shields.io/badge/Comandos-228-ff69b4?style=for-the-badge)](#-comandos)
+[![Comandos](https://img.shields.io/badge/Comandos-229-ff69b4?style=for-the-badge)](#-comandos)
 [![PM2](https://img.shields.io/badge/PM2-ready-2B037A?style=for-the-badge&logo=pm2&logoColor=white)](#-producción-con-pm2)
 [![Licencia](https://img.shields.io/badge/Licencia-MIT-blue?style=for-the-badge)](LICENSE)
 
@@ -200,6 +200,21 @@ Luego sigue la sección de [PM2](#-producción-con-pm2) para dejarlo corriendo 2
 
 ---
 
+## ☁️ Respaldo automático de tus datos
+
+El bot puede copiar solo la carpeta `data/` (monedas, niveles, trabajos, grupos…) a un **repositorio privado tuyo de GitHub**, para no perder nada si cambias de celular o reinstalas.
+
+1. Crea un repositorio **privado y vacío** (ej. `YuiBot-datos`).
+2. Crea un token en GitHub (*Settings → Developer settings → Fine-grained tokens*) limitado a ese repo, con permiso **Contents: Read and write**.
+3. Copia `.env.example` como `.env` y rellena `RESPALDO_REPO` y `RESPALDO_TOKEN` (el `.env` nunca se sube a GitHub).
+4. Reinicia el bot. Desde ahí respalda solo cada `RESPALDO_CADA_MIN` minutos (60 por defecto), subiendo **únicamente lo que cambió** en un solo commit.
+
+- Si el repo es **público**, el bot se niega a subir nada (los datos tienen números de teléfono).
+- No sube las llaves de APIs (`api-proveedores.json`) ni la sesión de WhatsApp. Puedes excluir más archivos con `RESPALDO_EXCLUIR`.
+- En una instalación nueva con `data/` vacía y el respaldo configurado, **restaura el último respaldo al arrancar**. Nunca pisa datos que ya existen.
+- Comando para owners (solo bot principal): `.respaldonube` (subir ahora), `.respaldonube estado` y `.respaldonube restaurar confirmar` (guarda antes una copia en `backups/`).
+- Si falla, avisa al owner una sola vez y otra cuando se recupera. El token nunca se imprime.
+
 ## 🧰 Producción con PM2
 
 El repositorio incluye `ecosystem.config.cjs`, que levanta el bot principal y **detecta automáticamente los subbots ya vinculados**.
@@ -242,7 +257,7 @@ Cualquier persona puede tener su propio bot usando tu servidor:
 
 ## 📜 Comandos
 
-El bot trae **228 comandos** organizados por categoría. Usa `.menu` para la portada (tu nivel, barra de XP, racha, logros, novedades y un consejo del día) y toca **📂 Abrir menú**: arriba están los accesos rápidos y debajo todos los comandos, que se ejecutan al tocarlos. Además: `.menu <categoría>` (ej. `.menu juegos`, con lista para tocar y botones a la categoría anterior/siguiente), `.menu <palabra>` para buscar, `.menu novedades`, `.menu populares` (lo más usado), `.menu categorias`, `.menu azar` (un comando sorpresa), `.menu consejo` y `.menu todo`. Cada comando tiene su ficha con cómo se usa, cuántas veces se usó y comandos parecidos. Solo ves los comandos que puedes usar.
+El bot trae **229 comandos** organizados por categoría. Usa `.menu` para la portada (tu nivel, barra de XP, racha, logros, novedades y un consejo del día) y toca **📂 Abrir menú**: arriba están los accesos rápidos y debajo todos los comandos, que se ejecutan al tocarlos. Además: `.menu <categoría>` (ej. `.menu juegos`, con lista para tocar y botones a la categoría anterior/siguiente), `.menu <palabra>` para buscar, `.menu novedades`, `.menu populares` (lo más usado), `.menu categorias`, `.menu azar` (un comando sorpresa), `.menu consejo` y `.menu todo`. Cada comando tiene su ficha con cómo se usa, cuántas veces se usó y comandos parecidos. Solo ves los comandos que puedes usar.
 
 | Categoría | Ejemplos |
 |---|---|

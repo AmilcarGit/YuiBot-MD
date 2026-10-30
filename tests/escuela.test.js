@@ -204,10 +204,13 @@ test('.misexamenes agenda con avisos y los borra', async () => {
   assert.equal(e.materia, 'Historia del Perú')
   assert.equal(e.tema, 'Virreinato y Colonia')
 
-  let r = await ejecutar('misexamenes', u, ['add', 'Matemática', 'mañana', '23:00', 'Álgebra'], { esSubBot: true, subbotNumero: '5111' })
+  // Dentro de 3 días (hora de Perú): así el aviso de "1 día antes" siempre está en el futuro, sea la hora que sea.
+  const en3 = new Date(Date.now() - 5 * 3600000 + 3 * 86400000)
+  const fecha3 = `${String(en3.getUTCDate()).padStart(2, '0')}/${String(en3.getUTCMonth() + 1).padStart(2, '0')}/${en3.getUTCFullYear()}`
+  let r = await ejecutar('misexamenes', u, ['add', 'Matemática', fecha3, '23:00', 'Álgebra'], { esSubBot: true, subbotNumero: '5111' })
   assert.ok(r[0].includes('EXAMEN AGENDADO'), r[0])
   const avisos = recordatorios.listarDe(u.numero)
-  assert.equal(avisos.length, 2) // 1 día antes (ya pasó? no: mañana 23:00 - 1 d = hoy 23:00) y 1 h antes
+  assert.equal(avisos.length, 2) // 1 día antes y 1 h antes
   assert.ok(avisos.every((a) => a.idBot === '5111' && a.jid === `${u.numero}@s.whatsapp.net`))
   r = await ejecutar('misexamenes', u, [])
   assert.ok(r[0].includes('Matemática') && r[0].includes('Álgebra'))

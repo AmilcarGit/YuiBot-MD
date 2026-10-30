@@ -3,6 +3,8 @@
 // que es un paquete ESM puro ("type": "module"). No se puede hacer
 // require() de un paquete ESM desde un proyecto CommonJS, así que se
 // carga con import() dinámico dentro de startBot() (ver más abajo).
+// Lee el .env (RESPALDO_REPO, RESPALDO_TOKEN…) antes de cargar lo demás.
+require('./lib/entorno').cargarEnv();
 const { Boom } = require('@hapi/boom');
 const qrcode = require('qrcode-terminal');
 const pino = require('pino');
@@ -32,6 +34,7 @@ const proteccion = require('./lib/proteccion');
 const verUnaVez = require('./lib/verUnaVez');
 const { crearCacheGrupos } = require('./lib/cacheGrupos');
 const { crearLimiteComandos } = require('./lib/limiteComandos');
+const respaldoNube = require('./lib/respaldoNube');
 const cacheGrupos = crearCacheGrupos();
 const limiteComandos = crearLimiteComandos();
 const config = require('./defaults');
@@ -137,7 +140,13 @@ async function elegirMetodoDeVinculacion() {
 
 let detenerAlertasRed = null;
 
+// El respaldo avisa al primer owner por este socket (se actualiza en cada reconexión).
+let sockRespaldo = null;
+let detenerRespaldo = null;
+
 async function startBot() {
+  // Instalación nueva con respaldo configurado: recupera los datos antes de empezar.
+  await respaldoNube.restaurarSiVacia({ log: (t) => console.log(t) });
   const {
     default: makeWASocket,
     useMultiFileAuthState,
@@ -239,6 +248,17 @@ async function startBot() {
 
       if (detenerHeartbeatPrincipal) detenerHeartbeatPrincipal();
       detenerHeartbeatPrincipal = iniciarHeartbeat(ID_PRINCIPAL);
+
+      sockRespaldo = sock;
+      if (!detenerRespaldo) {
+        detenerRespaldo = respaldoNube.iniciar({
+          log: (t) => console.log(t),
+          avisar: async (texto) => {
+            const dueno = config.OWNERS?.[0]?.numero;
+            if (dueno && sockRespaldo) await sockRespaldo.sendMessage(`${dueno}@s.whatsapp.net`, { text: texto });
+          },
+        });
+      }
 
       recordatorios.iniciar(sock, 'principal');
       resumenDiario.iniciar(sock, 'principal', config.PREFIXES[0]);

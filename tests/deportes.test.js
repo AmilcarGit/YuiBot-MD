@@ -267,7 +267,9 @@ test('.envivo muestra solo lo que se juega y avisa cuando no hay nada', async ()
   try { await cmd('envivo').execute(sock, msg, [], { config }) } finally { red.restaurar() }
   let t = textoDe(sock.enviados[0])
   assert.ok(t.includes('Alianza Lima') && !t.includes('Sporting Cristal') && t.includes('1 partido'))
-  red = simularRed([['per.1/', { events: [evento({ estado: 'pre', fecha: new Date(Date.now() + 3600000).toISOString() })] }]])
+  // Un partido más tarde HOY (hora de Perú): 1 h adelante, pero sin pasar de la medianoche.
+  const finDeHoy = Math.ceil((Date.now() - 5 * 3600000 + 1) / 86400000) * 86400000 + 5 * 3600000
+  red = simularRed([['per.1/', { events: [evento({ estado: 'pre', fecha: new Date(Math.min(Date.now() + 3600000, finDeHoy - 1000)).toISOString() })] }]])
   sock = crearSock()
   try { await cmd('envivo').execute(sock, msg, [], { config }) } finally { red.restaurar() }
   t = textoDe(sock.enviados[0])
