@@ -72,7 +72,7 @@ test('ajustes: solo se activa con repo válido y token; mínimo 5 minutos', () =
   const a = R.leerAjustes({ RESPALDO_REPO: 'https://github.com/yo/datos.git', RESPALDO_TOKEN: 't', RESPALDO_CADA_MIN: '1' })
   assert.deepEqual([a.activo, a.repo, a.minutos], [true, 'yo/datos', 5])
   assert.equal(R.leerAjustes({ RESPALDO_REPO: 'a/b', RESPALDO_TOKEN: 't' }).minutos, 60)
-  assert.deepEqual(R.leerAjustes({ RESPALDO_REPO: 'a/b', RESPALDO_TOKEN: 't' }).excluir, ['api-proveedores.json'])
+  assert.deepEqual(R.leerAjustes({ RESPALDO_REPO: 'a/b', RESPALDO_TOKEN: 't' }).excluir, ['api-proveedores.json', 'sync-clave.json'])
 })
 
 test('el token nunca aparece en los mensajes de error', () => {

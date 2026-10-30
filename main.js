@@ -35,6 +35,7 @@ const verUnaVez = require('./lib/verUnaVez');
 const { crearCacheGrupos } = require('./lib/cacheGrupos');
 const { crearLimiteComandos } = require('./lib/limiteComandos');
 const respaldoNube = require('./lib/respaldoNube');
+const sincronizacion = require('./lib/sincronizacion');
 const cacheGrupos = crearCacheGrupos();
 const limiteComandos = crearLimiteComandos();
 const config = require('./defaults');
@@ -143,6 +144,7 @@ let detenerAlertasRed = null;
 // El respaldo avisa al primer owner por este socket (se actualiza en cada reconexión).
 let sockRespaldo = null;
 let detenerRespaldo = null;
+let detenerSync = null;
 
 async function startBot() {
   // Instalación nueva con respaldo configurado: recupera los datos antes de empezar.
@@ -252,6 +254,17 @@ async function startBot() {
       sockRespaldo = sock;
       if (!detenerRespaldo) {
         detenerRespaldo = respaldoNube.iniciar({
+          log: (t) => console.log(t),
+          avisar: async (texto) => {
+            const dueno = config.OWNERS?.[0]?.numero;
+            if (dueno && sockRespaldo) await sockRespaldo.sendMessage(`${dueno}@s.whatsapp.net`, { text: texto });
+          },
+        });
+      }
+
+      if (!detenerSync) {
+        detenerSync = sincronizacion.iniciar({
+          ajustes: sincronizacion.leerAjustes(config),
           log: (t) => console.log(t),
           avisar: async (texto) => {
             const dueno = config.OWNERS?.[0]?.numero;

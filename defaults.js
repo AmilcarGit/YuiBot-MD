@@ -31,6 +31,9 @@ module.exports = {
   ANTIBAN: { ENABLED: true, MIN_CHAT_MS: 500, JITTER_MS: 250, MIN_GLOBAL_MS: 100, MAX_COLA_CHAT: 40 },
   // Máximo de comandos por persona en una ventana (los owners no tienen límite). Evita ráfagas de respuestas.
   LIMITE_COMANDOS: { ENABLED: true, MAX: 6, VENTANA_MS: 10000, AVISO_MS: 30000 },
+  // Base de datos compartida entre instalaciones (repositorio YuiBot-datos desplegado en Vercel).
+  // Con URL vacía queda apagada y el bot trabaja solo con sus archivos locales. También se puede poner en el .env (SYNC_URL).
+  SYNC: { ENABLED: true, URL: 'https://yuibot-datos.vercel.app', INTERVALO_MS: 120000, LOTE: 100 },
   // Logs de consola. LOG_MENSAJES imprime el texto de cada mensaje que recibe
   // el bot (útil para depurar, pero ruidoso y guarda conversaciones en los
   // logs de PM2); ponlo en false para registrar solo eventos del bot.
