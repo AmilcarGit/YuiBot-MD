@@ -33,6 +33,7 @@ const { crearColaEnvio } = require('./lib/colaEnvio');
 const proteccion = require('./lib/proteccion');
 const verUnaVez = require('./lib/verUnaVez');
 const identidad = require('./lib/identidad');
+const bienvenida = require('./lib/bienvenida');
 const misiones = require('./lib/misiones');
 const { crearCacheGrupos } = require('./lib/cacheGrupos');
 const { crearLimiteComandos } = require('./lib/limiteComandos');
@@ -71,6 +72,7 @@ function printBanner({ totalComandos }) {
   console.log(`${col.morado}└${linea}┘${col.reset}\n`);
 }
 
+let bienvenidaMostrada = false;
 let metodoElegido = null;
 let mantenimientoIniciado = false;
 let detenerHeartbeatPrincipal = null;
@@ -185,7 +187,17 @@ async function startBot() {
   cachedGroupMetadata = cacheGrupos.instalar(sock);
 
   const { commands, categories, hooks } = loadCommands();
-  printBanner({ totalComandos: [...new Set(commands.values())].length });
+  const totalComandos = [...new Set(commands.values())].length;
+  if (!bienvenidaMostrada && config.BANNER?.FLOR !== false) {
+    // Primera vez del proceso: la flor florece. En las reconexiones solo se muestra el cuadro corto de siempre.
+    bienvenidaMostrada = true;
+    await bienvenida.mostrar({
+      animado: config.BANNER?.ANIMADO !== false,
+      datos: { nombre: config.BOT_NAME, version: config.BOT_VERSION, prefijos: config.PREFIXES, sinPrefijo: Boolean(config.ALLOW_NO_PREFIX), comandos: totalComandos, ia: Boolean(config.IA_ENABLED), node: process.version },
+    });
+  } else {
+    printBanner({ totalComandos });
+  }
   iniciarMantenimiento();
 
   if (usePairingCode) {
