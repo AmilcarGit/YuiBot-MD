@@ -4,7 +4,7 @@ const assert = require('node:assert/strict')
 const path = require('path')
 const { respaldar } = require('./_util')
 
-const restaurar = respaldar([path.join(__dirname, '..', 'data', 'usuarios.json'), path.join(__dirname, '..', 'data', 'trabajos.json')])
+const restaurar = respaldar([path.join(__dirname, '..', 'data', 'usuarios.json'), path.join(__dirname, '..', 'data', 'trabajos.json'), path.join(__dirname, '..', 'data', 'misiones.json')])
 test.after(() => restaurar())
 
 const config = require('../defaults')

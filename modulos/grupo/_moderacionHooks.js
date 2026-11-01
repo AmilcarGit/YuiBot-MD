@@ -13,6 +13,7 @@ const { isOwner } = require('../../lib/handler')
 const { contieneLink, detectarFlood, esAdminDeGrupo } = require('../../lib/moderacion')
 const { registrarAvisoAntilink, reiniciarAvisosAntilink } = require('../../lib/db')
 const { estaEnWhitelist } = require('../../lib/whitelist')
+const escudo = require('../../lib/escudo')
 
 module.exports = {
   /**
@@ -23,7 +24,8 @@ module.exports = {
 
     if (!esGrupo || msg.key.fromMe) return
 
-    const antilinkActivo = config.MODERACION?.ANTILINK?.ENABLED
+    // Si el grupo activó el antilink del escudo (.escudo antilink on), este se encarga y el global se aparta.
+    const antilinkActivo = config.MODERACION?.ANTILINK?.ENABLED && !escudo.configGrupo(jid).antilink
     const antifloodActivo = config.MODERACION?.ANTIFLOOD?.ENABLED
     if (!antilinkActivo && !antifloodActivo) return
 

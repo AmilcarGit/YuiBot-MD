@@ -29,6 +29,8 @@ module.exports = {
       )
     }
 
+    try { require('../../lib/misiones').avanzar(numero, 'daily', 1) } catch { /* no es crítico */ }
+
     await sock.sendMessage(
       jid,
       {

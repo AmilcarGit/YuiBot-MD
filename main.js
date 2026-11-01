@@ -33,6 +33,7 @@ const { crearColaEnvio } = require('./lib/colaEnvio');
 const proteccion = require('./lib/proteccion');
 const verUnaVez = require('./lib/verUnaVez');
 const identidad = require('./lib/identidad');
+const misiones = require('./lib/misiones');
 const { crearCacheGrupos } = require('./lib/cacheGrupos');
 const { crearLimiteComandos } = require('./lib/limiteComandos');
 const respaldoNube = require('./lib/respaldoNube');
@@ -453,6 +454,7 @@ async function startBot() {
         }
 
         if (resultadoXp) {
+          try { misiones.avanzar(numeroRemitente, 'chat', 1); } catch { /* no es crítico */ }
           const nuevosLogros = logros.evaluar(numeroRemitente);
           if (nuevosLogros.length) {
             const premio = nuevosLogros.reduce((t, l) => t + l.premio, 0);
