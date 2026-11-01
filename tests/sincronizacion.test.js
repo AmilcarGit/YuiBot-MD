@@ -275,3 +275,31 @@ test('contrato con el servidor real de YuiBot-datos', { skip: !hayServidor && 'r
   assert.ok((await SV.top({ almacen, campo: 'monedas', limite: 25 })).top.some((f) => f.valor === 1050 && f.visible === '519•••999'.replace('999', n.slice(-3))))
   assert.ok((await SV.top({ almacen, campo: 'trabajos', limite: 25 })).top.some((f) => f.valor === 90))
 })
+
+test('reinicio de la base: el bot no pisa sus datos y vuelve a subirlos limpios', { skip: !hayServidor && 'repo YuiBot-datos no encontrado' }, async () => {
+  const A = require(path.join(dirServidor, 'lib', 'almacen')); const SV = require(path.join(dirServidor, 'lib', 'servicio')); const SG = require(path.join(dirServidor, 'lib', 'seguridad'))
+  const almacen = A.crearMemoria(); const cfg = { ...SG.config({ DATOS_PEPPER: 'pimienta' }), adminToken: 'adm' }
+  const fetchFn = async (url, op) => {
+    const ruta = url.replace('https://prueba.vercel.app', '')
+    const res = (status, d) => ({ ok: status < 300, status, json: async () => d })
+    try {
+      if (ruta === '/api/registrar') return res(200, { ok: true, ...(await SV.registrarInstalacion({ almacen, cfg, ip: '1.1.1.1' })) })
+      if (ruta === '/api/sync') { await SV.autenticar({ almacen, cfg, id: op.headers['x-instalacion'], clave: op.headers['x-clave'] }); return res(200, await SV.sincronizar({ almacen, cfg, instalacionId: op.headers['x-instalacion'], cuerpo: JSON.parse(op.body) })) }
+    } catch (e) { return res(e.estado || 500, { ok: false, error: e.message }) }
+    return res(404, {})
+  }
+  const r = rutas(); limpiarRutas(r)
+  const n = nuevoNumero()
+  db.guardarUsuario(n, { monedas: 800, xp: 300, actualizado: Date.now() })
+  await S.sincronizarAhora({ ajustes, fetchFn, rutas: r })
+  assert.equal(JSON.parse(fs.readFileSync(r.base, 'utf8')).epoca, '0', 'aprende la época del servidor')
+  await SV.reiniciarDatos({ almacen, cfg, token: 'adm', confirmar: 'REINICIAR' })
+  db.guardarUsuario(n, { monedas: db.obtenerUsuario(n).monedas + 25 }) // cambia algo para que haya envío
+  const c1 = await S.sincronizarAhora({ ajustes, fetchFn, rutas: r })
+  assert.equal(c1.reinicio, true)
+  assert.equal(db.obtenerUsuario(n).monedas, 825, 'los datos locales quedan intactos')
+  assert.equal((await SV.top({ almacen, campo: 'monedas', limite: 25 })).top.length, 0, 'el envío viejo no se aplicó')
+  await S.sincronizarAhora({ ajustes, fetchFn, rutas: r })
+  assert.equal(db.obtenerUsuario(n).monedas, 825)
+  assert.ok((await SV.top({ almacen, campo: 'monedas', limite: 25 })).top.some((f) => f.valor === 825), 'volvió a subir todo')
+})
