@@ -64,3 +64,19 @@ test('unirLid sin relación conocida no toca nada', () => {
   assert.equal(I.unirLid('184444444444444'), 0)
   assert.equal(db.obtenerUsuario('184444444444444').monedas, 7)
 })
+
+test('aprende de los datos del grupo y de la propia cuenta, y une lo guardado', () => {
+  db.guardarUsuario('185555555555555', { monedas: 40 })
+  const n = I.aprenderDeMetadata({ participants: [
+    { id: '185555555555555@lid', phoneNumber: '51910000555@s.whatsapp.net' },
+    { id: '51910000666@s.whatsapp.net', lid: '186666666666666@lid' },
+    { id: '51910000777@s.whatsapp.net' }, { id: 'x@lid' },
+  ] })
+  assert.equal(n, 2)
+  assert.equal(I.numeroDe('186666666666666@lid'), '51910000666')
+  assert.equal(db.obtenerUsuario('51910000555').monedas, 40); assert.equal(db.obtenerUsuario('185555555555555'), null)
+  assert.equal(I.aprenderDeMetadata({ participants: [{ id: '185555555555555@lid', phoneNumber: '51910000555@s.whatsapp.net' }] }), 0, 'ya sabido')
+  assert.equal(I.aprenderDelSocket({ user: { id: '51910000888:7@s.whatsapp.net', lid: '187777777777777:7@lid' } }), true)
+  assert.equal(I.numeroDe('187777777777777@lid'), '51910000888')
+  assert.equal(I.aprenderDeMetadata(null), 0)
+})

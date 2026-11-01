@@ -267,6 +267,18 @@ async function startBot() {
       detenerHeartbeatPrincipal = iniciarHeartbeat(ID_PRINCIPAL);
 
       sockRespaldo = sock;
+
+      // Aprende quién es quién (LID ↔ teléfono) con la propia cuenta y los grupos, y une lo guardado bajo un LID.
+      setTimeout(async () => {
+        try {
+          identidad.aprenderDelSocket(sock);
+          const grupos = await sock.groupFetchAllParticipating();
+          let nuevos = 0;
+          for (const g of Object.values(grupos || {})) nuevos += identidad.aprenderDeMetadata(g);
+          const unidos = identidad.unirTodos();
+          if (nuevos || unidos) console.log(`[IDENTIDAD] ${nuevos} relación(es) LID→teléfono aprendida(s); ${unidos} registro(s) unido(s).`);
+        } catch (e) { console.error('[IDENTIDAD] No se pudo revisar los grupos:', e?.message || e); }
+      }, 20000).unref?.();
       if (!detenerRespaldo) {
         detenerRespaldo = respaldoNube.iniciar({
           log: (t) => console.log(t),
