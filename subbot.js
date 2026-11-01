@@ -262,6 +262,8 @@ async function startSubBot() {
   sock.ev.on('messages.upsert', async ({ messages, type }) => {
     if (!messages?.length || type !== 'notify') return
 
+    for (const m of messages) { try { require('./lib/identidad').normalizarMensaje(m) } catch { /* nunca debe romper un mensaje */ } }
+
     for (const msg of messages) {
       const key = msg.key || {}
       const jid = key.remoteJid || key.remoteJidAlt || ''

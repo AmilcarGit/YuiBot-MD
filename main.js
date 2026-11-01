@@ -32,6 +32,7 @@ const resiliencia = require('./lib/resiliencia');
 const { crearColaEnvio } = require('./lib/colaEnvio');
 const proteccion = require('./lib/proteccion');
 const verUnaVez = require('./lib/verUnaVez');
+const identidad = require('./lib/identidad');
 const { crearCacheGrupos } = require('./lib/cacheGrupos');
 const { crearLimiteComandos } = require('./lib/limiteComandos');
 const respaldoNube = require('./lib/respaldoNube');
@@ -149,6 +150,7 @@ let detenerSync = null;
 async function startBot() {
   // Instalación nueva con respaldo configurado: recupera los datos antes de empezar.
   await respaldoNube.restaurarSiVacia({ log: (t) => console.log(t) });
+  try { const u = identidad.unirTodos(); if (u) console.log(`[IDENTIDAD] ${u} registro(s) con LID se unieron a su teléfono.`); } catch { /* no es crítico */ }
   const {
     default: makeWASocket,
     useMultiFileAuthState,
@@ -520,6 +522,9 @@ async function startBot() {
 
   sock.ev.on('messages.upsert', async ({ messages, type }) => {
     if (type !== 'notify' || !messages?.length) return;
+
+    // Antes de nada: que todos (comandos y escuchas temporales) vean el teléfono real y no un LID.
+    for (const m of messages) { try { identidad.normalizarMensaje(m); } catch { /* nunca debe romper un mensaje */ } }
 
     for (const msg of messages) {
       // Un mensaje que falla no debe impedir que se procesen los demás del lote.
