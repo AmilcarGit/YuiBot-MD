@@ -62,7 +62,7 @@ test('anime MAL: adapta payload', async () => {
 
 test('si ninguna ruta responde, el error es claro y no revienta', async () => {
   almacenRutas.guardar({})
-  await assert.rejects(delirius.buscarAnimeMAL('x', async () => { throw new Error('red') }), /formato esperado/)
+  await assert.rejects(delirius.buscarAnimeMAL('x', async () => { throw new Error('red') }), /no responde ahora/)
   await assert.rejects(delirius.buscarAnimeMAL('x', async () => ({ ok: true, json: async () => ({ status: false, message: 'Sin resultados' }) })), /Sin resultados/)
 })
 
@@ -76,4 +76,11 @@ test('diagnosticar informa el código de cada ruta y fijarRuta la guarda', async
   assert.equal(almacenRutas.leer().minecraftnews.ruta, '/news/otra')
   assert.throws(() => delirius.fijarRuta('minecraftnews', '../x'), /no válida/)
   await assert.rejects(delirius.diagnosticar('nada'), /desconocida/)
+})
+
+test('si Delirius está caído (5xx o sin red) lo dice distinto a "ruta incorrecta"', async () => {
+  almacenRutas.guardar({})
+  await assert.rejects(delirius.buscarAnimeMAL('x', async () => ({ ok: false, status: 503 })), /no responde ahora/)
+  await assert.rejects(delirius.buscarAnimeMAL('x', async () => { throw new Error('red') }), /no responde ahora/)
+  await assert.rejects(delirius.buscarAnimeMAL('x', async () => ({ ok: false, status: 404 })), /formato esperado/)
 })
