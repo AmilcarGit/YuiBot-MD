@@ -65,3 +65,15 @@ test('si ninguna ruta responde, el error es claro y no revienta', async () => {
   await assert.rejects(delirius.buscarAnimeMAL('x', async () => { throw new Error('red') }), /formato esperado/)
   await assert.rejects(delirius.buscarAnimeMAL('x', async () => ({ ok: true, json: async () => ({ status: false, message: 'Sin resultados' }) })), /Sin resultados/)
 })
+
+test('diagnosticar informa el código de cada ruta y fijarRuta la guarda', async () => {
+  almacenRutas.guardar({})
+  const f = async (url) => { const ok = new URL(url).pathname === '/news/minecraft'; return { status: ok ? 200 : 404, text: async () => (ok ? '{"status":true}' : 'Not found') } }
+  const filas = await delirius.diagnosticar('minecraftnews', undefined, f)
+  assert.equal(filas.find((x) => x.ruta === '/news/minecraft').http, 200)
+  assert.equal(filas.filter((x) => x.http === 404).length, filas.length - 1)
+  delirius.fijarRuta('minecraftnews', '/news/otra', null)
+  assert.equal(almacenRutas.leer().minecraftnews.ruta, '/news/otra')
+  assert.throws(() => delirius.fijarRuta('minecraftnews', '../x'), /no válida/)
+  await assert.rejects(delirius.diagnosticar('nada'), /desconocida/)
+})

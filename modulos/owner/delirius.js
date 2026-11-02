@@ -45,11 +45,26 @@ module.exports = {
     const jid = msg.key.remoteJid
     const P = config?.PREFIXES?.[0] || '.'
     const responder = (text) => sock.sendMessage(jid, { text }, { quoted: msg })
+    const sub = String(args[0] || '').toLowerCase()
+    if (sub === 'probar' || sub === 'fijar') {
+      const clave = String(args[1] || '').toLowerCase()
+      try {
+        if (sub === 'probar') {
+          const filas = await delirius.diagnosticar(clave, args.slice(2).join(' ') || undefined)
+          return responder(caja('🩺', `Diagnóstico ${clave}`, filas.map((f) => `${f.http === 200 ? '✅' : f.http === 404 ? '▫️' : '⚠️'} ${f.http} ${f.ruta}\n   ${f.resumen}`),
+            `✅ 200 = funciona · ⚠️ otro código = la ruta existe, falta ajustar · ▫️ 404 = no existe\nFijar: ${P}delirius fijar ${clave} /ruta parametro`))
+        }
+        delirius.fijarRuta(clave, args[2] || '', args[3])
+        return responder(`✅ ${clave} ahora usa ${args[2]}${args[3] ? ` (parámetro ${args[3]})` : ''}.`)
+      } catch (e) { return responder(`❌ ${e.message}`) }
+    }
     const ruta = args[0]
     if (!ruta) return responder(caja('🧪', 'Probar Delirius', [
       `${P}delirius /ruta clave=valor ; otra=valor`,
       `${P}delirius /search/lyrics monaco`,
       `${P}delirius /search/spotify q=bad bunny`,
+      `${P}delirius probar minecraftnews  (prueba todas las rutas)`,
+      `${P}delirius fijar <clave> /ruta [parametro]`,
       null,
       'Sin "=" el texto se manda como q=…',
       `Agrega "forma" al final para ver solo la estructura.`,
