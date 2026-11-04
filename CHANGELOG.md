@@ -5,6 +5,9 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
 ## [Sin publicar]
 
+### Corregido
+- **Fotos que no se suben** (`Media upload failed on all hosts`, común en Termux con red lenta): si WhatsApp no deja subir una imagen/video/documento que trae texto (bienvenidas, perfiles, noticias…), la cola de envío manda solo el texto en vez de perder el mensaje. 2 pruebas nuevas.
+
 ### Añadido
 - **`.delirius probar <clave>` y `.delirius fijar <clave> /ruta [parámetro]`** (owners): `probar` consulta todas las rutas candidatas de un comando (`minecraftnews`, `robloxstalk`, `tiktokstalk`, `igstalk`, `anime-mal`) y muestra el código HTTP de cada una; `fijar` guarda la ruta correcta en `data/delirius-rutas.json`. Más rutas candidatas para las noticias de Minecraft.
 - **5 comandos con Delirius**: `.robloxstalk` (perfil de Roblox con seguidores, amigos, juegos creados y foto), `.tiktokstalk`, `.igstalk`, `.minecraftnews [página]` (noticias oficiales, 6 por página con la portada) y `.animemal <nombre>` (lista de resultados de MyAnimeList; `.anime` sigue dando la ficha completa). Como Delirius no publica sus rutas, cada uno prueba rutas y parámetros probables y **recuerda la que responde con el formato esperado** (`data/delirius-rutas.json`, editable a mano). Si ninguna sirve, el error lo dice y se diagnostica con `.delirius`. 6 pruebas nuevas.

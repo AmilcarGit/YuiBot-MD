@@ -99,3 +99,29 @@ test('la configuración por defecto activa la despedida y la cola anti-ban', () 
   assert.equal(config.ANTIBAN.ENABLED, true)
   assert.ok(config.ANTIBAN.MIN_CHAT_MS >= 500)
 })
+
+test('si falla la subida de la imagen, manda solo el texto del pie', async () => {
+  const enviados = []
+  const sock = {
+    async sendMessage(jid, contenido) {
+      enviados.push(contenido)
+      if (contenido.image) throw new Error('Media upload failed on all hosts')
+      return { key: { id: 'ok' } }
+    },
+  }
+  const cola = crearColaEnvio(rapido)
+  const s = cola.envolver(sock)
+  const r = await s.sendMessage('chat1', { image: Buffer.from('x'), caption: 'Hola *mundo*', mentions: ['1@s.whatsapp.net'] })
+  assert.equal(r.key.id, 'ok')
+  assert.match(enviados[1].text, /^Hola \*mundo\*/)
+  assert.deepEqual(enviados[1].mentions, ['1@s.whatsapp.net'])
+  assert.equal(cola.estado().sinArchivo, 1)
+})
+
+test('sin texto de respaldo o con otro error, el fallo se propaga igual', async () => {
+  const cola = crearColaEnvio(rapido)
+  const s1 = cola.envolver({ async sendMessage() { throw new Error('Media upload failed on all hosts') } })
+  await assert.rejects(s1.sendMessage('c1', { image: Buffer.from('x') }), /upload failed/)
+  const s2 = crearColaEnvio(rapido).envolver({ async sendMessage() { throw new Error('otro') } })
+  await assert.rejects(s2.sendMessage('c2', { image: Buffer.from('x'), caption: 'hola' }), /otro/)
+})
