@@ -84,3 +84,18 @@ test('si Delirius está caído (5xx o sin red) lo dice distinto a "ruta incorrec
   await assert.rejects(delirius.buscarAnimeMAL('x', async () => { throw new Error('red') }), /no responde ahora/)
   await assert.rejects(delirius.buscarAnimeMAL('x', async () => ({ ok: false, status: 404 })), /formato esperado/)
 })
+
+test('anime: usa /anime/animesearch?query= primero', async () => {
+  almacenRutas.guardar({})
+  const f = falso('/anime/animesearch', 'query', { status: true, data: [{ id: 20, name: 'Naruto', url: 'u', payload: { media_type: 'TV', start_year: 2002, score: '8.03', status: 'x' } }] })
+  const l = await delirius.buscarAnimeMAL('Naruto', f)
+  assert.equal(l[0].nombre, 'Naruto')
+  assert.equal(new URL(f.llamadas[0]).pathname, '/anime/animesearch')
+})
+
+test('chatgpt quita el enlace de tarjeta del inicio', () => {
+  const { limpiarRespuestaIA } = delirius._internos
+  assert.equal(limpiarRespuestaIA('http://googleusercontent.com/card_content/0\nCurrent weather: 47°F'), 'Current weather: 47°F')
+  assert.equal(limpiarRespuestaIA('Hola, ¿cómo estás?'), 'Hola, ¿cómo estás?')
+  assert.equal(limpiarRespuestaIA('http://googleusercontent.com/card_content/0'), 'http://googleusercontent.com/card_content/0')
+})
