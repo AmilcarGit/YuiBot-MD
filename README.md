@@ -7,7 +7,7 @@
 [![CI](https://img.shields.io/github/actions/workflow/status/AmilcarGit/YuiBot-MD/ci.yml?branch=main&style=for-the-badge&logo=githubactions&logoColor=white&label=CI)](https://github.com/AmilcarGit/YuiBot-MD/actions/workflows/ci.yml)
 [![Node.js](https://img.shields.io/badge/Node.js-%E2%89%A5%2020-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
 [![WhatsApp](https://img.shields.io/badge/WhatsApp-Multi--Device-25D366?style=for-the-badge&logo=whatsapp&logoColor=white)](https://www.whatsapp.com/)
-[![Comandos](https://img.shields.io/badge/Comandos-238-ff69b4?style=for-the-badge)](#-comandos)
+[![Comandos](https://img.shields.io/badge/Comandos-239-ff69b4?style=for-the-badge)](#-comandos)
 [![PM2](https://img.shields.io/badge/PM2-ready-2B037A?style=for-the-badge&logo=pm2&logoColor=white)](#-producción-con-pm2)
 [![Licencia](https://img.shields.io/badge/Licencia-MIT-blue?style=for-the-badge)](LICENSE)
 
@@ -208,6 +208,7 @@ Todas las instalaciones de YuiBot-MD pueden compartir el registro de cada person
 - Se **suman** monedas, XP, mensajes, reputación y ganancias de trabajos entre instalaciones; mejoras, rachas y esperas se quedan con el mayor; inventario y logros se juntan; el resto gana lo más reciente.
 - Los números de teléfono **no se guardan** en el servidor (solo un código irreversible); el ranking los muestra enmascarados (`519•••479`).
 - Si no quieres compartir tus datos, pon `SYNC: { ENABLED: false }` o `SYNC_ENABLED=false` en el `.env`.
+- Tema visual: `.tema navidad|normal|auto` (owners). En auto, Navidad del 1 de diciembre al 6 de enero.
 - Perfiles y noticias (Delirius): `.robloxstalk` · `.tiktokstalk` · `.igstalk` · `.minecraftnews` · `.animemal`.
 - Comandos: `.misionesdia` (3 misiones diarias con bono por racha) · `.escudo` (antidelete, antispam, antiflood, antilink por grupo con castigo gradual y silencios) · `.topglobal [monedas|xp|trabajos|semana]` (ranking mundial, para todos) y `.sincronizar` / `.sincronizar estado` (owners).
 - Para usar tu propia base: despliega YuiBot-datos en tu Vercel y pon su URL en `SYNC_URL` (`.env`).
@@ -269,7 +270,7 @@ Cualquier persona puede tener su propio bot usando tu servidor:
 
 ## 📜 Comandos
 
-El bot trae **238 comandos** organizados por categoría. Usa `.menu` para la portada (tu nivel, barra de XP, racha, logros, novedades y un consejo del día) y toca **📂 Abrir menú**: arriba están los accesos rápidos y debajo todos los comandos, que se ejecutan al tocarlos. Además: `.menu <categoría>` (ej. `.menu juegos`, con lista para tocar y botones a la categoría anterior/siguiente), `.menu <palabra>` para buscar, `.menu novedades`, `.menu populares` (lo más usado), `.menu categorias`, `.menu azar` (un comando sorpresa), `.menu consejo` y `.menu todo`. Cada comando tiene su ficha con cómo se usa, cuántas veces se usó y comandos parecidos. Solo ves los comandos que puedes usar.
+El bot trae **239 comandos** organizados por categoría. Usa `.menu` para la portada (tu nivel, barra de XP, racha, logros, novedades y un consejo del día) y toca **📂 Abrir menú**: arriba están los accesos rápidos y debajo todos los comandos, que se ejecutan al tocarlos. Además: `.menu <categoría>` (ej. `.menu juegos`, con lista para tocar y botones a la categoría anterior/siguiente), `.menu <palabra>` para buscar, `.menu novedades`, `.menu populares` (lo más usado), `.menu categorias`, `.menu azar` (un comando sorpresa), `.menu consejo` y `.menu todo`. Cada comando tiene su ficha con cómo se usa, cuántas veces se usó y comandos parecidos. Solo ves los comandos que puedes usar.
 
 | Categoría | Ejemplos |
 |---|---|

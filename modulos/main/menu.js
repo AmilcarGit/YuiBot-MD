@@ -13,6 +13,7 @@
 // límite de WhatsApp.
 
 const fs = require('fs')
+const tema = require('../../lib/tema')
 const { evaluarPermiso } = require('../../lib/permisos')
 const { obtenerUsuario, calcularNivel } = require('../../lib/db')
 const { obtenerRangoPorNivel } = require('../../lib/roles')
@@ -240,7 +241,7 @@ function construirPortada({ msg, config, esSubBot, visibles, totalComandos, pref
   const nuevos = novedadesVisibles(visibles).slice(0, 4)
 
   let t = '╭━━━━━━━━━━━━━━━━━━━━━━━━╮\n'
-  t += `┃     🌸 *${negrita(config.BOT_NAME || 'YuiBot-MD')}* 🌸\n`
+  t += `┃     ${tema.adorno()} *${negrita(config.BOT_NAME || 'YuiBot-MD')}* ${tema.adorno()}\n`
   t += '╰━━━━━━━━━━━━━━━━━━━━━━━━╯\n\n'
   t += `${obtenerSaludo()}, *${nombreUsuario}* ✨\n\n`
 

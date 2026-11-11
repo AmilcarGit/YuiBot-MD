@@ -1,6 +1,7 @@
 const test = require('node:test')
 const assert = require('node:assert/strict')
 const e = require('../lib/estilo')
+require('../lib/tema').forzar('normal')
 
 test('negrita y versalitas', () => {
   assert.equal(e.negrita('Hola 1'), '𝗛𝗼𝗹𝗮 𝟭')
