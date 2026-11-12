@@ -1,13 +1,13 @@
 <div align="center">
 
-<img src="media/banner.svg" alt="YuiBot-MD — Bot de WhatsApp Multi-Device" width="100%"/>
+<img src="media/banner-navidad.svg" alt="YuiBot-MD — Bot de WhatsApp Multi-Device" width="100%"/>
 
 <br/>
 
 [![CI](https://img.shields.io/github/actions/workflow/status/AmilcarGit/YuiBot-MD/ci.yml?branch=main&style=for-the-badge&logo=githubactions&logoColor=white&label=CI)](https://github.com/AmilcarGit/YuiBot-MD/actions/workflows/ci.yml)
 [![Node.js](https://img.shields.io/badge/Node.js-%E2%89%A5%2020-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
 [![WhatsApp](https://img.shields.io/badge/WhatsApp-Multi--Device-25D366?style=for-the-badge&logo=whatsapp&logoColor=white)](https://www.whatsapp.com/)
-[![Comandos](https://img.shields.io/badge/Comandos-239-ff69b4?style=for-the-badge)](#-comandos)
+[![Comandos](https://img.shields.io/badge/Comandos-239-d62839?style=for-the-badge)](#-comandos)
 [![PM2](https://img.shields.io/badge/PM2-ready-2B037A?style=for-the-badge&logo=pm2&logoColor=white)](#-producción-con-pm2)
 [![Licencia](https://img.shields.io/badge/Licencia-MIT-blue?style=for-the-badge)](LICENSE)
 
@@ -24,25 +24,31 @@
 
 </div>
 
----
 
-## 🌸 ¿Qué es YuiBot-MD?
+<p align="center">❄️ 🎄 ❄️ 🎁 ❄️ 🎅 ❄️ 🎄 ❄️</p>
+
+
+## 🎄 ¿Qué es YuiBot-MD?
 
 **YuiBot-MD** es un bot de WhatsApp hecho con **Node.js** sobre [ultra-baileys](https://github.com/russellxz/ultra-baileys), pensado para grupos y comunidades: moderación completa, economía y RPG, descargas, stickers, utilidades y un sistema de **subbots** para que otras personas tengan su propio bot sin duplicar el servidor.
 
 Está diseñado para ser **modular** (cada comando es un archivo), **resistente** (reconexión inteligente y circuit breaker por comando) y **fácil de mantener**.
 
+> 🎅 **¡Felices fiestas!** YuiBot-MD viste su **tema de Navidad** (❄️ cajas con copos, letras cursivas y cuenta regresiva); se activa solo del 1 de diciembre al 6 de enero o con `.tema navidad`.
+
 > 🚧 **Proyecto en desarrollo activo.** Se corrigen y añaden funciones constantemente.
 
----
 
-## ✨ Características
+<p align="center">❄️ 🎄 ❄️ 🎁 ❄️ 🎅 ❄️ 🎄 ❄️</p>
+
+
+## 🌟 Características
 
 <table>
 <tr>
 <td width="50%" valign="top">
 
-### 🛡️ Moderación de grupos
+### 🎅 Moderación de grupos
 - **Antilink** y **antiflood** (con avisos y expulsión automática), **antiinsultos**
 - **Antiraid**, **antifake**, **antibot**
 - Filtros por tipo: audio, documento, imagen, sticker y video
@@ -54,7 +60,7 @@ Está diseñado para ser **modular** (cada comando es un archivo), **resistente*
 </td>
 <td width="50%" valign="top">
 
-### 🤖 Subbots
+### 🦌 Subbots
 - Vincula otro número con un **código de emparejamiento**
 - Cada subbot corre en su propio proceso
 - **Liderazgo por grupo**: si hay varios bots, solo uno responde
@@ -66,7 +72,7 @@ Está diseñado para ser **modular** (cada comando es un archivo), **resistente*
 <tr>
 <td valign="top">
 
-### 🎮 Economía y RPG
+### 🎁 Economía y RPG
 - Monedas, `daily`, tienda e inventario
 - XP y niveles por actividad en el grupo
 - Duelos, jefes, misiones y loot
@@ -76,7 +82,7 @@ Está diseñado para ser **modular** (cada comando es un archivo), **resistente*
 </td>
 <td valign="top">
 
-### 📥 Multimedia y utilidades
+### 🎀 Multimedia y utilidades
 - Descargas de YouTube, TikTok e Instagram
 - Stickers, `brat`, `emojimix`, búsqueda de stickers
 - Generador de imágenes: logo, tweet, wanted, quote…
@@ -88,7 +94,7 @@ Está diseñado para ser **modular** (cada comando es un archivo), **resistente*
 <tr>
 <td valign="top">
 
-### 🔁 Resiliencia
+### 🔔 Resiliencia
 - Reconexión con **backoff exponencial**
 - Cooldown automático ante el error **405** de WhatsApp
 - **Circuit breaker**: un comando que falla repetido se desactiva solo
@@ -98,7 +104,7 @@ Está diseñado para ser **modular** (cada comando es un archivo), **resistente*
 </td>
 <td valign="top">
 
-### 🧩 Arquitectura limpia
+### 🧦 Arquitectura limpia
 - **Hooks** (`onMessage`, `onGroupUpdate`) para añadir moderación sin tocar el núcleo
 - Permisos centralizados (`ownerOnly` / `subbotOwnerOnly`)
 - Gestor de **proveedores de API** con on/off en caliente
@@ -119,9 +125,11 @@ Está diseñado para ser **modular** (cada comando es un archivo), **resistente*
 </tr>
 </table>
 
----
 
-## 🏗️ Arquitectura
+<p align="center">❄️ 🎄 ❄️ 🎁 ❄️ 🎅 ❄️ 🎄 ❄️</p>
+
+
+## 🛷 Arquitectura
 
 ```mermaid
 flowchart LR
@@ -137,7 +145,9 @@ flowchart LR
     M -. presencia .- N
 ```
 
----
+
+<p align="center">❄️ 🎄 ❄️ 🎁 ❄️ 🎅 ❄️ 🎄 ❄️</p>
+
 
 ## 🚀 Instalación
 
@@ -198,9 +208,11 @@ Luego sigue la sección de [PM2](#-producción-con-pm2) para dejarlo corriendo 2
 
 </details>
 
----
 
-## 🌐 Base de datos compartida entre instalaciones
+<p align="center">❄️ 🎄 ❄️ 🎁 ❄️ 🎅 ❄️ 🎄 ❄️</p>
+
+
+## 🍪 Base de datos compartida entre instalaciones
 
 Todas las instalaciones de YuiBot-MD pueden compartir el registro de cada persona (monedas, XP, nivel, registro, trabajos, mejoras, logros) mediante una API pequeña en Vercel: el repositorio [YuiBot-datos](https://github.com/AmilcarGit/YuiBot-datos). **No tienes que configurar nada**: la dirección viene en `SYNC.URL` de `defaults.js`.
 
@@ -213,7 +225,7 @@ Todas las instalaciones de YuiBot-MD pueden compartir el registro de cada person
 - Comandos: `.misionesdia` (3 misiones diarias con bono por racha) · `.escudo` (antidelete, antispam, antiflood, antilink por grupo con castigo gradual y silencios) · `.topglobal [monedas|xp|trabajos|semana]` (ranking mundial, para todos) y `.sincronizar` / `.sincronizar estado` (owners).
 - Para usar tu propia base: despliega YuiBot-datos en tu Vercel y pon su URL en `SYNC_URL` (`.env`).
 
-## ☁️ Respaldo automático de tus datos
+## 🥛 Respaldo automático de tus datos
 
 El bot puede copiar solo la carpeta `data/` (monedas, niveles, trabajos, grupos…) a un **repositorio privado tuyo de GitHub**, para no perder nada si cambias de celular o reinstalas.
 
@@ -228,7 +240,7 @@ El bot puede copiar solo la carpeta `data/` (monedas, niveles, trabajos, grupos�
 - Comando para owners (solo bot principal): `.respaldonube` (subir ahora), `.respaldonube estado` y `.respaldonube restaurar confirmar` (guarda antes una copia en `backups/`).
 - Si falla, avisa al owner una sola vez y otra cuando se recupera. El token nunca se imprime.
 
-## 🧰 Producción con PM2
+## 🎺 Producción con PM2
 
 El repositorio incluye `ecosystem.config.cjs`, que levanta el bot principal y **detecta automáticamente los subbots ya vinculados**.
 
@@ -242,9 +254,11 @@ pm2 save && pm2 startup   # arrancar con el sistema
 
 > 💡 Con PM2 también funcionan `update` (hace `git pull` y reinicia), `reconectar` y `reloadsubbots`.
 
----
 
-## 🤖 Subbots
+<p align="center">❄️ 🎄 ❄️ 🎁 ❄️ 🎅 ❄️ 🎄 ❄️</p>
+
+
+## 🦌 Subbots
 
 Cualquier persona puede tener su propio bot usando tu servidor:
 
@@ -266,7 +280,9 @@ Cualquier persona puede tener su propio bot usando tu servidor:
 
 > 🔐 `eval` y `exec` **solo funcionan en el bot principal** y únicamente para los owners.
 
----
+
+<p align="center">❄️ 🎄 ❄️ 🎁 ❄️ 🎅 ❄️ 🎄 ❄️</p>
+
 
 ## 📜 Comandos
 
@@ -291,9 +307,11 @@ El bot trae **239 comandos** organizados por categoría. Usa `.menu` para la por
 
 > Los prefijos por defecto son `!` `.` `/` `#`, y el bot también acepta comandos **sin prefijo**. Todo es configurable.
 
----
 
-## ⚙️ Configuración
+<p align="center">❄️ 🎄 ❄️ 🎁 ❄️ 🎅 ❄️ 🎄 ❄️</p>
+
+
+## 🍬 Configuración
 
 Casi todo se controla desde **`defaults.js`**:
 
@@ -313,9 +331,11 @@ Casi todo se controla desde **`defaults.js`**:
 
 Las **APIs externas** se administran en caliente con `.apimanager` (activar o desactivar proveedores sin tocar el código). **Yui, la IA conversacional** (`.ia`) responde solo en chats **privados** del bot principal. Con `"enabled": true` en `config/ia.json`, también contesta a cualquier mensaje privado que no sea un comando.
 
----
 
-## 🧩 Crea tu propio comando
+<p align="center">❄️ 🎄 ❄️ 🎁 ❄️ 🎅 ❄️ 🎄 ❄️</p>
+
+
+## 🎁 Crea tu propio comando
 
 La forma más rápida:
 
@@ -370,9 +390,11 @@ Los hooks se ejecutan igual en el bot principal y en los subbots, y un error en 
 
 </details>
 
----
 
-## 📂 Estructura del proyecto
+<p align="center">❄️ 🎄 ❄️ 🎁 ❄️ 🎅 ❄️ 🎄 ❄️</p>
+
+
+## 🎄 Estructura del proyecto
 
 ```text
 YuiBot-MD/
@@ -404,9 +426,11 @@ YuiBot-MD/
 | `npm run smoke` | Carga todos los módulos y detecta nombres/alias duplicados |
 | `npm run pm2:start` · `pm2:restart` · `pm2:logs` | Gestión con PM2 |
 
----
 
-## 🩺 Solución de problemas
+<p align="center">❄️ 🎄 ❄️ 🎁 ❄️ 🎅 ❄️ 🎄 ❄️</p>
+
+
+## 🧣 Solución de problemas
 
 <details>
 <summary><b>❌ <code>Cannot find module '../build/Release/canvas.node'</code></b></summary>
@@ -456,36 +480,46 @@ Revisa que no esté activo `modoadmi` (solo admins pueden usar comandos), que el
 
 </details>
 
----
 
-## 🔐 Seguridad
+<p align="center">❄️ 🎄 ❄️ 🎁 ❄️ 🎅 ❄️ 🎄 ❄️</p>
+
+
+## 🔔 Seguridad
 
 - Los comandos peligrosos (`eval`, `exec`, `update`…) son **solo para owners** y no se ejecutan dentro de subbots.
 - No subas nunca tu carpeta `session/`, `subbots/` ni claves privadas.
 - ¿Encontraste una vulnerabilidad? Lee la [política de seguridad](SECURITY.md) y repórtala en privado.
 
----
+
+<p align="center">❄️ 🎄 ❄️ 🎁 ❄️ 🎅 ❄️ 🎄 ❄️</p>
+
 
 ## 🤝 Contribuir
 
 Las contribuciones son bienvenidas. Lee la [guía de contribución](CONTRIBUTING.md), abre un *Issue* para cambios grandes y ejecuta `npm run check`, `npm test` y `npm run smoke` antes de enviar tu *Pull Request*. El historial de cambios está en el [CHANGELOG](CHANGELOG.md).
 
----
 
-## 🙏 Créditos
+<p align="center">❄️ 🎄 ❄️ 🎁 ❄️ 🎅 ❄️ 🎄 ❄️</p>
+
+
+## 🎶 Créditos
 
 - **[ultra-baileys](https://github.com/russellxz/ultra-baileys)** de russellxz y **[Baileys](https://github.com/WhiskeySockets/Baileys)** — la base de la conexión con WhatsApp.
 - **fsociety-bot** — proyecto de referencia que inspiró varias funciones, adaptadas a la arquitectura de YuiBot-MD.
 - **[AmilcarGit](https://github.com/AmilcarGit)** — creador y mantenedor · **Leo** — colaborador.
 - A todas las personas que prueban, reportan errores y ayudan a mejorar el bot. 💖
 
----
 
-## ⚠️ Aviso
+<p align="center">❄️ 🎄 ❄️ 🎁 ❄️ 🎅 ❄️ 🎄 ❄️</p>
+
+
+## 🕯 Aviso
 
 YuiBot-MD **no está afiliado, asociado ni respaldado por WhatsApp o Meta**. Usar bots en WhatsApp puede incumplir sus términos y provocar el bloqueo de la cuenta; úsalo bajo tu propia responsabilidad y, de preferencia, con un número secundario.
 
----
+
+<p align="center">❄️ 🎄 ❄️ 🎁 ❄️ 🎅 ❄️ 🎄 ❄️</p>
+
 
 <div align="center">
 

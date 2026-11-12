@@ -1,0 +1,139 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="320" viewBox="0 0 1280 320" role="img" aria-labelledby="t d">
+  <title id="t">YuiBot-MD · Navidad</title>
+  <desc id="d">Bot de WhatsApp Multi-Device modular con subbots, moderación, economía y RPG</desc>
+  <defs>
+    <linearGradient id="fondo" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b2a1a"/>
+      <stop offset="0.55" stop-color="#14502f"/>
+      <stop offset="1" stop-color="#a3182b"/>
+    </linearGradient>
+    <linearGradient id="titulo" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#ffe3e3"/>
+    </linearGradient>
+    <linearGradient id="linea" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#ffd36b" stop-opacity="0"/>
+      <stop offset="0.5" stop-color="#ffd36b"/>
+      <stop offset="1" stop-color="#ffd36b" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="difuso" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="38"/>
+    </filter>
+    <clipPath id="redondeado"><rect width="1280" height="320" rx="22"/></clipPath>
+  </defs>
+
+  <g clip-path="url(#redondeado)">
+    <rect width="1280" height="320" fill="url(#fondo)"/>
+
+    <!-- luces difusas -->
+    <circle cx="150" cy="40" r="120" fill="#ff4d5e" opacity="0.45" filter="url(#difuso)"/>
+    <circle cx="1130" cy="290" r="150" fill="#2fbf71" opacity="0.50" filter="url(#difuso)"/>
+    <circle cx="700" cy="-20" r="110" fill="#ffd36b" opacity="0.28" filter="url(#difuso)"/>
+
+    <!-- pétalos decorativos -->
+    <g fill="#ffd1ea" opacity="0.75">
+      <ellipse cx="1040" cy="78" rx="9" ry="5" transform="rotate(-28 1040 78)"/>
+      <ellipse cx="1112" cy="132" rx="7" ry="4" transform="rotate(20 1112 132)"/>
+      <ellipse cx="1190" cy="70" rx="6" ry="3.5" transform="rotate(-50 1190 70)"/>
+      <ellipse cx="96" cy="236" rx="8" ry="4.5" transform="rotate(35 96 236)"/>
+      <ellipse cx="190" cy="274" rx="6" ry="3.5" transform="rotate(-15 190 274)"/>
+      <ellipse cx="1226" cy="214" rx="7" ry="4" transform="rotate(40 1226 214)"/>
+    </g>
+
+    <!-- puntos tipo "red" -->
+    <g fill="#ffffff" opacity="0.18">
+      <circle cx="930" cy="250" r="3"/><circle cx="978" cy="226" r="3"/><circle cx="1022" cy="262" r="3"/>
+      <circle cx="1072" cy="236" r="3"/><circle cx="1118" cy="268" r="3"/>
+    </g>
+    <g stroke="#ffffff" stroke-opacity="0.14" stroke-width="1.2" fill="none">
+      <path d="M930 250 L978 226 L1022 262 L1072 236 L1118 268"/>
+    </g>
+
+    <!-- texto -->
+    <text x="640" y="150" text-anchor="middle" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="92" font-weight="800" letter-spacing="2" fill="url(#titulo)">🎄 YuiBot-MD 🎅</text>
+    <rect x="360" y="178" width="560" height="3" rx="1.5" fill="url(#linea)"/>
+    <text x="640" y="226" text-anchor="middle" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="29" fill="#ffffff" fill-opacity="0.92">Bot de WhatsApp Multi-Device · Modular · Subbots · Moderación · RPG</text>
+    <text x="640" y="272" text-anchor="middle" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="19" letter-spacing="4" fill="#ffe3b0" fill-opacity="0.9">NODE.JS  ·  ULTRA-BAILEYS  ·  PM2  ·  🎁 FELICES FIESTAS</text>
+
+    <!-- guirnalda y nieve -->
+    <path d="M0 14 Q 640 44 1280 14" stroke="#0a1f14" stroke-width="3" fill="none" opacity=".6"/>
+    <circle cx="20" cy="20" r="6" fill="#ff4d5e"><animate attributeName="opacity" values="1;.35;1" dur="1.2s" begin="-0.0s" repeatCount="indefinite"/></circle>
+    <circle cx="60" cy="28" r="6" fill="#ffd36b"><animate attributeName="opacity" values="1;.35;1" dur="1.5s" begin="-0.3s" repeatCount="indefinite"/></circle>
+    <circle cx="100" cy="20" r="6" fill="#4de39a"><animate attributeName="opacity" values="1;.35;1" dur="1.7999999999999998s" begin="-0.6s" repeatCount="indefinite"/></circle>
+    <circle cx="140" cy="28" r="6" fill="#6ab7ff"><animate attributeName="opacity" values="1;.35;1" dur="1.2s" begin="-0.8999999999999999s" repeatCount="indefinite"/></circle>
+    <circle cx="180" cy="20" r="6" fill="#ff4d5e"><animate attributeName="opacity" values="1;.35;1" dur="1.5s" begin="-1.2s" repeatCount="indefinite"/></circle>
+    <circle cx="220" cy="28" r="6" fill="#ffd36b"><animate attributeName="opacity" values="1;.35;1" dur="1.7999999999999998s" begin="-0.0s" repeatCount="indefinite"/></circle>
+    <circle cx="260" cy="20" r="6" fill="#4de39a"><animate attributeName="opacity" values="1;.35;1" dur="1.2s" begin="-0.3s" repeatCount="indefinite"/></circle>
+    <circle cx="300" cy="28" r="6" fill="#6ab7ff"><animate attributeName="opacity" values="1;.35;1" dur="1.5s" begin="-0.6s" repeatCount="indefinite"/></circle>
+    <circle cx="340" cy="20" r="6" fill="#ff4d5e"><animate attributeName="opacity" values="1;.35;1" dur="1.7999999999999998s" begin="-0.8999999999999999s" repeatCount="indefinite"/></circle>
+    <circle cx="380" cy="28" r="6" fill="#ffd36b"><animate attributeName="opacity" values="1;.35;1" dur="1.2s" begin="-1.2s" repeatCount="indefinite"/></circle>
+    <circle cx="420" cy="20" r="6" fill="#4de39a"><animate attributeName="opacity" values="1;.35;1" dur="1.5s" begin="-0.0s" repeatCount="indefinite"/></circle>
+    <circle cx="460" cy="28" r="6" fill="#6ab7ff"><animate attributeName="opacity" values="1;.35;1" dur="1.7999999999999998s" begin="-0.3s" repeatCount="indefinite"/></circle>
+    <circle cx="500" cy="20" r="6" fill="#ff4d5e"><animate attributeName="opacity" values="1;.35;1" dur="1.2s" begin="-0.6s" repeatCount="indefinite"/></circle>
+    <circle cx="540" cy="28" r="6" fill="#ffd36b"><animate attributeName="opacity" values="1;.35;1" dur="1.5s" begin="-0.8999999999999999s" repeatCount="indefinite"/></circle>
+    <circle cx="580" cy="20" r="6" fill="#4de39a"><animate attributeName="opacity" values="1;.35;1" dur="1.7999999999999998s" begin="-1.2s" repeatCount="indefinite"/></circle>
+    <circle cx="620" cy="28" r="6" fill="#6ab7ff"><animate attributeName="opacity" values="1;.35;1" dur="1.2s" begin="-0.0s" repeatCount="indefinite"/></circle>
+    <circle cx="660" cy="20" r="6" fill="#ff4d5e"><animate attributeName="opacity" values="1;.35;1" dur="1.5s" begin="-0.3s" repeatCount="indefinite"/></circle>
+    <circle cx="700" cy="28" r="6" fill="#ffd36b"><animate attributeName="opacity" values="1;.35;1" dur="1.7999999999999998s" begin="-0.6s" repeatCount="indefinite"/></circle>
+    <circle cx="740" cy="20" r="6" fill="#4de39a"><animate attributeName="opacity" values="1;.35;1" dur="1.2s" begin="-0.8999999999999999s" repeatCount="indefinite"/></circle>
+    <circle cx="780" cy="28" r="6" fill="#6ab7ff"><animate attributeName="opacity" values="1;.35;1" dur="1.5s" begin="-1.2s" repeatCount="indefinite"/></circle>
+    <circle cx="820" cy="20" r="6" fill="#ff4d5e"><animate attributeName="opacity" values="1;.35;1" dur="1.7999999999999998s" begin="-0.0s" repeatCount="indefinite"/></circle>
+    <circle cx="860" cy="28" r="6" fill="#ffd36b"><animate attributeName="opacity" values="1;.35;1" dur="1.2s" begin="-0.3s" repeatCount="indefinite"/></circle>
+    <circle cx="900" cy="20" r="6" fill="#4de39a"><animate attributeName="opacity" values="1;.35;1" dur="1.5s" begin="-0.6s" repeatCount="indefinite"/></circle>
+    <circle cx="940" cy="28" r="6" fill="#6ab7ff"><animate attributeName="opacity" values="1;.35;1" dur="1.7999999999999998s" begin="-0.8999999999999999s" repeatCount="indefinite"/></circle>
+    <circle cx="980" cy="20" r="6" fill="#ff4d5e"><animate attributeName="opacity" values="1;.35;1" dur="1.2s" begin="-1.2s" repeatCount="indefinite"/></circle>
+    <circle cx="1020" cy="28" r="6" fill="#ffd36b"><animate attributeName="opacity" values="1;.35;1" dur="1.5s" begin="-0.0s" repeatCount="indefinite"/></circle>
+    <circle cx="1060" cy="20" r="6" fill="#4de39a"><animate attributeName="opacity" values="1;.35;1" dur="1.7999999999999998s" begin="-0.3s" repeatCount="indefinite"/></circle>
+    <circle cx="1100" cy="28" r="6" fill="#6ab7ff"><animate attributeName="opacity" values="1;.35;1" dur="1.2s" begin="-0.6s" repeatCount="indefinite"/></circle>
+    <circle cx="1140" cy="20" r="6" fill="#ff4d5e"><animate attributeName="opacity" values="1;.35;1" dur="1.5s" begin="-0.8999999999999999s" repeatCount="indefinite"/></circle>
+    <circle cx="1180" cy="28" r="6" fill="#ffd36b"><animate attributeName="opacity" values="1;.35;1" dur="1.7999999999999998s" begin="-1.2s" repeatCount="indefinite"/></circle>
+    <circle cx="1220" cy="20" r="6" fill="#4de39a"><animate attributeName="opacity" values="1;.35;1" dur="1.2s" begin="-0.0s" repeatCount="indefinite"/></circle>
+    <circle cx="1260" cy="28" r="6" fill="#6ab7ff"><animate attributeName="opacity" values="1;.35;1" dur="1.5s" begin="-0.3s" repeatCount="indefinite"/></circle>
+    <circle cx="782" cy="-10" r="3.6" fill="#fff" opacity="0.8"><animateTransform attributeName="transform" type="translate" values="0 0; -1 340" dur="11.9s" begin="-0.2s" repeatCount="indefinite"/></circle>
+    <circle cx="96" cy="-10" r="3.8" fill="#fff" opacity="0.72"><animateTransform attributeName="transform" type="translate" values="0 0; 32 340" dur="11.3s" begin="-0.3s" repeatCount="indefinite"/></circle>
+    <circle cx="1215" cy="-10" r="3.8" fill="#fff" opacity="0.75"><animateTransform attributeName="transform" type="translate" values="0 0; -15 340" dur="10.0s" begin="-7.3s" repeatCount="indefinite"/></circle>
+    <circle cx="656" cy="-10" r="3.7" fill="#fff" opacity="0.76"><animateTransform attributeName="transform" type="translate" values="0 0; 20 340" dur="7.3s" begin="-3.6s" repeatCount="indefinite"/></circle>
+    <circle cx="211" cy="-10" r="3.1" fill="#fff" opacity="0.8"><animateTransform attributeName="transform" type="translate" values="0 0; -20 340" dur="8.5s" begin="-3.5s" repeatCount="indefinite"/></circle>
+    <circle cx="158" cy="-10" r="1.7" fill="#fff" opacity="0.84"><animateTransform attributeName="transform" type="translate" values="0 0; -24 340" dur="9.9s" begin="-5.1s" repeatCount="indefinite"/></circle>
+    <circle cx="92" cy="-10" r="3.0" fill="#fff" opacity="0.89"><animateTransform attributeName="transform" type="translate" values="0 0; 14 340" dur="6.5s" begin="-5.8s" repeatCount="indefinite"/></circle>
+    <circle cx="925" cy="-10" r="2.7" fill="#fff" opacity="0.73"><animateTransform attributeName="transform" type="translate" values="0 0; 21 340" dur="9.5s" begin="-5.0s" repeatCount="indefinite"/></circle>
+    <circle cx="1023" cy="-10" r="2.3" fill="#fff" opacity="0.8"><animateTransform attributeName="transform" type="translate" values="0 0; 8 340" dur="6.3s" begin="-4.1s" repeatCount="indefinite"/></circle>
+    <circle cx="946" cy="-10" r="1.5" fill="#fff" opacity="0.69"><animateTransform attributeName="transform" type="translate" values="0 0; 33 340" dur="12.6s" begin="-4.3s" repeatCount="indefinite"/></circle>
+    <circle cx="141" cy="-10" r="3.8" fill="#fff" opacity="0.9"><animateTransform attributeName="transform" type="translate" values="0 0; -17 340" dur="6.9s" begin="-2.3s" repeatCount="indefinite"/></circle>
+    <circle cx="286" cy="-10" r="2.1" fill="#fff" opacity="0.63"><animateTransform attributeName="transform" type="translate" values="0 0; 7 340" dur="7.0s" begin="-9.5s" repeatCount="indefinite"/></circle>
+    <circle cx="1180" cy="-10" r="3.9" fill="#fff" opacity="0.67"><animateTransform attributeName="transform" type="translate" values="0 0; 7 340" dur="11.5s" begin="-5.2s" repeatCount="indefinite"/></circle>
+    <circle cx="1023" cy="-10" r="2.8" fill="#fff" opacity="0.69"><animateTransform attributeName="transform" type="translate" values="0 0; 8 340" dur="9.3s" begin="-4.2s" repeatCount="indefinite"/></circle>
+    <circle cx="236" cy="-10" r="3.8" fill="#fff" opacity="0.83"><animateTransform attributeName="transform" type="translate" values="0 0; -37 340" dur="7.8s" begin="-3.2s" repeatCount="indefinite"/></circle>
+    <circle cx="1169" cy="-10" r="3.7" fill="#fff" opacity="0.85"><animateTransform attributeName="transform" type="translate" values="0 0; -18 340" dur="12.4s" begin="-5.7s" repeatCount="indefinite"/></circle>
+    <circle cx="540" cy="-10" r="2.9" fill="#fff" opacity="0.57"><animateTransform attributeName="transform" type="translate" values="0 0; -36 340" dur="11.2s" begin="-2.6s" repeatCount="indefinite"/></circle>
+    <circle cx="344" cy="-10" r="3.4" fill="#fff" opacity="0.8"><animateTransform attributeName="transform" type="translate" values="0 0; -18 340" dur="6.2s" begin="-9.0s" repeatCount="indefinite"/></circle>
+    <circle cx="170" cy="-10" r="1.8" fill="#fff" opacity="0.77"><animateTransform attributeName="transform" type="translate" values="0 0; -21 340" dur="10.7s" begin="-6.0s" repeatCount="indefinite"/></circle>
+    <circle cx="269" cy="-10" r="2.2" fill="#fff" opacity="0.64"><animateTransform attributeName="transform" type="translate" values="0 0; 32 340" dur="6.7s" begin="-5.9s" repeatCount="indefinite"/></circle>
+    <circle cx="1140" cy="-10" r="3.4" fill="#fff" opacity="0.58"><animateTransform attributeName="transform" type="translate" values="0 0; -31 340" dur="10.5s" begin="-8.3s" repeatCount="indefinite"/></circle>
+    <circle cx="42" cy="-10" r="2.4" fill="#fff" opacity="0.58"><animateTransform attributeName="transform" type="translate" values="0 0; -7 340" dur="7.2s" begin="-8.0s" repeatCount="indefinite"/></circle>
+    <circle cx="201" cy="-10" r="3.4" fill="#fff" opacity="0.87"><animateTransform attributeName="transform" type="translate" values="0 0; -3 340" dur="8.0s" begin="-4.6s" repeatCount="indefinite"/></circle>
+    <circle cx="758" cy="-10" r="2.3" fill="#fff" opacity="0.89"><animateTransform attributeName="transform" type="translate" values="0 0; -5 340" dur="7.9s" begin="-8.6s" repeatCount="indefinite"/></circle>
+    <circle cx="90" cy="-10" r="2.9" fill="#fff" opacity="0.94"><animateTransform attributeName="transform" type="translate" values="0 0; 37 340" dur="6.0s" begin="-2.9s" repeatCount="indefinite"/></circle>
+    <circle cx="709" cy="-10" r="4.1" fill="#fff" opacity="0.69"><animateTransform attributeName="transform" type="translate" values="0 0; 17 340" dur="12.6s" begin="-2.4s" repeatCount="indefinite"/></circle>
+    <circle cx="1038" cy="-10" r="1.6" fill="#fff" opacity="0.69"><animateTransform attributeName="transform" type="translate" values="0 0; -21 340" dur="9.1s" begin="-3.1s" repeatCount="indefinite"/></circle>
+    <circle cx="153" cy="-10" r="2.1" fill="#fff" opacity="0.71"><animateTransform attributeName="transform" type="translate" values="0 0; 34 340" dur="10.6s" begin="-9.5s" repeatCount="indefinite"/></circle>
+    <circle cx="34" cy="-10" r="1.9" fill="#fff" opacity="0.68"><animateTransform attributeName="transform" type="translate" values="0 0; 40 340" dur="12.1s" begin="-6.7s" repeatCount="indefinite"/></circle>
+    <circle cx="1120" cy="-10" r="4.1" fill="#fff" opacity="0.94"><animateTransform attributeName="transform" type="translate" values="0 0; 7 340" dur="12.4s" begin="-0.5s" repeatCount="indefinite"/></circle>
+    <circle cx="228" cy="-10" r="1.8" fill="#fff" opacity="0.83"><animateTransform attributeName="transform" type="translate" values="0 0; -26 340" dur="9.9s" begin="-6.0s" repeatCount="indefinite"/></circle>
+    <circle cx="1033" cy="-10" r="1.7" fill="#fff" opacity="0.63"><animateTransform attributeName="transform" type="translate" values="0 0; -30 340" dur="12.8s" begin="-0.7s" repeatCount="indefinite"/></circle>
+    <circle cx="145" cy="-10" r="2.8" fill="#fff" opacity="0.91"><animateTransform attributeName="transform" type="translate" values="0 0; 39 340" dur="7.2s" begin="-3.9s" repeatCount="indefinite"/></circle>
+    <circle cx="341" cy="-10" r="2.5" fill="#fff" opacity="0.67"><animateTransform attributeName="transform" type="translate" values="0 0; -30 340" dur="8.6s" begin="-1.2s" repeatCount="indefinite"/></circle>
+    <circle cx="1041" cy="-10" r="3.0" fill="#fff" opacity="0.7"><animateTransform attributeName="transform" type="translate" values="0 0; 24 340" dur="9.8s" begin="-1.8s" repeatCount="indefinite"/></circle>
+    <circle cx="927" cy="-10" r="1.7" fill="#fff" opacity="0.62"><animateTransform attributeName="transform" type="translate" values="0 0; 8 340" dur="10.5s" begin="-7.6s" repeatCount="indefinite"/></circle>
+    <circle cx="280" cy="-10" r="2.9" fill="#fff" opacity="0.58"><animateTransform attributeName="transform" type="translate" values="0 0; -15 340" dur="8.0s" begin="-8.8s" repeatCount="indefinite"/></circle>
+    <circle cx="957" cy="-10" r="2.6" fill="#fff" opacity="0.61"><animateTransform attributeName="transform" type="translate" values="0 0; -18 340" dur="8.2s" begin="-3.5s" repeatCount="indefinite"/></circle>
+    <circle cx="89" cy="-10" r="2.4" fill="#fff" opacity="0.69"><animateTransform attributeName="transform" type="translate" values="0 0; -14 340" dur="11.5s" begin="-2.3s" repeatCount="indefinite"/></circle>
+    <circle cx="882" cy="-10" r="3.1" fill="#fff" opacity="0.57"><animateTransform attributeName="transform" type="translate" values="0 0; 6 340" dur="11.8s" begin="-8.6s" repeatCount="indefinite"/></circle>
+    <circle cx="430" cy="-10" r="2.4" fill="#fff" opacity="0.82"><animateTransform attributeName="transform" type="translate" values="0 0; -38 340" dur="9.3s" begin="-0.5s" repeatCount="indefinite"/></circle>
+    <circle cx="245" cy="-10" r="3.0" fill="#fff" opacity="0.91"><animateTransform attributeName="transform" type="translate" values="0 0; -22 340" dur="7.8s" begin="-7.9s" repeatCount="indefinite"/></circle>
+    <circle cx="53" cy="-10" r="4.1" fill="#fff" opacity="0.9"><animateTransform attributeName="transform" type="translate" values="0 0; 0 340" dur="8.9s" begin="-4.2s" repeatCount="indefinite"/></circle>
+    <circle cx="140" cy="-10" r="3.9" fill="#fff" opacity="0.86"><animateTransform attributeName="transform" type="translate" values="0 0; 31 340" dur="9.5s" begin="-2.5s" repeatCount="indefinite"/></circle>
+    <circle cx="799" cy="-10" r="3.9" fill="#fff" opacity="0.58"><animateTransform attributeName="transform" type="translate" values="0 0; -13 340" dur="9.0s" begin="-0.7s" repeatCount="indefinite"/></circle>
+    <circle cx="20" cy="-10" r="1.8" fill="#fff" opacity="0.9"><animateTransform attributeName="transform" type="translate" values="0 0; -28 340" dur="9.4s" begin="-5.9s" repeatCount="indefinite"/></circle>
+  </g>
+</svg>
