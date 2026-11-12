@@ -1,7 +1,8 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
-// Nota: @whiskeysockets/baileys ahora apunta a ultra-baileys (russellxz),
+// Nota: la conexión con WhatsApp usa Yui-Bails (@yui-bails/yui-bails, AmilcarGit),
 // que es un paquete ESM puro ("type": "module"). Se carga con import()
 // dinámico dentro de startSubBot() (ver más abajo), no con require().
+process.env.YUI_BAILS_NO_BANNER ??= '1' // el banner de Yui-Bails ya lo muestra el bot principal
 const { Boom } = require('@hapi/boom')
 const pino = require('pino')
 const path = require('path')
@@ -138,7 +139,7 @@ async function startSubBot() {
     DisconnectReason,
     fetchLatestBaileysVersion,
     fetchLatestWaWebVersion,
-  } = await import('@whiskeysockets/baileys')
+  } = await import('@yui-bails/yui-bails')
 
   const { state, saveCreds } = await useMultiFileAuthState(sessionPath)
   const version = await resolverVersionWA({ fetchLatestWaWebVersion, fetchLatestBaileysVersion })
@@ -281,7 +282,7 @@ async function startSubBot() {
       }
 
       // Antes esto dependía de lib/marcar-leido.js (un parche a require()
-      // que dejó de funcionar al cambiar a ultra-baileys, que es ESM puro
+      // que dejó de funcionar al pasar a una librería ESM pura
       // y se carga con import() dinámico). Ahora se hace directo acá,
       // igual que en main.js, y respeta el mismo toggle de defaults.js.
       if (!key.fromMe && config.MARCAR_LEIDO) {

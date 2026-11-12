@@ -1,5 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
-const { downloadContentFromMessage } = require('@whiskeysockets/baileys')
+const { downloadContentFromMessage } = require('@yui-bails/yui-bails')
 const { loadImage, createCanvas } = require('../../lib/canvas')
 const { negrita } = require('../../lib/estilo')
 const jsQR = require('jsqr')

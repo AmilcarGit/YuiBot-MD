@@ -4,7 +4,7 @@ const { pedirTikTok } = require('../../lib/tiktok')
 const { caja, uso } = require('../../lib/estilo')
 const { iniciar, fallar, conEstado } = require('../../lib/reaccion')
 const { conFuentes, descargarLocal } = require('../../lib/youtube')
-const { generateWAMessageFromContent, prepareWAMessageMedia, proto } = require('@whiskeysockets/baileys')
+const { generateWAMessageFromContent, prepareWAMessageMedia, proto } = require('@yui-bails/yui-bails')
 
 const LIMITE_VIDEO_MB = 64
 

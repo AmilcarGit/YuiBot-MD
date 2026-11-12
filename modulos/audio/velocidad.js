@@ -3,7 +3,7 @@ const { spawn } = require('child_process')
 const fs = require('fs')
 const os = require('os')
 const path = require('path')
-const { downloadContentFromMessage } = require('@whiskeysockets/baileys')
+const { downloadContentFromMessage } = require('@yui-bails/yui-bails')
 
 async function descargarAudio(msg) {
   const mensaje = msg.message?.audioMessage

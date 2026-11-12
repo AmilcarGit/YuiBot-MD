@@ -30,7 +30,7 @@
 
 ## 🎄 ¿Qué es YuiBot-MD?
 
-**YuiBot-MD** es un bot de WhatsApp hecho con **Node.js** sobre [ultra-baileys](https://github.com/russellxz/ultra-baileys), pensado para grupos y comunidades: moderación completa, economía y RPG, descargas, stickers, utilidades y un sistema de **subbots** para que otras personas tengan su propio bot sin duplicar el servidor.
+**YuiBot-MD** es un bot de WhatsApp hecho con **Node.js** sobre [Yui-Bails](https://github.com/AmilcarGit/Yui-Bails), pensado para grupos y comunidades: moderación completa, economía y RPG, descargas, stickers, utilidades y un sistema de **subbots** para que otras personas tengan su propio bot sin duplicar el servidor.
 
 Está diseñado para ser **modular** (cada comando es un archivo), **resistente** (reconexión inteligente y circuit breaker por comando) y **fácil de mantener**.
 
@@ -133,7 +133,7 @@ Está diseñado para ser **modular** (cada comando es un archivo), **resistente*
 
 ```mermaid
 flowchart LR
-    WA([WhatsApp]) <--> B[ultra-baileys]
+    WA([WhatsApp]) <--> B[Yui-Bails]
     B --> M[main.js<br/>bot principal]
     B --> S[subbot.js<br/>un proceso por subbot]
     M --> H[Hooks onMessage<br/>antilink · antiflood · antibot<br/>antiinsultos · modoadmi]
@@ -504,7 +504,7 @@ Las contribuciones son bienvenidas. Lee la [guía de contribución](CONTRIBUTING
 
 ## 🎶 Créditos
 
-- **[ultra-baileys](https://github.com/russellxz/ultra-baileys)** de russellxz y **[Baileys](https://github.com/WhiskeySockets/Baileys)** — la base de la conexión con WhatsApp.
+- **[Yui-Bails](https://github.com/AmilcarGit/Yui-Bails)** (`@yui-bails/yui-bails`) de AmilcarGit, construida sobre **[Baileys](https://github.com/WhiskeySockets/Baileys)** y **[ultra-baileys](https://github.com/russellxz/ultra-baileys)** de russellxz — la base de la conexión con WhatsApp.
 - **fsociety-bot** — proyecto de referencia que inspiró varias funciones, adaptadas a la arquitectura de YuiBot-MD.
 - **[AmilcarGit](https://github.com/AmilcarGit)** — creador y mantenedor · **Leo** — colaborador.
 - A todas las personas que prueban, reportan errores y ayudan a mejorar el bot. 💖

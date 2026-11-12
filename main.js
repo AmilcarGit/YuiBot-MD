@@ -1,10 +1,12 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
-// Nota: @whiskeysockets/baileys ahora apunta a ultra-baileys (russellxz),
+// Nota: la conexión con WhatsApp usa Yui-Bails (@yui-bails/yui-bails, AmilcarGit),
 // que es un paquete ESM puro ("type": "module"). No se puede hacer
 // require() de un paquete ESM desde un proyecto CommonJS, así que se
 // carga con import() dinámico dentro de startBot() (ver más abajo).
 // Lee el .env (RESPALDO_REPO, RESPALDO_TOKEN…) antes de cargar lo demás.
 require('./lib/entorno').cargarEnv();
+// Yui-Bails imprime su propio banner al crear el socket; el bot ya muestra el suyo (flor / árbol). Para verlo: YUI_BAILS_NO_BANNER=0 en el .env.
+process.env.YUI_BAILS_NO_BANNER ??= '1';
 const { Boom } = require('@hapi/boom');
 const qrcode = require('qrcode-terminal');
 const pino = require('pino');
@@ -160,7 +162,7 @@ async function startBot() {
     DisconnectReason,
     fetchLatestBaileysVersion,
     fetchLatestWaWebVersion,
-  } = await import('@whiskeysockets/baileys');
+  } = await import('@yui-bails/yui-bails');
 
   const { state, saveCreds } = await useMultiFileAuthState(
     path.join(__dirname, 'session')

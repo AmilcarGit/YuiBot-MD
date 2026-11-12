@@ -1,6 +1,6 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
 const fetch = require('../../lib/http').fetchSeguro // timeout por defecto (ver lib/http.js)
-const { downloadContentFromMessage } = require('@whiskeysockets/baileys')
+const { downloadContentFromMessage } = require('@yui-bails/yui-bails')
 const { negrita } = require('../../lib/estilo')
 const { APIS } = require('../../defaults')
 

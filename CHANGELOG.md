@@ -8,6 +8,9 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 ### Corregido
 - **Fotos que no se suben** (`Media upload failed on all hosts`, común en Termux con red lenta): si WhatsApp no deja subir una imagen/video/documento que trae texto (bienvenidas, perfiles, noticias…), la cola de envío manda solo el texto en vez de perder el mensaje. 2 pruebas nuevas.
 
+### Cambiado
+- **Conexión con WhatsApp: ahora Yui-Bails** (`@yui-bails/yui-bails` ^1.4.0, de AmilcarGit) en lugar de ultra-baileys. Se cambiaron los 13 puntos donde el bot importa la librería; la API que usa el bot (sockets, grupos, botones/listas/`nativeFlow`, código de vinculación, descarga de medios) está en Yui-Bails. Su banner de consola se apaga para no duplicar el del bot (`YUI_BAILS_NO_BANNER=0` lo devuelve). Tras actualizar: `npm install` y reiniciar; la carpeta `session/` sigue valiendo.
+
 ### Añadido
 - **Bienvenida de Navidad en la consola 🎄**: con el tema navidad, `npm start` muestra un **árbol grande** que se dibuja de arriba abajo (estrella ★, tronco, luces de colores que parpadean) con **nieve cayendo**, junto al panel con las letras YUIBOT en rojo y verde, "¡Felices fiestas!" y la cuenta regresiva a Navidad. Sigue adaptándose a cualquier tamaño de pantalla (7 diseños, hasta solo texto en pantallas diminutas) y sin color ni animación en pm2/archivos. Sale del tema activo (`lib/tema.js`), así que vuelve a la flor al desactivar la Navidad. 4 pruebas nuevas.
 - **README navideño 🎄**: banner nuevo `media/banner-navidad.svg` (guirnalda de luces que parpadean y nieve cayendo, animado), encabezados con emojis de Navidad (los enlaces internos siguen funcionando), separadores de copos ❄️ y la insignia de comandos en rojo. El banner original `media/banner.svg` se conserva para volver al diseño normal.

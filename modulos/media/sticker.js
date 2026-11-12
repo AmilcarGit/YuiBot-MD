@@ -1,5 +1,5 @@
 //CÓDIGO ORIGINAL DE YUIBOT-MD
-const { downloadContentFromMessage } = require('@whiskeysockets/baileys')
+const { downloadContentFromMessage } = require('@yui-bails/yui-bails')
 const { crearStickerWebp } = require('../../lib/stickers')
 const { reintentar, esErrorPasajero } = require('../../lib/reintentar')
 
