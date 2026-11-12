@@ -240,10 +240,14 @@ function construirPortada({ msg, config, esSubBot, visibles, totalComandos, pref
   const totalVisibles = [...visibles.values()].reduce((suma, lista) => suma + lista.length, 0)
   const nuevos = novedadesVisibles(visibles).slice(0, 4)
 
-  let t = '╭━━━━━━━━━━━━━━━━━━━━━━━━╮\n'
+  let t = tema.separador() ? `${tema.separador()}\n` : ''
+  t += '╭━━━━━━━━━━━━━━━━━━━━━━━━╮\n'
   t += `┃     ${tema.adorno()} *${negrita(config.BOT_NAME || 'YuiBot-MD')}* ${tema.adorno()}\n`
   t += '╰━━━━━━━━━━━━━━━━━━━━━━━━╯\n\n'
-  t += `${obtenerSaludo()}, *${nombreUsuario}* ✨\n\n`
+  t += `${obtenerSaludo()}, *${nombreUsuario}* ✨\n`
+  if (tema.saludo()) t += `${tema.saludo()}\n`
+  if (tema.cuentaRegresiva()) t += `${tema.cuentaRegresiva()}\n`
+  t += '\n'
 
   if (perfil) {
     const { barra, actual, span } = barraXp(perfil.xp, perfil.nivel)

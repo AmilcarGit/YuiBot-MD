@@ -28,6 +28,8 @@ for (const archivo of archivos) {
   const resultado = spawnSync(process.execPath, ['--test', path.join('tests', archivo)], {
     cwd: RAIZ,
     stdio: 'inherit',
+    // Los textos esperados son los del diseño normal; el tema (Navidad…) no debe cambiarlos según la fecha.
+    env: { ...process.env, YUI_TEMA: process.env.YUI_TEMA || 'normal' },
   })
   if (resultado.status !== 0) fallidos.push(archivo)
 }

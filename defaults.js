@@ -36,6 +36,8 @@ module.exports = {
   // Pantalla de bienvenida de la consola (flor que florece). FLOR:false la quita; ANIMADO:false la muestra sin animación.
   // También se apaga con la variable YUI_SIN_ANIMACION=1 o NO_COLOR=1; con pm2 (sin terminal) sale siempre sin color.
   BANNER: { FLOR: true, ANIMADO: true },
+  // Tema visual de todos los comandos: 'auto' (Navidad del 1 dic al 6 ene), 'normal' o 'navidad'. `.tema` lo cambia sin tocar este archivo.
+  TEMA: 'navidad',
   SYNC: { ENABLED: true, URL: 'https://yuibot-datos.vercel.app', INTERVALO_MS: 120000, LOTE: 100 },
   // Logs de consola. LOG_MENSAJES imprime el texto de cada mensaje que recibe
   // el bot (útil para depurar, pero ruidoso y guarda conversaciones en los
