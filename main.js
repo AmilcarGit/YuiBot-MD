@@ -164,6 +164,8 @@ async function startBot() {
     fetchLatestWaWebVersion,
   } = await import('@yui-bails/yui-bails');
 
+  try { console.log(`[BAILS] Yui-Bails v${require('@yui-bails/yui-bails/package.json').version}`) } catch { /* sin versión visible */ }
+
   const { state, saveCreds } = await useMultiFileAuthState(
     path.join(__dirname, 'session')
   );

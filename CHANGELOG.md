@@ -9,6 +9,7 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 - **Fotos que no se suben** (`Media upload failed on all hosts`, común en Termux con red lenta): si WhatsApp no deja subir una imagen/video/documento que trae texto (bienvenidas, perfiles, noticias…), la cola de envío manda solo el texto en vez de perder el mensaje. 2 pruebas nuevas.
 
 ### Cambiado
+- **Yui-Bails siempre en su última versión**: la dependencia pasó de `^1.4.0` a `latest`, `npm run bails` la actualiza en cualquier momento y el arranque muestra `[BAILS] Yui-Bails vX.Y.Z`. (Con `^1.4.0`, un `npm install` normal no sube una versión ya instalada.)
 - **Conexión con WhatsApp: ahora Yui-Bails** (`@yui-bails/yui-bails` ^1.4.0, de AmilcarGit) en lugar de ultra-baileys. Se cambiaron los 13 puntos donde el bot importa la librería; la API que usa el bot (sockets, grupos, botones/listas/`nativeFlow`, código de vinculación, descarga de medios) está en Yui-Bails. Su banner de consola se apaga para no duplicar el del bot (`YUI_BAILS_NO_BANNER=0` lo devuelve). Tras actualizar: `npm install` y reiniciar; la carpeta `session/` sigue valiendo.
 
 ### Añadido

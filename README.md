@@ -42,6 +42,8 @@ Está diseñado para ser **modular** (cada comando es un archivo), **resistente*
 <p align="center">❄️ 🎄 ❄️ 🎁 ❄️ 🎅 ❄️ 🎄 ❄️</p>
 
 
+> 🔄 **Actualizar la librería de WhatsApp (Yui-Bails):** `npm run bails` instala siempre la última versión; al arrancar, la consola muestra `[BAILS] Yui-Bails vX.Y.Z`.
+
 ## 🌟 Características
 
 <table>
