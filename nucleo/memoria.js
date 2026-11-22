@@ -18,6 +18,8 @@ const base = {
   racha: 0,
   ultimoDaily: 0,
   ultimoTrabajo: 0,
+  esperaTrabajo: 0,
+  ultimoAdivina: 0,
   ultimoXp: 0,
   trabajo: '',
   inventario: {},
@@ -34,27 +36,57 @@ const baseChat = {
 
 const archivo = nombre => path.join(carpeta, `${nombre}.json`)
 
+const ultimo = {}
+const respaldos = {}
+const CADA_RESPALDO = 600000
+
+const leerJson = ruta => JSON.parse(fs.readFileSync(ruta, 'utf8'))
+
 function leer(nombre) {
   if (db) {
     const fila = db.prepare('SELECT datos FROM colecciones WHERE nombre = ?').get(nombre)
     return fila ? JSON.parse(fila.datos) : {}
   }
+
+  const ruta = archivo(nombre)
+  if (!fs.existsSync(ruta)) return {}
+
   try {
-    return JSON.parse(fs.readFileSync(archivo(nombre), 'utf8'))
+    return leerJson(ruta)
   } catch {
-    return {}
+    // Un archivo dañado nunca se sobrescribe con datos vacíos: se aparta y se intenta el respaldo.
+    const aparte = ruta.replace(/\.json$/, `.corrupto-${Date.now()}.json`)
+    fs.renameSync(ruta, aparte)
+    console.error(`${nombre}.json estaba dañado; se guardó como ${path.basename(aparte)}`)
+    try {
+      const datos = leerJson(`${ruta}.bak`)
+      console.error(`${nombre} se recuperó desde la copia de respaldo.`)
+      return datos
+    } catch {
+      return {}
+    }
   }
 }
 
 function escribir(nombre, datos) {
   const texto = JSON.stringify(datos)
+  if (ultimo[nombre] === texto) return
+
   if (db) {
     db.prepare('INSERT OR REPLACE INTO colecciones (nombre, datos) VALUES (?, ?)').run(nombre, texto)
+    ultimo[nombre] = texto
     return
   }
-  const temporal = `${archivo(nombre)}.tmp`
+
+  const ruta = archivo(nombre)
+  if (fs.existsSync(ruta) && Date.now() - (respaldos[nombre] || 0) > CADA_RESPALDO) {
+    fs.copyFileSync(ruta, `${ruta}.bak`)
+    respaldos[nombre] = Date.now()
+  }
+  const temporal = `${ruta}.tmp`
   fs.writeFileSync(temporal, texto)
-  fs.renameSync(temporal, archivo(nombre))
+  fs.renameSync(temporal, ruta)
+  ultimo[nombre] = texto
 }
 
 export async function iniciarMemoria() {

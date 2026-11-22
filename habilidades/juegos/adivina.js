@@ -1,6 +1,8 @@
 // Código Oficial de YuiBot-MD.by AmilcarGit
-import { aleatorio } from '../../nucleo/utiles.js'
+import { aleatorio, tiempo } from '../../nucleo/utiles.js'
 
+const PREMIO = 100
+const ESPERA_PREMIO = 600000
 const partidas = new Map()
 
 export default {
@@ -12,6 +14,7 @@ export default {
     const intento = parseInt(ctx.args[0], 10)
 
     if (!intento) {
+      for (const [clave, p] of partidas) if (p.fin < Date.now()) partidas.delete(clave)
       partidas.set(ctx.jid, { numero: aleatorio(1, 10), intentos: 3, fin: Date.now() + 120000 })
       return ctx.responder(`Pensé un número del 1 al 10. Tienes 3 intentos: ${ctx.prefijo}adivina <número>`)
     }
@@ -24,9 +27,13 @@ export default {
 
     if (intento === partida.numero) {
       partidas.delete(ctx.jid)
-      const premio = ctx.usuario.registrado
-      if (premio) ctx.usuario.monedas += 100
-      return ctx.responder(`Acertaste.${premio ? ' Ganaste 100 monedas.' : ''}`)
+      const u = ctx.usuario
+      const falta = u.ultimoAdivina + ESPERA_PREMIO - Date.now()
+      if (!u.registrado) return ctx.responder('Acertaste.')
+      if (falta > 0) return ctx.responder(`Acertaste. El próximo premio estará disponible en ${tiempo(falta)}.`)
+      u.monedas += PREMIO
+      u.ultimoAdivina = Date.now()
+      return ctx.responder(`Acertaste. Ganaste ${PREMIO} monedas.`)
     }
 
     partida.intentos--

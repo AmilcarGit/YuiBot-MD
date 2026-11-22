@@ -5,7 +5,8 @@ export default {
   categoria: 'general',
   ayuda: 'Velocidad de respuesta',
   async ejecutar(sock, m, ctx) {
-    const ms = Math.max(0, Date.now() - Number(m.messageTimestamp) * 1000)
+    const marca = Number(m.messageTimestamp?.toNumber?.() ?? m.messageTimestamp)
+    const ms = Number.isFinite(marca) ? Math.max(0, Date.now() - marca * 1000) : 0
     await ctx.responder(`Pong ${ms} ms`)
   }
 }

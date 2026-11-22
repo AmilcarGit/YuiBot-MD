@@ -6,7 +6,8 @@
   "license": "MIT",
   "author": "AmilcarGit",
   "scripts": {
-    "start": "node yui.js"
+    "start": "node yui.js",
+    "test": "node --test"
   },
   "engines": {
     "node": ">=20"

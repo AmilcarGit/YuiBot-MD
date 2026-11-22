@@ -29,12 +29,14 @@ export default {
       ].join('\n'))
     }
 
-    const falta = u.ultimoTrabajo + trabajo.espera - Date.now()
+    // El descanso se fija con el trabajo que se cobró, así cambiar de oficio no lo salta.
+    const falta = u.ultimoTrabajo + (u.esperaTrabajo || trabajo.espera) - Date.now()
     if (falta > 0) return ctx.responder(`Descansa ${tiempo(falta)} más.`)
 
     const pago = Math.floor(aleatorio(...trabajo.pago) * (u.inventario.pico ? 1.25 : 1))
     u.monedas += pago
     u.ultimoTrabajo = Date.now()
+    u.esperaTrabajo = trabajo.espera
     ganarXp(u, 25)
 
     const extra = logro(u, 'primerTrabajo') ? '\nLogro: Primer trabajo' : ''

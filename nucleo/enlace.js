@@ -7,12 +7,22 @@ import { procesar } from './cerebro.js'
 import { eventosGrupo } from './grupos.js'
 
 const registro = pino({ level: 'silent' })
+const MAX_CODIGOS = 3
 
 export async function conectar(opciones) {
   const { carpeta, numero = null, qr = false, alCodigo, alError, alAbrir, alSalir } = opciones
+  // Se conserva entre reconexiones porque `opciones` es el mismo objeto.
+  const estado = (opciones.estado ??= { intentos: 0, codigos: 0 })
 
   fs.mkdirSync(carpeta, { recursive: true })
   const { state, saveCreds } = await useMultiFileAuthState(carpeta)
+
+  // Un sub-bot que nunca se vincula no debe pedir códigos para siempre (cada uno llega al teléfono).
+  if (alSalir && numero && !state.creds.registered && estado.codigos >= MAX_CODIGOS) {
+    fs.rmSync(carpeta, { recursive: true, force: true })
+    alError?.(new Error('No se completó la vinculación. Pide un código nuevo.'))
+    return alSalir()
+  }
 
   const sock = makeWASocket({
     auth: state,
@@ -26,6 +36,7 @@ export async function conectar(opciones) {
     setTimeout(async () => {
       try {
         const codigo = await sock.requestPairingCode(numero)
+        estado.codigos++
         console.log(`Código de vinculación (${numero}): ${codigo}`)
         alCodigo?.(codigo)
       } catch (error) {
@@ -44,6 +55,7 @@ export async function conectar(opciones) {
   sock.ev.on('connection.update', ({ connection, lastDisconnect }) => {
     if (connection === 'open') {
       console.log(`${ajustes.nombre} conectado (${carpeta})`)
+      estado.intentos = 0
       alAbrir?.(sock)
       return
     }
@@ -57,9 +69,12 @@ export async function conectar(opciones) {
     }
     if (codigo === DisconnectReason.connectionReplaced) return terminar()
 
+    // Tras vincular, WhatsApp pide reiniciar la conexión al instante; el resto de fallos espera más cada vez.
+    const reinicio = codigo === DisconnectReason.restartRequired
+    const espera = reinicio ? 500 : Math.min(3000 * 2 ** estado.intentos++, 60000)
     setTimeout(() => {
       conectar(opciones).catch(error => console.error(error.message))
-    }, 3000)
+    }, espera)
   })
 
   return sock
