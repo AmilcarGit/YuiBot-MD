@@ -6,6 +6,7 @@ import { encolar } from './cola.js'
 import { vigilar } from './guardia.js'
 import { ganarXp } from './juego.js'
 import { extraerTexto, soloNumero } from './utiles.js'
+import { dice, mal, ok } from '../estilo/index.js'
 
 const cacheGrupos = new Map()
 
@@ -72,7 +73,7 @@ async function atender(sock, m) {
   if (Date.now() - u.ultimoXp > 10000) {
     u.ultimoXp = Date.now()
     if (ganarXp(u, 3) && u.registrado) {
-      await ctx.responder(`${u.nombre} subió al nivel ${u.nivel}.`)
+      await ctx.responder(ok(dice('nivelUp', { nombre: u.nombre, nivel: u.nivel })))
     }
   }
 
@@ -88,20 +89,20 @@ async function atender(sock, m) {
   Object.assign(ctx, { prefijo, args, comando: habilidad.nombre })
 
   if (grupo && c.soloAdmin && !esAdmin && !esDueno) return
-  if (habilidad.soloDueno && !esDueno) return ctx.responder('Solo el dueño puede usar este comando.')
-  if (habilidad.soloGrupo && !grupo) return ctx.responder('Este comando solo funciona en grupos.')
-  if (habilidad.soloPrivado && grupo) return ctx.responder('Este comando solo funciona en privado.')
+  if (habilidad.soloDueno && !esDueno) return ctx.responder(mal(dice('soloDueno')))
+  if (habilidad.soloGrupo && !grupo) return ctx.responder(mal(dice('soloGrupo')))
+  if (habilidad.soloPrivado && grupo) return ctx.responder(mal(dice('soloPrivado')))
   if (habilidad.soloAdmin && !esAdmin && !esDueno) {
-    return ctx.responder('Solo los administradores pueden usar este comando.')
+    return ctx.responder(mal(dice('soloAdmin')))
   }
   if (habilidad.registro && !u.registrado) {
-    return ctx.responder(`Regístrate primero con ${prefijo}registrar tuNombre`)
+    return ctx.responder(mal(dice('registro', { prefijo })))
   }
 
   try {
     await habilidad.ejecutar(sock, m, ctx)
   } catch (error) {
     console.error(`Error en ${habilidad.nombre}:`, error)
-    await ctx.responder('Ocurrió un error, inténtalo de nuevo.')
+    await ctx.responder(mal(dice('fallo')))
   }
 }

@@ -31,7 +31,8 @@ const baseChat = {
   bienvenida: false,
   antienlaces: false,
   antifalsos: false,
-  soloAdmin: false
+  soloAdmin: false,
+  tema: ''
 }
 
 const archivo = nombre => path.join(carpeta, `${nombre}.json`)

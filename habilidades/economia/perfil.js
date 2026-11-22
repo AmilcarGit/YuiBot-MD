@@ -1,6 +1,7 @@
 // Código Oficial de YuiBot-MD.by AmilcarGit
 import { formato } from '../../nucleo/utiles.js'
 import { logros, trabajos } from '../../nucleo/juego.js'
+import { caja, temaActivo } from '../../estilo/index.js'
 
 export default {
   nombre: 'perfil',
@@ -10,20 +11,22 @@ export default {
   registro: true,
   async ejecutar(sock, m, ctx) {
     const u = ctx.usuario
+    const e = temaActivo().emojis
     const personajes = Object.values(u.coleccion).reduce((a, b) => a + b, 0)
     const trabajo = trabajos.find(t => t.id === u.trabajo)?.nombre || 'Ninguno'
     const obtenidos = u.logros.map(l => logros[l]).join(', ') || 'Ninguno'
 
-    await ctx.responder([
-      `*${u.nombre}*`,
-      `Nivel: ${u.nivel}`,
-      `XP: ${formato(u.xp)}`,
-      `Monedas: ${formato(u.monedas)}`,
-      `Mensajes: ${formato(u.mensajes)}`,
-      `Racha: ${u.racha} días`,
-      `Trabajo: ${trabajo}`,
-      `Personajes: ${personajes}`,
-      `Logros: ${obtenidos}`
-    ].join('\n'))
+    await ctx.responder(caja('Perfil', [
+      `${e.persona} ${u.nombre}`,
+      '',
+      `${e.nivel} Nivel: ${u.nivel}`,
+      `${e.xp} XP: ${formato(u.xp)}`,
+      `${e.dinero} Monedas: ${formato(u.monedas)}`,
+      `💬 Mensajes: ${formato(u.mensajes)}`,
+      `${e.racha} Racha: ${u.racha} ${u.racha === 1 ? 'día' : 'días'}`,
+      `${e.trabajo} Trabajo: ${trabajo}`,
+      `${e.regalo} Personajes: ${personajes}`,
+      `${e.logro} Logros: ${obtenidos}`
+    ]))
   }
 }

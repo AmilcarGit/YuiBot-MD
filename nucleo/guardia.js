@@ -1,4 +1,6 @@
 // Código Oficial de YuiBot-MD.by AmilcarGit
+import { dice, mal } from '../estilo/index.js'
+
 const enlaceGrupo = /chat\.whatsapp\.com\/[A-Za-z0-9]{10,}/i
 
 export async function vigilar(ctx) {
@@ -6,7 +8,7 @@ export async function vigilar(ctx) {
   if (!grupo || esAdmin || esDueno) return false
   if (chat.antienlaces && enlaceGrupo.test(texto)) {
     await sock.sendMessage(jid, { delete: m.key }).catch(() => {})
-    await ctx.responder('No se permiten enlaces de otros grupos.')
+    await ctx.responder(mal(dice('antienlaces')))
     return true
   }
   return false

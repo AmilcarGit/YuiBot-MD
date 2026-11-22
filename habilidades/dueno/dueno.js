@@ -1,5 +1,6 @@
 // Código Oficial de YuiBot-MD.by AmilcarGit
 import ajustes from '../../ajustes.js'
+import { caja, dice, firma, temaActivo } from '../../estilo/index.js'
 
 export default {
   nombre: 'dueno',
@@ -7,6 +8,14 @@ export default {
   categoria: 'general',
   ayuda: 'Contacto del creador',
   async ejecutar(sock, m, ctx) {
-    await ctx.responder(`Creador: ${ajustes.creador}\nContacto: wa.me/${ajustes.dueno[0]}`)
+    const e = temaActivo().emojis
+    await ctx.responder(caja('Mi creador', [
+      dice('dueno'),
+      '',
+      `${e.persona} ${ajustes.creador}`,
+      `📱 wa.me/${ajustes.dueno[0]}`,
+      '',
+      firma()
+    ]))
   }
 }
