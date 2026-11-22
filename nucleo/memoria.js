@@ -18,6 +18,8 @@ const base = {
   racha: 0,
   ultimoDaily: 0,
   ultimoTrabajo: 0,
+  esperaTrabajo: 0,
+  ultimoAdivina: 0,
   ultimoXp: 0,
   trabajo: '',
   inventario: {},
@@ -29,7 +31,8 @@ const baseChat = {
   bienvenida: false,
   antienlaces: false,
   antifalsos: false,
-  soloAdmin: false
+  soloAdmin: false,
+  tema: ''
 }
 
 const archivo = nombre => path.join(carpeta, `${nombre}.json`)

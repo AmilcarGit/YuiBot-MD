@@ -1,5 +1,6 @@
 // Código Oficial de YuiBot-MD.by AmilcarGit
 import { crearSubbot } from '../../nucleo/subbots.js'
+import { aviso, caja, dice, mal } from '../../estilo/index.js'
 
 export default {
   nombre: 'serbot',
@@ -9,11 +10,17 @@ export default {
   soloPrivado: true,
   async ejecutar(sock, m, ctx) {
     try {
-      await ctx.responder('Generando tu código de vinculación...')
+      await ctx.responder(aviso(dice('serbotGenerando')))
       const codigo = await crearSubbot(ctx.numero)
-      await ctx.responder(`Código: ${codigo}\nAbre WhatsApp > Dispositivos vinculados > Vincular con el número de teléfono.`)
+      await ctx.responder(caja('Código de vinculación', [
+        dice('serbotCodigo'),
+        '',
+        `🔑 ${codigo}`,
+        '',
+        'WhatsApp › Dispositivos vinculados › Vincular con el número de teléfono'
+      ]))
     } catch (error) {
-      await ctx.responder(error.message)
+      await ctx.responder(mal(error.message))
     }
   }
 }

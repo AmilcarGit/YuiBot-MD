@@ -3,6 +3,7 @@ import ajustes from '../ajustes.js'
 import { chat } from './memoria.js'
 import { encolar } from './cola.js'
 import { soloNumero } from './utiles.js'
+import { caja, dice, firma } from '../estilo/index.js'
 
 export async function eventosGrupo(sock, { id, participants, action }) {
   if (action !== 'add') return
@@ -20,7 +21,7 @@ export async function eventosGrupo(sock, { id, participants, action }) {
 
     if (config.bienvenida) {
       await encolar(id, () => sock.sendMessage(id, {
-        text: `Bienvenido @${soloNumero(jid)} a este grupo.`,
+        text: caja('Bienvenida', [dice('bienvenida', { usuario: `@${soloNumero(jid)}` }), '', firma()]),
         mentions: [jid]
       }))
     }

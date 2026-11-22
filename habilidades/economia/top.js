@@ -2,6 +2,9 @@
 import { api, activa } from '../../nucleo/api.js'
 import { todosUsuarios } from '../../nucleo/memoria.js'
 import { formato } from '../../nucleo/utiles.js'
+import { aviso, caja, dice, temaActivo } from '../../estilo/index.js'
+
+const medallas = ['🥇', '🥈', '🥉']
 
 async function remoto() {
   if (!activa()) return null
@@ -24,11 +27,12 @@ export default {
       .filter(u => u.registrado)
       .sort((a, b) => b.xp - a.xp)
 
-    if (!lista.length) return ctx.responder('Aún no hay jugadores.')
+    if (!lista.length) return ctx.responder(aviso(dice('topVacio')))
 
+    const e = temaActivo().emojis
     const filas = lista.slice(0, 10).map((u, i) =>
-      `${i + 1}. ${u.nombre || 'Jugador'} — nivel ${u.nivel ?? '-'} · ${formato(u.xp ?? 0)} XP`
+      `${medallas[i] || `${i + 1}.`} ${u.nombre || 'Jugador'} · ${e.nivel} ${u.nivel ?? '-'} · ${e.xp} ${formato(u.xp ?? 0)}`
     )
-    await ctx.responder(['*Top jugadores*', ...filas].join('\n'))
+    await ctx.responder(caja('Top jugadores', filas))
   }
 }
