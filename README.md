@@ -1,6 +1,6 @@
 # YuiBot-MD
 
-Bot de WhatsApp de AmilcarGit hecho con `@yui-bails/baileys`.
+Bot de WhatsApp de AmilcarGit hecho con [Yui-Bails](https://github.com/AmilcarGit/Yui-Bails).
 
 ## Termux
 

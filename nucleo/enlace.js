@@ -1,5 +1,5 @@
 // Código Oficial de YuiBot-MD.by AmilcarGit
-import makeWASocket, { useMultiFileAuthState, DisconnectReason } from '@yui-bails/baileys'
+import makeWASocket, { useMultiFileAuthState, DisconnectReason } from 'yui-bails'
 import pino from 'pino'
 import fs from 'fs'
 import ajustes from '../ajustes.js'
