@@ -13,7 +13,7 @@
     "node": ">=20"
   },
   "dependencies": {
-    "@yui-bails/baileys": "^1.0.0",
+    "yui-bails": "npm:@yui-bails/yui-bails@^1.0.0",
     "chokidar": "^3.6.0",
     "dotenv": "^16.4.5",
     "pino": "^9.3.2"
