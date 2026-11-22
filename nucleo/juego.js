@@ -32,9 +32,24 @@ export function logro(u, id) {
   return true
 }
 
+export const nivelDe = xp => Math.floor(Math.sqrt(Math.max(0, xp) / 20)) + 1
+
+// Lunes de la semana (hora de Perú, como la base de datos) en formato AAAA-MM-DD.
+export function semanaActual(ahora = Date.now()) {
+  const d = new Date(ahora - 5 * 3600000)
+  const atras = (d.getUTCDay() + 6) % 7
+  return new Date(d.getTime() - atras * 86400000).toISOString().slice(0, 10)
+}
+
 export function ganarXp(u, cantidad) {
   u.xp += cantidad
-  const nivel = Math.floor(Math.sqrt(u.xp / 20)) + 1
+  const semana = semanaActual()
+  if (u.semana !== semana) {
+    u.semana = semana
+    u.xpSemana = 0
+  }
+  u.xpSemana = (u.xpSemana || 0) + cantidad
+  const nivel = nivelDe(u.xp)
   const subio = nivel > u.nivel
   u.nivel = Math.max(u.nivel, nivel)
   if (u.nivel >= 10) logro(u, 'nivel10')

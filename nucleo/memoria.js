@@ -21,6 +21,10 @@ const base = {
   esperaTrabajo: 0,
   ultimoAdivina: 0,
   ultimoXp: 0,
+  semana: '',
+  xpSemana: 0,
+  trabajosGanado: 0,
+  veces: {},
   trabajo: '',
   inventario: {},
   coleccion: {},
@@ -98,6 +102,8 @@ export async function iniciarMemoria() {
     db.exec('CREATE TABLE IF NOT EXISTS colecciones (nombre TEXT PRIMARY KEY, datos TEXT NOT NULL)')
   }
   for (const nombre of nombres) cache[nombre] = leer(nombre)
+  // Perfiles guardados con versiones anteriores reciben los campos nuevos.
+  for (const [id, u] of Object.entries(cache.usuarios)) cache.usuarios[id] = { ...structuredClone(base), ...u }
   setInterval(guardar, 15000).unref()
 }
 
@@ -116,14 +122,3 @@ export function chat(id) {
 }
 
 export const todosUsuarios = () => cache.usuarios
-
-export const exportar = () => ({ usuarios: cache.usuarios })
-
-export function fusionar(remotos = {}) {
-  for (const [id, remoto] of Object.entries(remotos)) {
-    const local = cache.usuarios[id]
-    if (!local || (remoto.xp ?? 0) > local.xp) {
-      cache.usuarios[id] = { ...structuredClone(base), ...remoto }
-    }
-  }
-}

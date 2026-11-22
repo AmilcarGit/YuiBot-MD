@@ -31,9 +31,16 @@ Al primer arranque escribe el número del bot con código de país y vincula el 
 - `data/` datos locales
 - `temporal/` y `medios/` archivos temporales
 
-## Base de datos oficial
+## Base de datos oficial (Yui-Datos)
 
-Con `DATOS_URL` apuntando a tu despliegue de YuiBot-datos, el bot sincroniza cada 2 minutos. Sin ella funciona solo con los datos locales.
+Con `DATOS_URL` apuntando a tu despliegue de [YuiBot-datos](https://github.com/AmilcarGit/YuiBot-datos) (por ejemplo `https://tu-proyecto.vercel.app`), el bot:
+
+- se registra solo la primera vez y guarda sus credenciales en `data/datos.json` (no se sube al repo, no hay que poner claves en el `.env`);
+- cada 2 minutos envía los cambios de los jugadores registrados (monedas, XP, racha, inventario, logros, trabajos). Los números se anonimizan en el servidor y no se envía el nombre;
+- aparece en el ranking y el panel web, y `.top [xp|monedas|semana|trabajos]` y `.perfil` muestran los datos globales;
+- si la API falla, el bot sigue funcionando con sus datos locales y reintenta sin duplicar nada.
+
+El dueño puede ver el estado con `.datos` y forzar una sincronización con `.datos ahora`. Sin `DATOS_URL` el bot funciona solo con datos locales.
 
 ## Nueva habilidad
 

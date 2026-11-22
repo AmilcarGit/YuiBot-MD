@@ -2,6 +2,7 @@
 import { formato } from '../../nucleo/utiles.js'
 import { logros, trabajos } from '../../nucleo/juego.js'
 import { caja, temaActivo } from '../../estilo/index.js'
+import { api, activa } from '../../nucleo/api.js'
 
 export default {
   nombre: 'perfil',
@@ -16,6 +17,15 @@ export default {
     const trabajo = trabajos.find(t => t.id === u.trabajo)?.nombre || 'Ninguno'
     const obtenidos = u.logros.map(l => logros[l]).join(', ') || 'Ninguno'
 
+    // Posición en el ranking global (si Yui-Datos responde a tiempo; si no, se omite).
+    let global = null
+    if (activa()) {
+      try {
+        const datos = await api.usuario(ctx.numero)
+        if (datos.existe) global = datos.posiciones
+      } catch {}
+    }
+
     await ctx.responder(caja('Perfil', [
       `${e.persona} ${u.nombre}`,
       '',
@@ -26,7 +36,8 @@ export default {
       `${e.racha} Racha: ${u.racha} ${u.racha === 1 ? 'día' : 'días'}`,
       `${e.trabajo} Trabajo: ${trabajo}`,
       `${e.regalo} Personajes: ${personajes}`,
-      `${e.logro} Logros: ${obtenidos}`
+      `${e.logro} Logros: ${obtenidos}`,
+      global?.xp && `🌍 Ranking global: #${global.xp} en XP`
     ]))
   }
 }

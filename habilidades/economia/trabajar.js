@@ -42,6 +42,8 @@ export default {
     u.monedas += pago
     u.ultimoTrabajo = Date.now()
     u.esperaTrabajo = trabajo.espera
+    u.trabajosGanado += pago
+    u.veces[trabajo.id] = (u.veces[trabajo.id] || 0) + 1
     ganarXp(u, 25)
 
     const nuevoLogro = logro(u, 'primerTrabajo')

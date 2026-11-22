@@ -1,28 +1,37 @@
 // Código Oficial de YuiBot-MD.by AmilcarGit
+// Cliente de YuiBot-datos (la base compartida). Cada instalación se identifica con { id, clave },
+// que la API entrega una sola vez al registrarse y que se guarda en data/datos.json (no va al repo).
 import ajustes from '../ajustes.js'
 
 export const activa = () => Boolean(ajustes.datosUrl)
 
-async function pedir(ruta, opciones = {}) {
+async function pedir(ruta, { metodo = 'GET', cuerpo, cred, espera = 15000 } = {}) {
   const cabeceras = { 'content-type': 'application/json' }
-  if (ajustes.datosClave) cabeceras.authorization = `Bearer ${ajustes.datosClave}`
+  if (cred) {
+    cabeceras['x-instalacion'] = cred.id
+    cabeceras['x-clave'] = cred.clave
+  }
   const respuesta = await fetch(ajustes.datosUrl.replace(/\/$/, '') + ruta, {
-    ...opciones,
+    method: metodo,
     headers: cabeceras,
-    signal: AbortSignal.timeout(15000)
+    body: metodo === 'GET' ? undefined : JSON.stringify(cuerpo ?? {}),
+    signal: AbortSignal.timeout(espera)
   })
-  if (!respuesta.ok) throw new Error(`API ${respuesta.status}`)
-  return respuesta.json()
+  const datos = await respuesta.json().catch(() => ({}))
+  if (!respuesta.ok || datos.ok === false) {
+    const error = new Error(datos.error || `API ${respuesta.status}`)
+    error.estado = respuesta.status
+    throw error
+  }
+  return datos
 }
-
-const enviar = (ruta, datos) => pedir(ruta, { method: 'POST', body: JSON.stringify(datos) })
 
 export const api = {
   salud: () => pedir('/api/salud'),
-  registrar: datos => enviar('/api/registrar', datos),
-  sync: datos => enviar('/api/sync', datos),
-  top: () => pedir('/api/top'),
-  usuario: id => pedir(`/api/usuario?id=${encodeURIComponent(id)}`),
-  evento: () => pedir('/api/evento'),
-  estadisticas: () => pedir('/api/estadisticas')
+  registrar: () => pedir('/api/registrar', { metodo: 'POST' }),
+  sync: (cred, cuerpo) => pedir('/api/sync', { metodo: 'POST', cuerpo, cred }),
+  top: (campo = 'xp', limite = 10) => pedir(`/api/top?campo=${encodeURIComponent(campo)}&limite=${limite}`, { espera: 6000 }),
+  usuario: numero => pedir(`/api/usuario?numero=${encodeURIComponent(numero)}`, { espera: 6000 }),
+  evento: () => pedir('/api/evento', { espera: 6000 }),
+  estadisticas: () => pedir('/api/estadisticas', { espera: 6000 })
 }

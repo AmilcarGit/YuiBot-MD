@@ -1,5 +1,4 @@
 // Código Oficial de YuiBot-MD.by AmilcarGit
-import { api, activa } from '../../nucleo/api.js'
 import { caja, dice, mal, temaActivo } from '../../estilo/index.js'
 import { formato } from '../../nucleo/utiles.js'
 
@@ -21,7 +20,6 @@ export default {
     u.registrado = true
     u.monedas += BONO
 
-    if (activa()) api.registrar({ id: ctx.numero, nombre }).catch(() => {})
     const e = temaActivo().emojis
     await ctx.responder(caja('Registro completo', [
       dice('registrado', { nombre, monedas: BONO }),

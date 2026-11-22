@@ -15,7 +15,6 @@ export default {
   maxSubbots: Number(process.env.MAX_SUBBOTS || 5),
   motor: process.env.MEMORIA_MOTOR === 'sqlite' ? 'sqlite' : 'json',
   datosUrl: process.env.DATOS_URL || '',
-  datosClave: process.env.DATOS_CLAVE || '',
   sincroMs: 120000,
   retardo: [800, 2000],
   falsos: lista(process.env.FALSOS, '')
