@@ -2,6 +2,7 @@
 import { tienda } from '../../nucleo/juego.js'
 import { formato } from '../../nucleo/utiles.js'
 import { caja, dice, mal, ok, temaActivo } from '../../estilo/index.js'
+import { conBotones } from '../../nucleo/botones.js'
 
 export default {
   nombre: 'tienda',
@@ -24,12 +25,16 @@ export default {
       return ctx.responder(ok(dice('tiendaCompra', { objeto: objeto.nombre })))
     }
 
-    await ctx.responder(caja('Tienda', [
+    const disponibles = tienda.filter(t => !u.inventario[t.id])
+    await conBotones(ctx, caja('Tienda', [
       dice('tiendaLista'),
       '',
       ...tienda.flatMap(t => [`${e.regalo} ${t.nombre} · ${e.dinero} ${formato(t.precio)}`, `   ${t.efecto} (${t.id})`]),
       '',
       `Uso: ${ctx.prefijo}tienda comprar id`
-    ]))
+    ]), disponibles.length ? [{
+      texto: '🛍️ Comprar',
+      secciones: [{ titulo: 'Mejoras', filas: disponibles.map(t => ({ titulo: t.nombre, descripcion: `${formato(t.precio)} monedas · ${t.efecto}`, cmd: `tienda comprar ${t.id}` })) }]
+    }] : [])
   }
 }

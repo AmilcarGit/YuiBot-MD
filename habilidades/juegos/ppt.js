@@ -1,6 +1,13 @@
 // Código Oficial de YuiBot-MD.by AmilcarGit
 import { aleatorio } from '../../nucleo/utiles.js'
 import { caja, dice, mal, temaActivo } from '../../estilo/index.js'
+import { conBotones } from '../../nucleo/botones.js'
+
+const jugadas = [
+  { texto: '🪨 Piedra', cmd: 'ppt piedra' },
+  { texto: '📄 Papel', cmd: 'ppt papel' },
+  { texto: '✂️ Tijera', cmd: 'ppt tijera' }
+]
 
 const opciones = ['piedra', 'papel', 'tijera']
 const iconos = { piedra: '🪨', papel: '📄', tijera: '✂️' }
@@ -14,17 +21,17 @@ export default {
   async ejecutar(sock, m, ctx) {
     const jugador = ctx.args[0]?.toLowerCase()
     if (!opciones.includes(jugador)) {
-      return ctx.responder(mal(dice('pptUso', { uso: `${ctx.prefijo}ppt piedra|papel|tijera` })))
+      return conBotones(ctx, mal(dice('pptUso', { uso: `${ctx.prefijo}ppt piedra|papel|tijera` })), jugadas)
     }
 
     const bot = opciones[aleatorio(0, 2)]
     const clave = jugador === bot ? 'pptEmpate' : vence[jugador] === bot ? 'pptGana' : 'pptPierde'
     const e = temaActivo().emojis
-    await ctx.responder(caja('Piedra, papel o tijera', [
+    await conBotones(ctx, caja('Piedra, papel o tijera', [
       `${e.persona} Tú: ${iconos[jugador]} ${jugador}`,
       `${e.titulo} Yui: ${iconos[bot]} ${bot}`,
       '',
       dice(clave)
-    ]))
+    ]), jugadas)
   }
 }

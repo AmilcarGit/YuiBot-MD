@@ -3,6 +3,7 @@ import ajustes from '../ajustes.js'
 import { habilidades } from './cargador.js'
 import { usuario, chat, moverUsuario } from './memoria.js'
 import { encolar } from './cola.js'
+import { aBotonesWa, textoAlterno } from './botones.js'
 import { vigilar } from './guardia.js'
 import { ganarXp } from './juego.js'
 import { extraerTexto, soloNumero } from './utiles.js'
@@ -87,7 +88,19 @@ async function atender(sock, m) {
     prefijo: '',
     args: [],
     responder: contenido => encolar(jid, () => sock.sendMessage(jid, { text: contenido }, { quoted: m })),
-    enviar: (contenido, opciones) => encolar(jid, () => sock.sendMessage(jid, contenido, opciones))
+    enviar: (contenido, opciones) => encolar(jid, () => sock.sendMessage(jid, contenido, opciones)),
+    botonesActivos: ajustes.botones,
+    // Texto con botones; si WhatsApp no los acepta, el mismo texto con los atajos escritos.
+    botones: (contenido, lista, { pie } = {}) => encolar(jid, async () => {
+      if (ajustes.botones) {
+        try {
+          return await sock.sendMessage(jid, { text: contenido, footer: pie || ajustes.nombre, buttons: aBotonesWa(lista, ctx.prefijo) }, { quoted: m })
+        } catch (error) {
+          console.error(`Botones: ${error.message}`)
+        }
+      }
+      return sock.sendMessage(jid, { text: contenido + textoAlterno(lista, ctx.prefijo) }, { quoted: m })
+    })
   }
 
   u.mensajes++

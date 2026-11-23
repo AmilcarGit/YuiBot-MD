@@ -3,6 +3,7 @@ import { formato } from '../../nucleo/utiles.js'
 import { logros, trabajos } from '../../nucleo/juego.js'
 import { caja, temaActivo } from '../../estilo/index.js'
 import { api, activa } from '../../nucleo/api.js'
+import { conBotones } from '../../nucleo/botones.js'
 
 export default {
   nombre: 'perfil',
@@ -26,7 +27,7 @@ export default {
       } catch {}
     }
 
-    await ctx.responder(caja('Perfil', [
+    await conBotones(ctx, caja('Perfil', [
       `${e.persona} ${u.nombre}`,
       '',
       `${e.nivel} Nivel: ${u.nivel}`,
@@ -38,6 +39,6 @@ export default {
       `${e.regalo} Personajes: ${personajes}`,
       `${e.logro} Logros: ${obtenidos}`,
       global?.xp && `🌍 Ranking global: #${global.xp} en XP`
-    ]))
+    ]), [{ texto: '🎁 Daily', cmd: 'daily' }, { texto: '💼 Trabajar', cmd: 'trabajar' }, { texto: '🏆 Top', cmd: 'top' }])
   }
 }

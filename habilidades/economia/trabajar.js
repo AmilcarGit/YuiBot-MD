@@ -2,6 +2,7 @@
 import { trabajos, ganarXp, logro } from '../../nucleo/juego.js'
 import { aleatorio, formato, tiempo } from '../../nucleo/utiles.js'
 import { caja, dice, mal, ok, temaActivo } from '../../estilo/index.js'
+import { conBotones } from '../../nucleo/botones.js'
 
 export default {
   nombre: 'trabajar',
@@ -25,13 +26,19 @@ export default {
 
     const trabajo = trabajos.find(t => t.id === u.trabajo)
     if (!trabajo) {
-      return ctx.responder(caja('Oficios', [
+      return conBotones(ctx, caja('Oficios', [
         dice('trabajoElige'),
         '',
         ...trabajos.map(t => `${e.trabajo} ${t.id} · nivel ${t.nivel} · ${t.pago[0]}-${t.pago[1]} monedas`),
         '',
         `Uso: ${ctx.prefijo}trabajar oficio`
-      ]))
+      ]), [{
+        texto: '💼 Elegir oficio',
+        secciones: [{
+          titulo: 'Oficios',
+          filas: trabajos.map(t => ({ titulo: t.nombre || t.id, descripcion: `Nivel ${t.nivel} · ${t.pago[0]}-${t.pago[1]} monedas`, cmd: `trabajar ${t.id}` }))
+        }]
+      }])
     }
 
     // El descanso se fija con el oficio que se cobró, así cambiar de oficio no lo salta.
@@ -47,12 +54,12 @@ export default {
     ganarXp(u, 25)
 
     const nuevoLogro = logro(u, 'primerTrabajo')
-    await ctx.responder(caja('Trabajo', [
+    await conBotones(ctx, caja('Trabajo', [
       dice('trabajoPago', { trabajo: trabajo.nombre, monto: formato(pago), nombre }),
       '',
       `${e.dinero} +${formato(pago)} monedas`,
       `${e.xp} +25 XP`,
       nuevoLogro && `${e.logro} Logro: Primer trabajo`
-    ]))
+    ]), [{ texto: '🪙 Perfil', cmd: 'perfil' }, { texto: '🛍️ Tienda', cmd: 'tienda' }])
   }
 }

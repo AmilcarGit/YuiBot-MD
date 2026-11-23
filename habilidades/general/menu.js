@@ -2,6 +2,7 @@
 import ajustes from '../../ajustes.js'
 import { listar } from '../../nucleo/cargador.js'
 import { caja, dice, firma, nieve, temaActivo } from '../../estilo/index.js'
+import { conBotones } from '../../nucleo/botones.js'
 
 const titulos = {
   general: 'General',
@@ -41,7 +42,24 @@ export default {
       `${tema.emojis.item} Estilo: ${tema.nombre}`
     ])
 
-    const bloques = (unica ? [elegida] : claves).map(c => caja(
+    const mostradas = unica ? [elegida] : claves
+    const desplegable = {
+      texto: '📜 Comandos',
+      secciones: mostradas.map(c => ({
+        titulo: titulos[c] || c,
+        filas: porCategoria.get(c).sort((a, b) => a.nombre.localeCompare(b.nombre)).map(h => ({ titulo: `${ctx.prefijo}${h.nombre}`, descripcion: h.ayuda, cmd: h.nombre }))
+      }))
+    }
+
+    // Con botones el mensaje se acorta (el detalle de cada comando va en el desplegable).
+    if (ctx.botonesActivos) {
+      const resumen = caja('Categorías', mostradas.map(c =>
+        `${tema.iconos?.[c] || tema.emojis.item} ${titulos[c] || c} › ${porCategoria.get(c).map(h => h.nombre).sort().join(' · ')}`
+      ))
+      return conBotones(ctx, [nieve(), cabecera, resumen, `💡 Toca “Comandos” para elegir uno.`, firma()].join('\n\n'), [desplegable])
+    }
+
+    const bloques = mostradas.map(c => caja(
       titulos[c] || c,
       porCategoria.get(c)
         .sort((a, b) => a.nombre.localeCompare(b.nombre))
