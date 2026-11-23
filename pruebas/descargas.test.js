@@ -58,3 +58,19 @@ test('reconoce enlaces de YouTube y limita a una descarga por persona', () => {
   soltar('51')
   assert.ok(tomar('51')); soltar('51')
 })
+
+test('yts con botones manda la imagen del primer resultado y un desplegable de audio y video', async () => {
+  const original = globalThis.fetch
+  globalThis.fetch = async () => ({ ok: true, status: 200, json: async () => ({ status: true, data: [{ type: 'video', url: 'https://youtu.be/-qvYXZOUImo', title: 'Patadas', duration: '3:45', author: { name: 'LM' } }] }) })
+  try {
+    const { default: yts } = await import('../habilidades/descargas/yts.js')
+    const enviados = []
+    await yts.ejecutar({}, {}, { prefijo: '.', args: ['patadas'], botonesActivos: true, responder: t => enviados.push(['txt', t]), botones: (t, l, o) => enviados.push(['btn', t, l, o]) })
+    const [tipo, texto, lista, opciones] = enviados[0]
+    assert.equal(tipo, 'btn')
+    assert.ok(texto.length < 60, 'texto corto')
+    assert.equal(opciones.media, 'https://i.ytimg.com/vi/-qvYXZOUImo/hqdefault.jpg')
+    assert.deepEqual(lista[0].secciones.map(s => s.titulo), ['🎵 Música (MP3)', '🎬 Video (MP4)'])
+    assert.equal(lista[0].secciones[1].filas[0].cmd, 'ytmp4 https://youtu.be/-qvYXZOUImo')
+  } finally { globalThis.fetch = original }
+})
