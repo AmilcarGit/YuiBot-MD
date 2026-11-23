@@ -1,5 +1,6 @@
 // Código Oficial de YuiBot-MD.by AmilcarGit
 import { esEnlaceYoutube, ytmp4, soltar, tomar } from '../../nucleo/descargas.js'
+import { motivo } from '../../nucleo/descargas.js'
 import { dice, mal } from '../../estilo/index.js'
 
 export default {
@@ -23,7 +24,7 @@ export default {
       }
     } catch (error) {
       console.error(`ytmp4: ${error.message}`)
-      await ctx.responder(mal(dice('descargaFallo')))
+      await ctx.responder(mal(`${dice('descargaFallo')}\n\n🔎 ${motivo(error)}`))
     } finally { soltar(ctx.numero) }
   }
 }

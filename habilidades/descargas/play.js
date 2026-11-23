@@ -1,5 +1,6 @@
 // Código Oficial de YuiBot-MD.by AmilcarGit
 import { buscarYoutube, esEnlaceYoutube, ytmp3, soltar, tomar } from '../../nucleo/descargas.js'
+import { motivo } from '../../nucleo/descargas.js'
 import { caja, dice, mal } from '../../estilo/index.js'
 import { conBotones } from '../../nucleo/botones.js'
 import { enviarAudio } from './_enviar.js'
@@ -28,7 +29,7 @@ export default {
       await enviarAudio(ctx, audio, video.titulo)
     } catch (error) {
       console.error(`play: ${error.message}`)
-      await ctx.responder(mal(dice('descargaFallo')))
+      await ctx.responder(mal(`${dice('descargaFallo')}\n\n🔎 ${motivo(error)}`))
     } finally { soltar(ctx.numero) }
   }
 }

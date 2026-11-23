@@ -22,13 +22,32 @@ test('ytmp3 entrega el enlace y falla si no hay', async () => {
   await assert.rejects(con({ message: 'mal' }, () => ytmp3('https://youtu.be/a'), false))
 })
 
-test('ytmp4 busca el enlace en cualquiera de los campos de YOSOYO', async () => {
-  const v = (downloads, download) => ({ result: [{ title: 'S', downloads, download }] })
-  assert.equal((await con(v({ mp4: { url: 'https://x.test/1.mp4' } }), () => ytmp4('https://youtu.be/a'))).url, 'https://x.test/1.mp4')
-  assert.equal((await con(v({ mp4: { url: '' }, v2: { download: { mp4: 'https://x.test/2.mp4' } } }), () => ytmp4('https://youtu.be/a'))).url, 'https://x.test/2.mp4')
-  assert.equal((await con(v({}, { mp4: 'https://x.test/3.mp4' }), () => ytmp4('https://youtu.be/a'))).url, 'https://x.test/3.mp4')
-  await assert.rejects(con(v({ mp4: { url: '' } }, { mp4: '' }), () => ytmp4('https://youtu.be/a')))
-  assert.match(responder.urls.at(-1), /api-yosoyyo-api-ofc\.onrender\.com\/api\/youtube\?q=.*&apiKey=AmilcarGit/)
+test('ytmp4 prueba Nexora y, si no hay enlace, YOSOYO', async () => {
+  const original = globalThis.fetch
+  const urls = []
+  const respuestas = {
+    nexora: { status: true, data: { download: 'https://x.test/n.mp4' } },
+    nexoraMal: { status: false, message: 'No se pudo obtener el video con esa calidad' },
+    yosoyo: { result: [{ title: 'S', downloads: { mp4: { url: '' }, v2: { download: { mp4: 'https://x.test/y.mp4' } } } }] },
+    yosoyoVacio: { result: [{ title: 'S', downloads: { mp4: { url: '' } }, download: { mp4: '' } }] }
+  }
+  const usar = (n, y) => { globalThis.fetch = async u => { urls.push(String(u)); return { ok: true, status: 200, json: async () => (String(u).includes('nexora') ? n : y) } } }
+  try {
+    usar(respuestas.nexora, respuestas.yosoyo)
+    assert.equal((await ytmp4('https://youtu.be/a')).url, 'https://x.test/n.mp4')
+    assert.match(urls.at(-1), /ytmp4\?url=.*&quality=360&apikey=nexora_/)
+    usar(respuestas.nexoraMal, respuestas.yosoyo)
+    assert.equal((await ytmp4('https://youtu.be/a')).url, 'https://x.test/y.mp4')
+    usar(respuestas.nexoraMal, respuestas.yosoyoVacio)
+    await assert.rejects(ytmp4('https://youtu.be/a'), /calidad/)
+  } finally { globalThis.fetch = original }
+})
+
+test('si la API falla una vez, se reintenta', async () => {
+  const original = globalThis.fetch
+  let n = 0
+  globalThis.fetch = async () => ({ ok: true, status: 200, json: async () => (++n === 1 ? { status: false, message: 'Error al consultar YouTube' } : { status: true, data: [{ type: 'video', url: 'https://youtu.be/a', title: 'T' }] }) })
+  try { assert.equal((await buscarYoutube('x')).length, 1); assert.equal(n, 2) } finally { globalThis.fetch = original }
 })
 
 test('reconoce enlaces de YouTube y limita a una descarga por persona', () => {
