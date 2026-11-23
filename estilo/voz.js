@@ -187,6 +187,26 @@ export const voz = {
   ],
 
   // ── Piedra, papel o tijera ────────────────────────────────────
+  descargaUso: [
+    'Dime qué buscar así: {uso} (•ᴗ•)',
+    '¿Qué canción quieres? Escribe {uso} ✨'
+  ],
+  descargaEspera: [
+    'Buscándolo para ti～ dame un momentito (๑>◡<๑)',
+    'Ya voy por ello, ¡no tardo! ✨'
+  ],
+  descargaOcupada: [
+    'Todavía estoy con tu descarga anterior, espera un poquito (>﹏<)',
+    'Una a la vez, ¿sí? Termino la anterior y sigo contigo (｡•́︿•̀｡)'
+  ],
+  descargaNada: [
+    'No encontré nada con eso (；ω；) prueba con otro nombre.',
+    'Busqué y busqué, pero no salió nada… ¿lo intentas con otras palabras? (｡•́︿•̀｡)'
+  ],
+  descargaFallo: [
+    'Uy～ no pude descargarlo ahora, la API está dormida o el enlace no sirve. Inténtalo en un rato (；ω；)',
+    'Ay no, no logré traerlo (>﹏<) prueba otra vez en unos minutos.'
+  ],
   pptUso: [
     'Juega así: {uso} (•ᴗ•)',
     '¿Jugamos? Escribe {uso} ✨'

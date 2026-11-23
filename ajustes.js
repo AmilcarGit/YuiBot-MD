@@ -21,6 +21,12 @@ export default {
   botonesFormato: /^interactive$/i.test(process.env.BOTONES_FORMATO?.trim() || '') ? 'interactive' : 'buttons',
   datosUrl: /^(off|no|false|0)$/i.test(process.env.DATOS_URL?.trim() || '') ? '' : (process.env.DATOS_URL?.trim() || 'https://yuibot-datos.vercel.app'),
   sincroMs: 120000,
+  // APIs de descargas. Las claves van aquí por defecto; para cambiarlas usa NEXORA_KEY / YOSOYO_KEY en .env.
+  descargas: {
+    nexora: { url: process.env.NEXORA_URL?.trim() || 'https://nexora-api-max6.onrender.com', clave: process.env.NEXORA_KEY?.trim() || 'nexora_1iw82j8LXamd1Qk4OVA8rjR5Bst0txDl' },
+    yosoyo: { url: process.env.YOSOYO_URL?.trim() || 'https://api-yosoyyo-api-ofc.onrender.com', clave: process.env.YOSOYO_KEY?.trim() || 'AmilcarGit' },
+    espera: 45000 // las APIs gratuitas de Render pueden tardar en "despertar"
+  },
   retardo: [800, 2000],
   falsos: lista(process.env.FALSOS, '')
 }

@@ -8,6 +8,7 @@ const titulos = {
   general: 'General',
   economia: 'Economía',
   juegos: 'Juegos',
+  descargas: 'Descargas',
   grupo: 'Grupo',
   subbots: 'Sub-bots',
   dueno: 'Dueño'
