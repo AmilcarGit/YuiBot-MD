@@ -50,3 +50,12 @@ test('al tocar un botón, la respuesta se lee como el comando que lleva', () => 
   assert.equal(extraerTexto(nativo), '.daily')
   assert.equal(extraerTexto(efimero), '.gacha')
 })
+
+test('el menú acepta enlace o archivo de imagen, GIF o video', async () => {
+  const { adjuntoDe } = await import('../nucleo/cerebro.js')
+  assert.equal(adjuntoDe(''), null)
+  assert.deepEqual(adjuntoDe('https://x.test/menu.mp4?v=1'), { video: { url: 'https://x.test/menu.mp4?v=1' }, gifPlayback: true })
+  assert.deepEqual(adjuntoDe('https://x.test/menu.jpg'), { image: { url: 'https://x.test/menu.jpg' } })
+  assert.equal(adjuntoDe('media/no-existe.mp4'), null)
+  assert.equal(adjuntoDe('https://x.test/pagina'), null)
+})

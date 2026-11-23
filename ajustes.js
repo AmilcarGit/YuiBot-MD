@@ -1,8 +1,18 @@
 // Código Oficial de YuiBot-MD.by AmilcarGit
 import 'dotenv/config'
 import path from 'path'
+import fs from 'fs'
 
 const lista = (valor, defecto) => (valor ?? defecto).split(',').map(x => x.trim()).filter(Boolean)
+
+// Imagen, GIF o video del menú: un enlace directo (MENU_MEDIA=https://...) o un archivo en la carpeta media/ (menu.mp4, menu.jpg, menu.png, menu.webp o menu.gif).
+// MENU_MEDIA=off lo desactiva.
+const medioMenu = () => {
+  const env = process.env.MENU_MEDIA?.trim()
+  if (/^(off|no|false|0)$/i.test(env || '')) return ''
+  if (env) return env
+  return ['mp4', 'gif', 'jpg', 'jpeg', 'png', 'webp'].map(e => path.join('media', `menu.${e}`)).find(f => fs.existsSync(f)) || ''
+}
 
 export default {
   nombre: 'YuiBot-MD',
@@ -20,6 +30,7 @@ export default {
   // 'buttons' = botones clásicos (los demás ven la respuesta como texto normal, sin aviso de "actualiza WhatsApp"). 'interactive' = botones modernos.
   botonesFormato: /^interactive$/i.test(process.env.BOTONES_FORMATO?.trim() || '') ? 'interactive' : 'buttons',
   datosUrl: /^(off|no|false|0)$/i.test(process.env.DATOS_URL?.trim() || '') ? '' : (process.env.DATOS_URL?.trim() || 'https://yuibot-datos.vercel.app'),
+  menuMedia: medioMenu(),
   sincroMs: 120000,
   // APIs de descargas. Las claves van aquí por defecto; para cambiarlas usa NEXORA_KEY / YOSOYO_KEY en .env.
   descargas: {

@@ -1,4 +1,6 @@
 // Código Oficial de YuiBot-MD.by AmilcarGit
+import fs from 'fs'
+import path from 'path'
 import ajustes from '../ajustes.js'
 import { habilidades } from './cargador.js'
 import { usuario, chat, moverUsuario } from './memoria.js'
@@ -8,6 +10,17 @@ import { vigilar } from './guardia.js'
 import { ganarXp } from './juego.js'
 import { extraerTexto, soloNumero } from './utiles.js'
 import { dice, mal, ok } from '../estilo/index.js'
+
+/** Convierte un enlace o ruta (imagen, GIF o video) en el contenido que entiende sock.sendMessage; null si no hay. */
+export function adjuntoDe(medio) {
+  if (!medio) return null
+  const ref = /^https?:\/\//i.test(medio) ? medio : path.resolve(medio)
+  if (!/^https?:\/\//i.test(ref) && !fs.existsSync(ref)) return null
+  const ext = ref.split('?')[0].split('.').pop().toLowerCase()
+  if (['mp4', 'mov', 'webm', 'gif'].includes(ext)) return { video: { url: ref }, gifPlayback: true }
+  if (['jpg', 'jpeg', 'png', 'webp'].includes(ext)) return { image: { url: ref } }
+  return null
+}
 
 const cacheGrupos = new Map()
 
@@ -91,9 +104,18 @@ async function atender(sock, m) {
     enviar: (contenido, opciones) => encolar(jid, () => sock.sendMessage(jid, contenido, opciones)),
     botonesActivos: ajustes.botones,
     // Texto con botones; si WhatsApp no los acepta, el mismo texto con los atajos escritos.
-    botones: (contenido, lista, { pie } = {}) => encolar(jid, async () => {
+    botones: (contenido, lista, { pie, media } = {}) => encolar(jid, async () => {
       if (ajustes.botones) {
         try {
+          // Con imagen, GIF o video: el texto va como pie de la imagen y los botones debajo.
+          const adjunto = adjuntoDe(media)
+          if (adjunto) {
+            try {
+              return await sock.sendMessage(jid, { ...adjunto, caption: contenido, footer: pie || ajustes.nombre, buttonsFormat: ajustes.botonesFormato, buttons: aBotonesWa(lista, ctx.prefijo) }, { quoted: m })
+            } catch (error) {
+              console.error(`Botones con medio: ${error.message}`)
+            }
+          }
           return await sock.sendMessage(jid, { text: contenido, footer: pie || ajustes.nombre, buttonsFormat: ajustes.botonesFormato, buttons: aBotonesWa(lista, ctx.prefijo) }, { quoted: m })
         } catch (error) {
           console.error(`Botones: ${error.message}`)

@@ -57,7 +57,7 @@ export default {
       const resumen = caja('Categorías', mostradas.map(c =>
         `${tema.iconos?.[c] || tema.emojis.item} ${titulos[c] || c} › ${porCategoria.get(c).map(h => h.nombre).sort().join(' · ')}`
       ))
-      return conBotones(ctx, [nieve(), cabecera, resumen, `💡 Toca “Comandos” para elegir uno.`, firma()].join('\n\n'), [desplegable])
+      return conBotones(ctx, [nieve(), cabecera, resumen, `💡 Toca “Comandos” para elegir uno.`, firma()].join('\n\n'), [desplegable], { media: ajustes.menuMedia })
     }
 
     const bloques = mostradas.map(c => caja(
