@@ -180,3 +180,19 @@ test('si la racha y el trabajo cambiaron en la web, el bot los adopta', () => {
   assert.equal(u.racha, 4)
   assert.equal(u.trabajo, 'minero')
 })
+
+test('la base oficial es el valor por defecto y se puede cambiar o apagar con DATOS_URL', async () => {
+  const leer = async valor => {
+    const previo = process.env.DATOS_URL
+    if (valor === undefined) delete process.env.DATOS_URL
+    else process.env.DATOS_URL = valor
+    const { default: ajustes } = await import(`../ajustes.js?x=${Math.random()}`)
+    if (previo === undefined) delete process.env.DATOS_URL
+    else process.env.DATOS_URL = previo
+    return ajustes.datosUrl
+  }
+  assert.equal(await leer(undefined), 'https://yuibot-datos.vercel.app')
+  assert.equal(await leer(''), 'https://yuibot-datos.vercel.app')
+  assert.equal(await leer('https://otra.vercel.app'), 'https://otra.vercel.app')
+  assert.equal(await leer('off'), '')
+})

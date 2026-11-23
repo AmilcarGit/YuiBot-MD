@@ -33,7 +33,7 @@ Al primer arranque escribe el número del bot con código de país y vincula el 
 
 ## Base de datos oficial (Yui-Datos)
 
-Con `DATOS_URL` apuntando a tu despliegue de [YuiBot-datos](https://github.com/AmilcarGit/YuiBot-datos) (por ejemplo `https://tu-proyecto.vercel.app`), el bot:
+El bot viene conectado por defecto a la base oficial (`https://yuibot-datos.vercel.app`, código en [YuiBot-datos](https://github.com/AmilcarGit/YuiBot-datos)). Para usar tu propio despliegue pon `DATOS_URL=https://tu-proyecto.vercel.app` en el `.env`, o `DATOS_URL=off` para desactivarla. Conectado, el bot:
 
 - se registra solo la primera vez y guarda sus credenciales en `data/datos.json` (no se sube al repo, no hay que poner claves en el `.env`);
 - cada 2 minutos envía los cambios de los jugadores registrados (monedas, XP, racha, inventario, logros, trabajos). Los números se anonimizan en el servidor y no se envía el nombre;
@@ -42,7 +42,7 @@ Con `DATOS_URL` apuntando a tu despliegue de [YuiBot-datos](https://github.com/A
 
 **Yui en la web:** escribe `.web` al bot por privado, te da un código de 6 dígitos y con él entras en `TU_URL/yui` para usar los comandos (menu, perfil, daily, trabajar, tienda, gacha, ppt, ruleta, top…) con el mismo progreso. Lo que haces allí se refleja en WhatsApp (el bot lo consulta cada 10 minutos).
 
-El dueño puede ver el estado con `.datos` y forzar una sincronización con `.datos ahora`. Sin `DATOS_URL` el bot funciona solo con datos locales.
+El dueño puede ver el estado con `.datos` y forzar una sincronización con `.datos ahora`. Con `DATOS_URL=off` el bot funciona solo con datos locales.
 
 ## Nueva habilidad
 

@@ -14,7 +14,8 @@ export default {
   sesionSubbots: path.join('alma', 'subbots'),
   maxSubbots: Number(process.env.MAX_SUBBOTS || 5),
   motor: process.env.MEMORIA_MOTOR === 'sqlite' ? 'sqlite' : 'json',
-  datosUrl: process.env.DATOS_URL || '',
+  // Base de datos oficial de Yui (ranking y chat web). Para usar la tuya cambia DATOS_URL; para desactivarla, DATOS_URL=off.
+  datosUrl: /^(off|no|false|0)$/i.test(process.env.DATOS_URL?.trim() || '') ? '' : (process.env.DATOS_URL?.trim() || 'https://yuibot-datos.vercel.app'),
   sincroMs: 120000,
   retardo: [800, 2000],
   falsos: lista(process.env.FALSOS, '')
