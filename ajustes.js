@@ -6,12 +6,12 @@ import fs from 'fs'
 const lista = (valor, defecto) => (valor ?? defecto).split(',').map(x => x.trim()).filter(Boolean)
 
 // Imagen, GIF o video del menú: un enlace directo (MENU_MEDIA=https://...) o un archivo en la carpeta media/ (menu.mp4, menu.jpg, menu.png, menu.webp o menu.gif).
-// MENU_MEDIA=off lo desactiva.
+// Si no hay ninguno de los dos, se usa el video oficial del menú. MENU_MEDIA=off lo desactiva.
 const medioMenu = () => {
   const env = process.env.MENU_MEDIA?.trim()
   if (/^(off|no|false|0)$/i.test(env || '')) return ''
   if (env) return env
-  return ['mp4', 'gif', 'jpg', 'jpeg', 'png', 'webp'].map(e => path.join('media', `menu.${e}`)).find(f => fs.existsSync(f)) || ''
+  return ['mp4', 'gif', 'jpg', 'jpeg', 'png', 'webp'].map(e => path.join('media', `menu.${e}`)).find(f => fs.existsSync(f)) || 'https://files.catbox.moe/rcfcf3.mp4'
 }
 
 export default {
