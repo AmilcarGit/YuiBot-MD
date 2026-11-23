@@ -17,6 +17,8 @@ export default {
   // Base de datos oficial de Yui (ranking y chat web). Para usar la tuya cambia DATOS_URL; para desactivarla, DATOS_URL=off.
   // Botones nativos de WhatsApp (Yui-Bails). BOTONES=off los reemplaza por texto con atajos.
   botones: !/^(off|no|false|0)$/i.test(process.env.BOTONES?.trim() || ''),
+  // 'buttons' = botones clásicos (los demás ven la respuesta como texto normal, sin aviso de "actualiza WhatsApp"). 'interactive' = botones modernos.
+  botonesFormato: /^interactive$/i.test(process.env.BOTONES_FORMATO?.trim() || '') ? 'interactive' : 'buttons',
   datosUrl: /^(off|no|false|0)$/i.test(process.env.DATOS_URL?.trim() || '') ? '' : (process.env.DATOS_URL?.trim() || 'https://yuibot-datos.vercel.app'),
   sincroMs: 120000,
   retardo: [800, 2000],

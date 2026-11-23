@@ -94,7 +94,7 @@ async function atender(sock, m) {
     botones: (contenido, lista, { pie } = {}) => encolar(jid, async () => {
       if (ajustes.botones) {
         try {
-          return await sock.sendMessage(jid, { text: contenido, footer: pie || ajustes.nombre, buttons: aBotonesWa(lista, ctx.prefijo) }, { quoted: m })
+          return await sock.sendMessage(jid, { text: contenido, footer: pie || ajustes.nombre, buttonsFormat: ajustes.botonesFormato, buttons: aBotonesWa(lista, ctx.prefijo) }, { quoted: m })
         } catch (error) {
           console.error(`Botones: ${error.message}`)
         }
