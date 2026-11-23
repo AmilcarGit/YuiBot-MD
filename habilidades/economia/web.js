@@ -1,7 +1,7 @@
 // Código Oficial de YuiBot-MD.by AmilcarGit
 import ajustes from '../../ajustes.js'
 import { api, activa } from '../../nucleo/api.js'
-import { credenciales, sincronizarAhora } from '../../nucleo/sincro.js'
+import { credenciales, sincronizarAhora, telefonoValido } from '../../nucleo/sincro.js'
 import { caja, dice, mal, temaActivo } from '../../estilo/index.js'
 
 export default {
@@ -13,6 +13,7 @@ export default {
   soloPrivado: true,
   async ejecutar(sock, m, ctx) {
     if (!activa()) return ctx.responder(mal(dice('webNoDisponible')))
+    if (!telefonoValido(ctx.numero)) return ctx.responder(mal(dice('webSinNumero')))
     try {
       // Primero se suben los datos, así la web ya los tiene al entrar.
       await sincronizarAhora()

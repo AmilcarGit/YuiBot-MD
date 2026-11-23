@@ -121,4 +121,12 @@ export function chat(id) {
   return cache.chats[id]
 }
 
+/** Si el perfil estaba guardado con el id oculto (LID) y ahora se conoce el teléfono, lo pasa al teléfono sin perder nada. */
+export function moverUsuario(desde, hasta) {
+  if (desde === hasta || !cache.usuarios[desde] || cache.usuarios[hasta]) return false
+  cache.usuarios[hasta] = cache.usuarios[desde]
+  delete cache.usuarios[desde]
+  return true
+}
+
 export const todosUsuarios = () => cache.usuarios

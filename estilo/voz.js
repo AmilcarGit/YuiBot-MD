@@ -270,6 +270,9 @@ export const voz = {
     '¡Aquí tienes tu llave para hablar conmigo en la web! (๑>◡<๑)',
     'Te espero en la página～ usa este código para entrar ✨'
   ],
+  webSinNumero: [
+    'WhatsApp me esconde tu número real y así no puedo darte el código (；ω；) Prueba desde otro chat o dile al dueño que revise Yui-Bails.'
+  ],
   webNoDisponible: [
     'Uy～ ahora no puedo hablar con la web, inténtalo en unos minutos (；ω；)',
     'No logro conectar con la página todavía… ¿lo intentas otra vez? (>﹏<)'

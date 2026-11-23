@@ -1,7 +1,7 @@
 // Código Oficial de YuiBot-MD.by AmilcarGit
 import ajustes from '../ajustes.js'
 import { habilidades } from './cargador.js'
-import { usuario, chat } from './memoria.js'
+import { usuario, chat, moverUsuario } from './memoria.js'
 import { encolar } from './cola.js'
 import { vigilar } from './guardia.js'
 import { ganarXp } from './juego.js'
@@ -24,6 +24,25 @@ function esAdminDe(meta, identidades) {
   ))
 }
 
+// WhatsApp a veces oculta el teléfono (id LID de 15 dígitos). Se busca el teléfono real en el mensaje,
+// en el mapa LID→teléfono de la sesión o en la lista de participantes del grupo.
+async function telefonoReal(sock, m, candidatos, meta) {
+  const directo = candidatos.find(j => j.endsWith('@s.whatsapp.net'))
+  if (directo) return directo
+  const lid = candidatos.find(j => j.endsWith('@lid'))
+  if (!lid) return undefined
+  for (const extra of [m.key.senderPn, m.key.participantPn, m.senderPn]) {
+    if (extra) return String(extra).includes('@') ? extra : `${extra}@s.whatsapp.net`
+  }
+  const participante = meta?.participants.find(p => p.id === lid || p.lid === lid)
+  if (participante?.phoneNumber) return participante.phoneNumber
+  try {
+    const pn = await sock.signalRepository?.lidMapping?.getPNForLID?.(lid)
+    if (pn) return pn
+  } catch {}
+  return undefined
+}
+
 export async function procesar(sock, { messages, type }) {
   if (type !== 'notify') return
   await Promise.all(messages.map(m => atender(sock, m).catch(error => console.error(error))))
@@ -40,12 +59,14 @@ async function atender(sock, m) {
   if (!origen) return
 
   const candidatos = [origen, m.key.participantAlt, m.key.remoteJidAlt].filter(Boolean)
-  const pn = candidatos.find(j => j.endsWith('@s.whatsapp.net')) || origen
+  const meta = grupo ? await metadatos(sock, jid).catch(() => null) : null
+  const pn = (await telefonoReal(sock, m, candidatos, meta)) || origen
   const numero = soloNumero(pn)
-  const identidades = new Set(candidatos.map(soloNumero))
+  const identidades = new Set([...candidatos, pn].map(soloNumero))
+  // Si antes se guardó con el id oculto, el perfil se pasa al teléfono.
+  for (const j of candidatos) if (j.endsWith('@lid')) moverUsuario(soloNumero(j), numero)
 
   const esDueno = ajustes.dueno.some(d => identidades.has(d))
-  const meta = grupo ? await metadatos(sock, jid).catch(() => null) : null
   const esAdmin = grupo ? esAdminDe(meta, identidades) : false
 
   const texto = extraerTexto(m)

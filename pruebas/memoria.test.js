@@ -43,3 +43,13 @@ test('los usuarios nuevos traen los campos de cooldown', () => {
   assert.equal(u.esperaTrabajo, 0)
   assert.equal(u.ultimoAdivina, 0)
 })
+
+test('moverUsuario pasa el perfil del id oculto al teléfono sin pisar uno existente', async () => {
+  const { moverUsuario, usuario } = await import('../nucleo/memoria.js')
+  usuario('111111111111111').monedas = 77
+  assert.equal(moverUsuario('111111111111111', '51900000009'), true)
+  assert.equal(usuario('51900000009').monedas, 77)
+  usuario('222222222222222').monedas = 1
+  assert.equal(moverUsuario('222222222222222', '51900000009'), false)
+  assert.equal(usuario('51900000009').monedas, 77)
+})
