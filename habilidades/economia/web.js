@@ -6,7 +6,7 @@ import { caja, dice, mal, temaActivo } from '../../estilo/index.js'
 
 export default {
   nombre: 'web',
-  alias: ['codigoweb'],
+  alias: ['wep', 'pagina', 'codigoweb'],
   categoria: 'economia',
   ayuda: 'Código para usar a Yui desde la página web',
   registro: true,
