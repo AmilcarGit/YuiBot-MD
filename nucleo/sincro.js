@@ -10,6 +10,8 @@ import { todosUsuarios, guardar } from './memoria.js'
 import { nivelDe } from './juego.js'
 
 const MAX_USUARIOS = 100
+// Aunque no haya cambios, cada tanto se consulta al servidor para enterarse de lo hecho en la web de Yui.
+const LATIDO_MS = 600000
 // Topes por sincronización (los mismos que aplica el servidor); lo que sobre se envía en la siguiente.
 const TOPE = { monedas: 100000, xp: 2000, mensajes: 500, trabajosVeces: 100, trabajosGanado: 100000 }
 const CAMPOS = ['monedas', 'xp', 'mensajes', 'trabajosGanado', 'trabajosVeces']
@@ -40,6 +42,10 @@ function registro(u) {
     mejorRacha: u.racha || 0,
     ultimoDaily: u.ultimoDaily || 0,
     ultimoXp: u.ultimoXp || 0,
+    ultimoTrabajo: u.ultimoTrabajo || 0,
+    esperaTrabajo: u.esperaTrabajo || 0,
+    ultimoAdivina: u.ultimoAdivina || 0,
+    coleccion: { ...(u.coleccion || {}) },
     trabajo: u.trabajo || '',
     semana: u.semana || '',
     inventario: Object.keys(u.inventario || {}).filter(k => u.inventario[k]),
@@ -82,35 +88,58 @@ export function construirEnvio(usuarios, estado, ahora = Date.now(), limite = MA
       }
     }
 
-    const cambio = !foto || foto.h !== h || Object.values(d).some(Boolean)
-    if (!cambio) continue
+    // `actualizado` es la hora del último cambio REAL del bot: así una consulta sin cambios nunca pisa lo hecho en la web.
+    const cambioRegistro = !foto || foto.h !== h
+    const cambio = cambioRegistro || Object.values(d).some(Boolean)
+    const latido = !foto || ahora - (foto.visto || 0) > LATIDO_MS
+    if (!cambio && !latido) continue
+    const hora = cambio ? ahora : foto.cambio || ahora
 
-    const item = { u: { r: { ...r, actualizado: ahora }, d }, vis: enmascarar(numero) }
+    const item = { u: { r: { ...r, actualizado: hora }, d }, vis: enmascarar(numero) }
     if (!foto) item.u.semilla = true
-    if (t.ganado || Object.keys(t.veces).length) item.t = { r: { actualizado: ahora }, d: t }
+    if (t.ganado || Object.keys(t.veces).length) item.t = { r: { actualizado: hora }, d: t }
 
     envio[numero] = item
-    enviados[numero] = { ...actual, h }
+    enviados[numero] = { ...actual, h, cambio: cambioRegistro ? ahora : foto.cambio || ahora }
   }
   return { envio, enviados }
 }
 
-// Solo sube: si el servidor trae menos de lo que el bot tiene (tope por hora, semilla recortada),
-// el bot NO pierde nada y lo que falta se sube poco a poco en las siguientes sincronizaciones.
-function aplicarUsuario(u, enviado, srv) {
+// `previo` es lo que el servidor tenía ANTES de sumar lo nuestro; si cambió desde la última vez, alguien más
+// (la web de Yui u otra instalación) ganó o gastó, y el bot lo refleja. Lo que el servidor recortó por topes
+// sigue pendiente en el bot y se sube en la siguiente sincronización (nada se pierde).
+// Con un servidor viejo (sin `previo`) solo se suben los totales: el bot nunca pierde monedas.
+function aplicarUsuario(u, enviado, srv, previo, anterior) {
   for (const c of ['monedas', 'xp']) {
-    const total = Number(srv[c])
-    if (Number.isFinite(total) && total > enviado[c]) u[c] += total - enviado[c]
+    if (previo && Number.isFinite(Number(previo[c]))) {
+      u[c] = Math.max(0, u[c] + Number(previo[c]) - (anterior?.[c] ?? 0))
+    } else {
+      const total = Number(srv[c])
+      if (Number.isFinite(total) && total > enviado[c]) u[c] += total - enviado[c]
+    }
   }
   u.nivel = Math.max(u.nivel || 1, nivelDe(u.xp))
-  u.ultimoDaily = Math.max(u.ultimoDaily || 0, Number(srv.ultimoDaily) || 0)
+  // Si el daily se cobró en otro lado, la racha también viene de allí.
+  if ((Number(srv.ultimoDaily) || 0) > (u.ultimoDaily || 0) && Number.isFinite(Number(srv.racha))) u.racha = Number(srv.racha)
+  for (const c of ['ultimoDaily', 'ultimoXp', 'ultimoAdivina']) u[c] = Math.max(u[c] || 0, Number(srv[c]) || 0)
+  // El descanso del trabajo viaja junto con la hora del último cobro.
+  if ((Number(srv.ultimoTrabajo) || 0) > (u.ultimoTrabajo || 0)) {
+    u.ultimoTrabajo = Number(srv.ultimoTrabajo)
+    u.esperaTrabajo = Number(srv.esperaTrabajo) || u.esperaTrabajo
+    if (/^[a-z]{1,20}$/.test(srv.trabajo)) u.trabajo = srv.trabajo
+  }
+  if (!u.trabajo && typeof srv.trabajo === 'string' && /^[a-z]{1,20}$/.test(srv.trabajo)) u.trabajo = srv.trabajo
 
   if (Array.isArray(srv.inventario)) for (const id of srv.inventario) if (/^[\w-]{1,30}$/.test(id) && !u.inventario[id]) u.inventario[id] = true
   if (srv.logros && typeof srv.logros === 'object') for (const id of Object.keys(srv.logros)) if (/^[\w-]{1,30}$/.test(id) && !u.logros.includes(id)) u.logros.push(id)
+  if (srv.coleccion && typeof srv.coleccion === 'object') {
+    u.coleccion ??= {}
+    for (const [id, n] of Object.entries(srv.coleccion)) if (/^[\wÀ-ÿ ,.-]{1,40}$/.test(id) && Number(n) > (u.coleccion[id] || 0)) u.coleccion[id] = Number(n)
+  }
 }
 
 /** Aplica la respuesta del servidor. Devuelve 'reinicio' si la base fue reiniciada, si no 'ok'. */
-export function aplicarRespuesta(usuarios, estado, envio, enviados, respuesta) {
+export function aplicarRespuesta(usuarios, estado, envio, enviados, respuesta, ahora = Date.now()) {
   if (respuesta.epoca) estado.epoca = respuesta.epoca
   if (respuesta.reinicio) {
     estado.usuarios = {}
@@ -121,9 +150,9 @@ export function aplicarRespuesta(usuarios, estado, envio, enviados, respuesta) {
     const error = respuesta.errores?.[numero]
     const srv = respuesta.usuarios?.[numero]?.u
     if (error === 'ocupado') continue // otra sincronización a la vez: se reintenta en el próximo ciclo
-    const foto = { ...enviados[numero] }
+    const foto = { ...enviados[numero], visto: ahora }
     if (srv && usuarios[numero]) {
-      aplicarUsuario(usuarios[numero], enviados[numero], srv)
+      aplicarUsuario(usuarios[numero], enviados[numero], srv, respuesta.usuarios[numero].previo, estado.usuarios[numero])
       // La referencia es lo que el servidor tiene ahora; la diferencia con el bot se enviará después.
       foto.monedas = Number(srv.monedas) || 0
       foto.xp = Number(srv.xp) || 0
@@ -215,6 +244,9 @@ function programar() {
 
 /** Sincroniza ya (lo usa el comando .datos ahora). */
 export const sincronizarAhora = intento
+
+/** Credenciales de esta instalación (para pedir códigos de enlace). */
+export const credenciales = () => (estado?.id ? { id: estado.id, clave: estado.clave } : null)
 
 export const estadoSincro = () => ({
   activa: activa(),

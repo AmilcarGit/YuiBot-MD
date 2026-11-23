@@ -40,6 +40,8 @@ Con `DATOS_URL` apuntando a tu despliegue de [YuiBot-datos](https://github.com/A
 - aparece en el ranking y el panel web, y `.top [xp|monedas|semana|trabajos]` y `.perfil` muestran los datos globales;
 - si la API falla, el bot sigue funcionando con sus datos locales y reintenta sin duplicar nada.
 
+**Yui en la web:** escribe `.web` al bot por privado, te da un código de 6 dígitos y con él entras en `TU_URL/yui` para usar los comandos (menu, perfil, daily, trabajar, tienda, gacha, ppt, ruleta, top…) con el mismo progreso. Lo que haces allí se refleja en WhatsApp (el bot lo consulta cada 10 minutos).
+
 El dueño puede ver el estado con `.datos` y forzar una sincronización con `.datos ahora`. Sin `DATOS_URL` el bot funciona solo con datos locales.
 
 ## Nueva habilidad

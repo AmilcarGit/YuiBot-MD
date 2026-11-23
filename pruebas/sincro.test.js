@@ -121,3 +121,62 @@ test('ganarXp lleva la cuenta semanal y la reinicia al cambiar de semana', () =>
   assert.equal(u.xpSemana, 15)
   assert.equal(semanaActual(Date.UTC(2026, 10, 22, 12)), '2026-11-16')
 })
+
+test('con `previo`: lo gastado o ganado desde la web llega al bot y lo recortado sigue pendiente', () => {
+  const u = jugador({ monedas: 1000 })
+  const estado = vacio()
+  estado.usuarios[51900000001] = { monedas: 1000, xp: 100, mensajes: 20, trabajosGanado: 200, trabajosVeces: 2, veces: { granjero: 2 }, semana: u.semana, xpSemana: 30, h: 'x' }
+  u.monedas = 1100 // el bot ganó 100
+  const { envio, enviados } = construirEnvio({ 51900000001: u }, estado)
+  // En la web se gastaron 400 (el servidor tenía 600) y el servidor aceptó nuestros +100 → 700
+  aplicarRespuesta({ 51900000001: u }, estado, envio, enviados, {
+    usuarios: { 51900000001: { u: { monedas: 700, xp: 100 }, previo: { monedas: 600, xp: 100 } } }, errores: {}
+  })
+  assert.equal(u.monedas, 700)
+  assert.equal(estado.usuarios[51900000001].monedas, 700)
+  assert.equal(Object.keys(construirEnvio({ 51900000001: u }, estado).envio).length, 0, 'quedan iguales')
+
+  // El servidor recortó el aumento por el tope por hora: el bot conserva lo que falta
+  u.monedas = 700 + 300
+  const otro = construirEnvio({ 51900000001: u }, estado)
+  aplicarRespuesta({ 51900000001: u }, estado, otro.envio, otro.enviados, {
+    usuarios: { 51900000001: { u: { monedas: 800, xp: 100 }, previo: { monedas: 700, xp: 100 } } }, errores: {}
+  })
+  assert.equal(u.monedas, 1000)
+  assert.equal(construirEnvio({ 51900000001: u }, estado).envio['51900000001'].u.d.monedas, 200)
+})
+
+test('el descanso del trabajo, la colección y el daily de la web se reflejan en el bot', () => {
+  const u = jugador({ ultimoTrabajo: 10, esperaTrabajo: 100, coleccion: { Aprendiz: 1 } })
+  const estado = vacio()
+  const { envio, enviados } = construirEnvio({ 51900000001: u }, estado)
+  aplicarRespuesta({ 51900000001: u }, estado, envio, enviados, {
+    usuarios: { 51900000001: { u: { monedas: 500, xp: 100, ultimoTrabajo: 999, esperaTrabajo: 1800000, ultimoDaily: 77, ultimoAdivina: 5, coleccion: { Aprendiz: 3, Hechicera: 1 } }, previo: { monedas: 0, xp: 0 } } }, errores: {}
+  })
+  assert.equal(u.ultimoTrabajo, 999)
+  assert.equal(u.esperaTrabajo, 1800000)
+  assert.equal(u.ultimoDaily, 77)
+  assert.deepEqual(u.coleccion, { Aprendiz: 3, Hechicera: 1 })
+})
+
+test('sin cambios, cada cierto tiempo se consulta al servidor sin pisar lo hecho en la web', () => {
+  const u = jugador()
+  const estado = vacio()
+  const primero = construirEnvio({ 51900000001: u }, estado, 1000)
+  aplicarRespuesta({ 51900000001: u }, estado, primero.envio, primero.enviados, { usuarios: { 51900000001: { u: { monedas: 500, xp: 100 }, previo: { monedas: 0, xp: 0 } } }, errores: {} }, 1000)
+  assert.equal(Object.keys(construirEnvio({ 51900000001: u }, estado, 2000).envio).length, 0, 'recién consultado')
+  const latido = construirEnvio({ 51900000001: u }, estado, 1000 + 700000)
+  const item = latido.envio['51900000001']
+  assert.ok(item, 'toca consultar')
+  assert.equal(item.u.r.actualizado, 1000, 'conserva la hora del último cambio real del bot')
+  assert.equal(Object.values(item.u.d).some(Boolean), false)
+})
+
+test('si la racha y el trabajo cambiaron en la web, el bot los adopta', () => {
+  const u = jugador({ ultimoDaily: 5, racha: 1, trabajo: 'granjero', ultimoTrabajo: 10 })
+  const estado = vacio()
+  const { envio, enviados } = construirEnvio({ 51900000001: u }, estado)
+  aplicarRespuesta({ 51900000001: u }, estado, envio, enviados, { usuarios: { 51900000001: { u: { monedas: 500, xp: 100, ultimoDaily: 99, racha: 4, ultimoTrabajo: 99, trabajo: 'minero' }, previo: { monedas: 0, xp: 0 } } }, errores: {} })
+  assert.equal(u.racha, 4)
+  assert.equal(u.trabajo, 'minero')
+})

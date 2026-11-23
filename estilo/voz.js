@@ -263,5 +263,15 @@ export const voz = {
   // ── Rankings ──────────────────────────────────────────────────
   topVacio: [
     'Aún no hay jugadores～ ¡sé el primero! (•̀ᴗ•́)و'
+  ],
+
+  // ── Yui en la web ─────────────────────────────────────────────
+  webCodigo: [
+    '¡Aquí tienes tu llave para hablar conmigo en la web! (๑>◡<๑)',
+    'Te espero en la página～ usa este código para entrar ✨'
+  ],
+  webNoDisponible: [
+    'Uy～ ahora no puedo hablar con la web, inténtalo en unos minutos (；ω；)',
+    'No logro conectar con la página todavía… ¿lo intentas otra vez? (>﹏<)'
   ]
 }

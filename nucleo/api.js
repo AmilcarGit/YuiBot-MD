@@ -30,6 +30,7 @@ export const api = {
   salud: () => pedir('/api/salud'),
   registrar: () => pedir('/api/registrar', { metodo: 'POST' }),
   sync: (cred, cuerpo) => pedir('/api/sync', { metodo: 'POST', cuerpo, cred }),
+  vincular: (cred, numero) => pedir('/api/vincular', { metodo: 'POST', cuerpo: { numero }, cred }),
   top: (campo = 'xp', limite = 10) => pedir(`/api/top?campo=${encodeURIComponent(campo)}&limite=${limite}`, { espera: 6000 }),
   usuario: numero => pedir(`/api/usuario?numero=${encodeURIComponent(numero)}`, { espera: 6000 }),
   evento: () => pedir('/api/evento', { espera: 6000 }),
