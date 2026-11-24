@@ -1,8 +1,8 @@
 // Código Oficial de YuiBot-MD.by AmilcarGit
-import { esEnlaceYoutube, ytmp3, soltar, tomar } from '../../nucleo/descargas.js'
+import { esEnlaceYoutube, ytmp3, ytaudioYui, soltar, tomar } from '../../nucleo/descargas.js'
 import { motivo } from '../../nucleo/descargas.js'
 import { dice, mal } from '../../estilo/index.js'
-import { enviarAudio } from './_enviar.js'
+import { entregarAudio } from './_enviar.js'
 
 export default {
   nombre: 'ytmp3',
@@ -15,7 +15,7 @@ export default {
     if (!tomar(ctx.numero)) return ctx.responder(mal(dice('descargaOcupada')))
     try {
       await ctx.responder(dice('descargaEspera'))
-      await enviarAudio(ctx, await ytmp3(enlace), 'audio')
+      await entregarAudio(ctx, enlace, 'audio')
     } catch (error) {
       console.error(`ytmp3: ${error.message}`)
       await ctx.responder(mal(`${dice('descargaFallo')}\n\n🔎 ${motivo(error)}`))

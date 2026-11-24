@@ -31,6 +31,35 @@ async function pedir(base, ruta, params, intentos = 2) {
 
 const primero = (...valores) => valores.find(v => typeof v === 'string' && /^https?:\/\//.test(v)) || null
 
+/** Búsqueda con la API oficial de YuiBot-MD (YuiApi). */
+async function buscarYuiapi(consulta, limite) {
+  const { yuiapi } = ajustes.descargas
+  const url = new URL('/api/v1/search/youtube', yuiapi.url)
+  url.searchParams.set('q', consulta); url.searchParams.set('limit', String(Math.min(limite, 10)))
+  const respuesta = await fetch(url, { headers: { 'x-api-key': yuiapi.clave }, signal: AbortSignal.timeout(ajustes.descargas.espera) })
+  const datos = await respuesta.json().catch(() => ({}))
+  if (!respuesta.ok || datos.ok === false) throw new Error(datos.error || datos.message || `YuiApi ${respuesta.status}`)
+  return (datos.results || [])
+    .filter(v => /^https?:\/\//.test(v.url || '') && v.duration)
+    .slice(0, limite)
+    .map(v => ({ url: v.url, titulo: v.title, duracion: v.duration, canal: v.channel, vistas: v.views, miniatura: v.id ? `https://i.ytimg.com/vi/${v.id}/hqdefault.jpg` : v.thumbnail }))
+}
+
+/** Audio MP3 de YuiApi: la API entrega el archivo, no un enlace. Devuelve un Buffer. */
+export async function ytaudioYui(enlace) {
+  const { yuiapi, maxAudioBytes } = ajustes.descargas
+  const url = new URL('/api/v1/download/ytaudio', yuiapi.url)
+  url.searchParams.set('url', enlace)
+  const respuesta = await fetch(url, { headers: { 'x-api-key': yuiapi.clave }, signal: AbortSignal.timeout(Math.max(ajustes.descargas.espera, 60000)) })
+  if (!respuesta.ok) throw new Error(`YuiApi ${respuesta.status}`)
+  if (/json|text/.test(respuesta.headers.get('content-type') || '')) throw new Error('YuiApi no devolvió audio')
+  const largo = Number(respuesta.headers.get('content-length') || 0)
+  if (largo > maxAudioBytes) throw new Error('el audio pesa demasiado')
+  const buffer = Buffer.from(await respuesta.arrayBuffer())
+  if (!buffer.length || buffer.length > maxAudioBytes) throw new Error('audio vacío o demasiado pesado')
+  return buffer
+}
+
 /** Búsqueda con YOSOYO (sin cuota diaria). Mismo formato de salida que buscarYoutube. */
 async function buscarYosoyo(consulta, limite) {
   const { yosoyo } = ajustes.descargas
@@ -51,10 +80,10 @@ async function buscarNexora(consulta, limite) {
     .map(v => ({ url: v.url, titulo: v.title, duracion: v.duration, canal: v.author?.name, vistas: v.views, miniatura: v.thumbnail || v.image }))
 }
 
-/** Busca videos en YouTube: primero YOSOYO y, si falla o no trae nada, Nexora. */
+/** Busca videos en YouTube: primero YuiApi (oficial) y, si falla o no trae nada, YOSOYO y Nexora. */
 export async function buscarYoutube(consulta, limite = 6) {
   let ultimo
-  for (const buscar of [buscarYosoyo, buscarNexora]) {
+  for (const buscar of [buscarYuiapi, buscarYosoyo, buscarNexora]) {
     try {
       const lista = await buscar(consulta, limite)
       if (lista.length) return lista

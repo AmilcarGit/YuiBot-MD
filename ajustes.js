@@ -34,8 +34,10 @@ export default {
   sincroMs: 120000,
   // APIs de descargas. Las claves van aquí por defecto; para cambiarlas usa NEXORA_KEY / YOSOYO_KEY en .env.
   descargas: {
+    yuiapi: { url: process.env.YUIAPI_URL?.trim() || 'https://yuiapi.vercel.app', clave: process.env.YUIAPI_KEY?.trim() || 'amk_i9vKkMEpbyOOueT2YcPxs68JFH3JaFzw' },
     nexora: { url: process.env.NEXORA_URL?.trim() || 'https://nexora-api-max6.onrender.com', clave: process.env.NEXORA_KEY?.trim() || 'nexora_1iw82j8LXamd1Qk4OVA8rjR5Bst0txDl' },
     yosoyo: { url: process.env.YOSOYO_URL?.trim() || 'https://api-yosoyyo-api-ofc.onrender.com', clave: process.env.YOSOYO_KEY?.trim() || 'AmilcarGit' },
+    maxAudioBytes: 16 * 1024 * 1024, // más pesado que esto va por enlace
     espera: 45000 // las APIs gratuitas de Render pueden tardar en "despertar"
   },
   retardo: [800, 2000],

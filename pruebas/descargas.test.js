@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { buscarYoutube, ytmp3, ytmp4, esEnlaceYoutube, tomar, soltar } from '../nucleo/descargas.js'
+import { buscarYoutube, ytaudioYui, ytmp3, ytmp4, esEnlaceYoutube, tomar, soltar } from '../nucleo/descargas.js'
 
 const responder = (cuerpo, ok = true) => async url => { responder.urls.push(String(url)); return { ok, status: ok ? 200 : 500, json: async () => cuerpo } }
 responder.urls = []
@@ -46,7 +46,7 @@ test('ytmp4 prueba Nexora y, si no hay enlace, YOSOYO', async () => {
 test('si la API falla una vez, se reintenta', async () => {
   const original = globalThis.fetch
   let n = 0
-  globalThis.fetch = async () => ({ ok: true, status: 200, json: async () => (++n === 1 ? { status: false, message: 'Error al consultar YouTube' } : { status: true, data: [{ type: 'video', url: 'https://youtu.be/a', title: 'T' }] }) })
+  globalThis.fetch = async u => { if (String(u).includes('yuiapi')) throw new Error('caída'); return ({ ok: true, status: 200, json: async () => (++n === 1 ? { status: false, message: 'Error al consultar YouTube' } : { status: true, data: [{ type: 'video', url: 'https://youtu.be/a', title: 'T' }] }) }) }
   try { assert.equal((await buscarYoutube('x')).length, 1); assert.equal(n, 2) } finally { globalThis.fetch = original }
 })
 
@@ -99,7 +99,7 @@ test('la búsqueda usa YOSOYO primero y Nexora si falla', async () => {
   const urls = []
   const yosoyo = { result: [{ title: 'A', videoUrl: 'https://youtube.com/watch?v=aaaaaaaaaaa', thumbnailUrl: 'm', channelName: 'C', duration: '3:45', views: 5 }, { title: 'sin duración', videoUrl: 'https://youtube.com/watch?v=bbbbbbbbbbb', duration: '' }] }
   const nexora = { status: true, data: [{ type: 'video', url: 'https://youtu.be/n', title: 'N', duration: '1:00', author: { name: 'X' } }] }
-  const usar = (y) => { globalThis.fetch = async u => { urls.push(String(u)); const esY = String(u).includes('yosoyyo'); if (esY && !y) throw new Error('caída'); return { ok: true, status: 200, json: async () => (esY ? y : nexora) } } }
+  const usar = (y) => { globalThis.fetch = async u => { if (String(u).includes('yuiapi')) throw new Error('caída'); urls.push(String(u)); const esY = String(u).includes('yosoyyo'); if (esY && !y) throw new Error('caída'); return { ok: true, status: 200, json: async () => (esY ? y : nexora) } } }
   try {
     usar(yosoyo)
     const r = await buscarYoutube('x')
@@ -124,5 +124,22 @@ test('YOSOYO v2: ytmp4 elige el 360p (con audio) y ytmp3 usa el m4a si Nexora fa
     const v = await ytmp4('https://youtu.be/a')
     assert.equal(v.url, 'https://g.test/360.mp4'); assert.equal(v.conAudio, true)
     assert.equal(await ytmp3('https://youtu.be/a'), 'https://g.test/a.m4a')
+  } finally { globalThis.fetch = original }
+})
+
+test('YuiApi: yts busca primero ahí con x-api-key y ytaudio devuelve un Buffer', async () => {
+  const original = globalThis.fetch
+  const llamadas = []
+  globalThis.fetch = async (u, op = {}) => {
+    llamadas.push({ u: String(u), clave: op.headers?.['x-api-key'] })
+    if (String(u).includes('/search/youtube')) return { ok: true, status: 200, json: async () => ({ ok: true, results: [{ id: 'abc', title: 'San Lucas', channel: 'X', duration: '4:03', views: '1', url: 'https://www.youtube.com/watch?v=abc' }] }) }
+    return { ok: true, status: 200, headers: { get: () => 'audio/mpeg' }, arrayBuffer: async () => new Uint8Array([1, 2, 3]).buffer }
+  }
+  try {
+    const [v] = await buscarYoutube('san lucas', 1)
+    assert.equal(v.titulo, 'San Lucas'); assert.match(v.miniatura, /i\.ytimg\.com\/vi\/abc/)
+    assert.ok(llamadas[0].u.includes('yuiapi.vercel.app/api/v1/search/youtube')); assert.match(llamadas[0].clave, /^amk_/)
+    const b = await ytaudioYui('https://youtu.be/abc')
+    assert.equal(b.length, 3)
   } finally { globalThis.fetch = original }
 })
