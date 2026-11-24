@@ -3,7 +3,7 @@ import fs from 'fs'
 import path from 'path'
 import ajustes from '../ajustes.js'
 import { habilidades } from './cargador.js'
-import { usuario, chat, moverUsuario } from './memoria.js'
+import { usuario, chat, moverUsuario, todosUsuarios } from './memoria.js'
 import { encolar } from './cola.js'
 import { aBotonesWa, textoAlterno } from './botones.js'
 import { vigilar } from './guardia.js'
@@ -103,6 +103,16 @@ async function atender(sock, m) {
     responder: contenido => encolar(jid, () => sock.sendMessage(jid, { text: contenido }, { quoted: m })),
     enviar: (contenido, opciones) => encolar(jid, () => sock.sendMessage(jid, contenido, opciones)),
     botonesActivos: ajustes.botones,
+    // Regalo de monedas a otro jugador registrado en este mismo bot.
+    regalar: async (destino, cantidad) => {
+      if (destino === numero) throw new Error('No puedes regalarte a ti mismo.')
+      const otro = todosUsuarios()[destino]
+      if (!otro?.registrado) throw new Error('Ese número no está registrado en el bot.')
+      if (u.monedas < cantidad) throw new Error('No tienes tantas monedas.')
+      u.monedas -= cantidad
+      otro.monedas += cantidad
+      return { nombre: otro.nombre }
+    },
     // Texto con botones; si WhatsApp no los acepta, el mismo texto con los atajos escritos.
     botones: (contenido, lista, { pie, media } = {}) => encolar(jid, async () => {
       if (ajustes.botones) {
