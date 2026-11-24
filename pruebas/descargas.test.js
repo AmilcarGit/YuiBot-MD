@@ -74,3 +74,22 @@ test('yts con botones manda la imagen del primer resultado y un desplegable de a
     assert.equal(lista[0].secciones[1].filas[0].cmd, 'ytmp4 https://youtu.be/-qvYXZOUImo')
   } finally { globalThis.fetch = original }
 })
+
+test('ytmp4Local usa yt-dlp si está instalado y devuelve null si no', async () => {
+  const fs = await import('fs'), os = await import('os'), path = await import('path')
+  const bin = fs.mkdtempSync(path.join(os.tmpdir(), 'falso-'))
+  const original = process.env.PATH
+  try {
+    const mod = await import('../nucleo/descargas.js?sin')
+    process.env.PATH = bin   // sin yt-dlp
+    assert.equal(await mod.ytmp4Local('https://youtu.be/a'), null)
+    fs.writeFileSync(path.join(bin, 'yt-dlp'), '#!/bin/sh\nif [ "$1" = "--version" ]; then echo 2026.1.1; exit 0; fi\nfor a in "$@"; do last="$a"; done\nout=""; prev=""; for a in "$@"; do if [ "$prev" = "-o" ]; then out="$a"; fi; prev="$a"; done\nf=$(echo "$out" | sed "s/%(id)s/abc/; s/%(ext)s/mp4/")\necho "datos" > "$f"\necho "Mi video"\necho "$f"\n', { mode: 0o755 })
+    const mod2 = await import('../nucleo/descargas.js?con')
+    process.env.PATH = `${bin}:${original}`
+    const r = await mod2.ytmp4Local('https://youtu.be/a')
+    assert.equal(r.titulo, 'Mi video')
+    assert.ok(fs.existsSync(r.archivo))
+    mod2.limpiarLocal(r)
+    assert.ok(!fs.existsSync(r.archivo))
+  } finally { process.env.PATH = original }
+})

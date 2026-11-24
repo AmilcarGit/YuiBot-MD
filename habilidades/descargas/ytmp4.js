@@ -1,5 +1,6 @@
 // Código Oficial de YuiBot-MD.by AmilcarGit
-import { esEnlaceYoutube, ytmp4, soltar, tomar } from '../../nucleo/descargas.js'
+import { esEnlaceYoutube, ytmp4, ytmp4Local, limpiarLocal, soltar, tomar } from '../../nucleo/descargas.js'
+import fs from 'fs'
 import { motivo } from '../../nucleo/descargas.js'
 import { dice, mal } from '../../estilo/index.js'
 import { conBotones } from '../../nucleo/botones.js'
@@ -15,6 +16,18 @@ export default {
     if (!tomar(ctx.numero)) return ctx.responder(mal(dice('descargaOcupada')))
     try {
       await ctx.responder(dice('descargaEspera'))
+      // 1) yt-dlp en esta máquina (si está instalado); 2) las APIs.
+      let local = null
+      try { local = await ytmp4Local(enlace) } catch (error) { console.error(`ytmp4 local: ${error.message}`) }
+      if (local) {
+        try {
+          const pie = local.titulo ? `🎬 ${local.titulo}` : '🎬'
+          const archivo = fs.readFileSync(local.archivo)
+          try { await ctx.enviar({ video: archivo, mimetype: 'video/mp4', caption: pie }, { quoted: m }) }
+          catch { await ctx.enviar({ document: archivo, mimetype: 'video/mp4', fileName: `${(local.titulo || 'video').slice(0, 60)}.mp4` }, { quoted: m }) }
+        } finally { limpiarLocal(local) }
+        return
+      }
       const v = await ytmp4(enlace)
       const pie = v.titulo ? `🎬 ${v.titulo}` : '🎬'
       try {

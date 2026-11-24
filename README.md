@@ -15,6 +15,16 @@ bash iniciar.sh
 
 Al primer arranque escribe el número del bot con código de país y vincula el código que aparece en WhatsApp > Dispositivos vinculados.
 
+### Descargas de video (`.ytmp4`)
+El video se descarga con **yt-dlp** si está instalado en la misma máquina del bot (es lo más fiable). En Termux:
+
+```bash
+pkg install python ffmpeg
+pip install -U yt-dlp
+```
+
+Sin yt-dlp el bot usa las APIs de Nexora y YOSOYO, que fallan a ratos. Los videos de más de 60 MB se rechazan.
+
 ## Railway
 
 1. Sube el repositorio y crea un servicio desde GitHub.

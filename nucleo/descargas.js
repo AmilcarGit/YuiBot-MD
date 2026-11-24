@@ -1,6 +1,10 @@
 // Código Oficial de YuiBot-MD.by AmilcarGit
 // Cliente de las APIs de descargas (Nexora para búsqueda y MP3, YOSOYO para MP4).
 // Las claves y URLs salen de ajustes.js.
+import { execFile } from 'child_process'
+import fs from 'fs'
+import os from 'os'
+import path from 'path'
 import ajustes from '../ajustes.js'
 
 const pausa = ms => new Promise(r => setTimeout(r, ms))
@@ -77,3 +81,44 @@ export const soltar = clave => ocupados.delete(clave)
 
 /** Motivo corto y legible del error para mostrarlo en el chat. */
 export const motivo = error => String(error?.message || error || 'error desconocido').replace(/https?:\/\/\S+/g, '').slice(0, 120)
+
+// ── Descarga local con yt-dlp (la más fiable: usa la conexión del propio teléfono o servidor) ──
+// Instalación en Termux:  pkg install python ffmpeg && pip install -U yt-dlp
+const ejecutar = (cmd, args, opciones = {}) => new Promise((resolve, reject) => {
+  execFile(cmd, args, { timeout: 180000, maxBuffer: 1 << 20, ...opciones }, (error, stdout, stderr) => error ? reject(Object.assign(error, { stderr })) : resolve(stdout))
+})
+
+let ytdlpDisponible
+/** true si yt-dlp está instalado (se comprueba una vez). */
+export async function hayYtdlp() {
+  if (ytdlpDisponible === undefined) ytdlpDisponible = await ejecutar('yt-dlp', ['--version'], { timeout: 10000 }).then(() => true, () => false)
+  return ytdlpDisponible
+}
+
+/**
+ * Descarga el video (360p/480p en MP4, con audio) a un archivo temporal.
+ * Devuelve { archivo, titulo } o null si yt-dlp no está instalado. Quien lo use debe borrar el archivo.
+ */
+export async function ytmp4Local(enlace, { maxMb = 60 } = {}) {
+  if (!(await hayYtdlp())) return null
+  const carpeta = fs.mkdtempSync(path.join(os.tmpdir(), 'yui-'))
+  try {
+    const salida = await ejecutar('yt-dlp', [
+      '--no-playlist', '--no-warnings', '--max-filesize', `${maxMb}M`,
+      '-f', '18/best[height<=480][ext=mp4]/best[height<=480]/worst[ext=mp4]',
+      '--merge-output-format', 'mp4',
+      '-o', path.join(carpeta, '%(id)s.%(ext)s'),
+      '--print', '%(title)s', '--print', 'after_move:filepath', '--no-simulate',
+      enlace
+    ])
+    const [titulo, archivo] = salida.trim().split('\n').slice(-2)
+    if (!archivo || !fs.existsSync(archivo)) throw new Error('el video supera el límite o no se pudo bajar')
+    return { archivo, titulo: titulo || '', carpeta }
+  } catch (error) {
+    fs.rmSync(carpeta, { recursive: true, force: true })
+    throw new Error(String(error.stderr || error.message).split('\n').filter(Boolean).pop()?.slice(0, 120) || 'yt-dlp falló')
+  }
+}
+
+/** Borra el archivo temporal de una descarga local. */
+export const limpiarLocal = d => d?.carpeta && fs.rmSync(d.carpeta, { recursive: true, force: true })
