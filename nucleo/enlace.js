@@ -62,6 +62,7 @@ export async function conectar(opciones) {
     if (connection !== 'close') return
 
     const codigo = lastDisconnect?.error?.output?.statusCode
+    console.log(`Conexión cerrada (${codigo ?? 'sin código'}): ${lastDisconnect?.error?.message || ''}`.trim())
 
     if (codigo === DisconnectReason.loggedOut) {
       fs.rmSync(carpeta, { recursive: true, force: true })
