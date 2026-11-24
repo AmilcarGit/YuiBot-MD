@@ -31,14 +31,37 @@ async function pedir(base, ruta, params, intentos = 2) {
 
 const primero = (...valores) => valores.find(v => typeof v === 'string' && /^https?:\/\//.test(v)) || null
 
-/** Busca videos en YouTube. Devuelve [{ url, titulo, duracion, canal, vistas, miniatura }]. */
-export async function buscarYoutube(consulta, limite = 6) {
+/** Búsqueda con YOSOYO (sin cuota diaria). Mismo formato de salida que buscarYoutube. */
+async function buscarYosoyo(consulta, limite) {
+  const { yosoyo } = ajustes.descargas
+  const r = await pedir(yosoyo, '/api/youtube', { q: consulta, apiKey: yosoyo.clave }, 1)
+  return (r.result || [])
+    .filter(v => /^https?:\/\//.test(v.videoUrl || '') && v.duration)
+    .slice(0, limite)
+    .map(v => ({ url: v.videoUrl, titulo: v.title, duracion: v.duration, canal: v.channelName, vistas: v.views, miniatura: v.thumbnailUrl }))
+}
+
+/** Búsqueda con Nexora (150 peticiones al día en la clave gratuita). */
+async function buscarNexora(consulta, limite) {
   const { nexora } = ajustes.descargas
   const r = await pedir(nexora, '/api/busqueda/youtube', { query: consulta, apikey: nexora.clave })
   return (r.data || [])
     .filter(v => v.type === 'video' && v.url && !v.isLive)
     .slice(0, limite)
     .map(v => ({ url: v.url, titulo: v.title, duracion: v.duration, canal: v.author?.name, vistas: v.views, miniatura: v.thumbnail || v.image }))
+}
+
+/** Busca videos en YouTube: primero YOSOYO y, si falla o no trae nada, Nexora. */
+export async function buscarYoutube(consulta, limite = 6) {
+  let ultimo
+  for (const buscar of [buscarYosoyo, buscarNexora]) {
+    try {
+      const lista = await buscar(consulta, limite)
+      if (lista.length) return lista
+    } catch (error) { ultimo = error }
+  }
+  if (ultimo) throw ultimo
+  return []
 }
 
 /** Enlace de descarga del audio (MP3) de un video de YouTube. */

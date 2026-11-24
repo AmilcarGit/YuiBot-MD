@@ -93,3 +93,19 @@ test('ytmp4Local usa yt-dlp si está instalado y devuelve null si no', async () 
     assert.ok(!fs.existsSync(r.archivo))
   } finally { process.env.PATH = original }
 })
+
+test('la búsqueda usa YOSOYO primero y Nexora si falla', async () => {
+  const original = globalThis.fetch
+  const urls = []
+  const yosoyo = { result: [{ title: 'A', videoUrl: 'https://youtube.com/watch?v=aaaaaaaaaaa', thumbnailUrl: 'm', channelName: 'C', duration: '3:45', views: 5 }, { title: 'sin duración', videoUrl: 'https://youtube.com/watch?v=bbbbbbbbbbb', duration: '' }] }
+  const nexora = { status: true, data: [{ type: 'video', url: 'https://youtu.be/n', title: 'N', duration: '1:00', author: { name: 'X' } }] }
+  const usar = (y) => { globalThis.fetch = async u => { urls.push(String(u)); const esY = String(u).includes('yosoyyo'); if (esY && !y) throw new Error('caída'); return { ok: true, status: 200, json: async () => (esY ? y : nexora) } } }
+  try {
+    usar(yosoyo)
+    const r = await buscarYoutube('x')
+    assert.deepEqual(r.map(v => v.titulo), ['A'])
+    assert.ok(urls.every(u => u.includes('yosoyyo')), 'no gasta cuota de Nexora')
+    urls.length = 0; usar(null)
+    assert.equal((await buscarYoutube('x'))[0].titulo, 'N')
+  } finally { globalThis.fetch = original }
+})
