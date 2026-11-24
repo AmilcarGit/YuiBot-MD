@@ -64,20 +64,43 @@ export async function buscarYoutube(consulta, limite = 6) {
   return []
 }
 
-/** Enlace de descarga del audio (MP3) de un video de YouTube. */
+/** Enlaces de descarga de la API v2 de YOSOYO: [{ download, quality, type, extension }]. */
+async function opcionesV2(enlace, formato) {
+  const { yosoyo } = ajustes.descargas
+  const r = await pedir(yosoyo, '/api/youtube/v2', { url: enlace, format: formato, apiKey: yosoyo.clave }, 1)
+  return (r.result?.results || []).filter(o => /^https?:\/\//.test(o.download || ''))
+}
+
+/** Enlace de descarga del audio de un video de YouTube: Nexora (MP3) y, si falla, YOSOYO v2 (M4A). */
 export async function ytmp3(enlace) {
   const { nexora } = ajustes.descargas
-  const r = await pedir(nexora, '/api/descargas/ytmp3', { url: enlace, apikey: nexora.clave })
-  const url = primero(r.data?.download)
-  if (!url) throw new Error('sin enlace de audio')
-  return url
+  let motivo
+  try {
+    const r = await pedir(nexora, '/api/descargas/ytmp3', { url: enlace, apikey: nexora.clave })
+    const url = primero(r.data?.download)
+    if (url) return url
+    motivo = 'sin enlace de audio'
+  } catch (error) { motivo = error.message }
+  try {
+    const m4a = (await opcionesV2(enlace, 'mp3')).find(o => o.type === 'audio' && o.extension === 'm4a')
+    if (m4a) return m4a.download
+  } catch { /* se informa el motivo de Nexora */ }
+  throw new Error(motivo)
 }
 
 /** Enlace de descarga del video (MP4) y datos básicos. */
 export async function ytmp4(enlace) {
   const { nexora, yosoyo } = ajustes.descargas
   let motivo
-  // 1) Nexora: el parámetro es format=360p (si no sale, 480p); 2) YOSOYO como respaldo.
+  // 0) YOSOYO v2: el 360p es el único que trae audio (los demás son solo imagen).
+  try {
+    const videos = (await opcionesV2(enlace, 'mp4')).filter(o => o.type === 'video' && o.extension === 'mp4')
+    const orden = ['360p', '480p', '240p', '720p', '144p']
+    const elegido = orden.map(q => videos.find(o => o.quality === q)).find(Boolean)
+    if (elegido) return { url: elegido.download, titulo: '', miniatura: '', conAudio: elegido.quality === '360p' }
+    motivo = 'YOSOYO no devolvió video'
+  } catch (error) { motivo = error.message }
+  // 1) Nexora: el parámetro es format=360p (si no sale, 480p); 2) YOSOYO (búsqueda) como último respaldo.
   for (const formato of ['360p', '480p']) {
     try {
       const r = await pedir(nexora, '/api/descargas/ytmp4', { url: enlace, format: formato, apikey: nexora.clave }, 1)

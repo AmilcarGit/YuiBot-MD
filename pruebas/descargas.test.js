@@ -109,3 +109,20 @@ test('la búsqueda usa YOSOYO primero y Nexora si falla', async () => {
     assert.equal((await buscarYoutube('x'))[0].titulo, 'N')
   } finally { globalThis.fetch = original }
 })
+
+test('YOSOYO v2: ytmp4 elige el 360p (con audio) y ytmp3 usa el m4a si Nexora falla', async () => {
+  const original = globalThis.fetch
+  const v2 = { status: true, result: { results: [
+    { download: 'https://g.test/a.m4a', quality: '128kbps', type: 'audio', extension: 'm4a' },
+    { download: 'https://g.test/a.weba', quality: 'webm_audio', type: 'audio', extension: 'weba' },
+    { download: null, quality: '4K', type: 'video', extension: 'webm' },
+    { download: 'https://g.test/720.mp4', quality: '720p', type: 'video', extension: 'mp4' },
+    { download: 'https://g.test/360.mp4', quality: '360p', type: 'video', extension: 'mp4' }
+  ] } }
+  globalThis.fetch = async u => ({ ok: true, status: 200, json: async () => (String(u).includes('/v2') ? v2 : { status: false, message: 'no disponible' }) })
+  try {
+    const v = await ytmp4('https://youtu.be/a')
+    assert.equal(v.url, 'https://g.test/360.mp4'); assert.equal(v.conAudio, true)
+    assert.equal(await ytmp3('https://youtu.be/a'), 'https://g.test/a.m4a')
+  } finally { globalThis.fetch = original }
+})
