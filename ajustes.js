@@ -20,8 +20,8 @@ export default {
   dueno: lista(process.env.DUENO, '51910227479'),
   prefijos: lista(process.env.PREFIJOS, '.,!,#,/'),
   login: process.env.LOGIN === 'qr' ? 'qr' : 'codigo',
-  sesionPrincipal: path.join('alma', 'principal'),
-  sesionSubbots: path.join('alma', 'subbots'),
+  sesionPrincipal: path.join(process.env.ALMA_DIR?.trim() || 'alma', 'principal'),
+  sesionSubbots: path.join(process.env.ALMA_DIR?.trim() || 'alma', 'subbots'),
   maxSubbots: Number(process.env.MAX_SUBBOTS || 5),
   motor: process.env.MEMORIA_MOTOR === 'sqlite' ? 'sqlite' : 'json',
   // Base de datos oficial de Yui (ranking y chat web). Para usar la tuya cambia DATOS_URL; para desactivarla, DATOS_URL=off.

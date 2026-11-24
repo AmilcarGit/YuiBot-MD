@@ -3,7 +3,7 @@ import fs from 'fs'
 import path from 'path'
 import ajustes from '../ajustes.js'
 
-const carpeta = path.resolve('data')
+const carpeta = path.resolve(process.env.DATA_DIR?.trim() || 'data')
 const nombres = ['usuarios', 'chats']
 const cache = { usuarios: {}, chats: {} }
 let db = null

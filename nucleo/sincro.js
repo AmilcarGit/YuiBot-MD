@@ -163,7 +163,7 @@ export function aplicarRespuesta(usuarios, estado, envio, enviados, respuesta, a
 }
 
 // ── Estado en disco y ciclo ────────────────────────────────────────
-const archivo = () => path.resolve('data', 'datos.json')
+const archivo = () => path.resolve(process.env.DATA_DIR?.trim() || 'data', 'datos.json')
 const info = { ultimoOk: 0, ultimoError: '', enviados: 0 }
 let estado = null
 let pendiente = null
