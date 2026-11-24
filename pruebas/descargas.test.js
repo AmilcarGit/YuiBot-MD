@@ -35,7 +35,7 @@ test('ytmp4 prueba Nexora y, si no hay enlace, YOSOYO', async () => {
   try {
     usar(respuestas.nexora, respuestas.yosoyo)
     assert.equal((await ytmp4('https://youtu.be/a')).url, 'https://x.test/n.mp4')
-    assert.match(urls.at(-1), /ytmp4\?url=.*&quality=360&apikey=nexora_/)
+    assert.match(urls.at(-1), /ytmp4\?url=.*&format=360p&apikey=nexora_/)
     usar(respuestas.nexoraMal, respuestas.yosoyo)
     assert.equal((await ytmp4('https://youtu.be/a')).url, 'https://x.test/y.mp4')
     usar(respuestas.nexoraMal, respuestas.yosoyoVacio)

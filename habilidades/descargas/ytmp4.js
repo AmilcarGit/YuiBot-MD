@@ -2,6 +2,7 @@
 import { esEnlaceYoutube, ytmp4, soltar, tomar } from '../../nucleo/descargas.js'
 import { motivo } from '../../nucleo/descargas.js'
 import { dice, mal } from '../../estilo/index.js'
+import { conBotones } from '../../nucleo/botones.js'
 
 export default {
   nombre: 'ytmp4',
@@ -24,7 +25,8 @@ export default {
       }
     } catch (error) {
       console.error(`ytmp4: ${error.message}`)
-      await ctx.responder(mal(`${dice('descargaFallo')}\n\n🔎 ${motivo(error)}`))
+      // Si el video no sale, se ofrece el audio, que casi siempre funciona.
+      await conBotones(ctx, mal(`${dice('descargaFallo')}\n\n🔎 ${motivo(error)}`), [{ texto: '🎵 Mejor el audio', cmd: `ytmp3 ${enlace}` }])
     } finally { soltar(ctx.numero) }
   }
 }

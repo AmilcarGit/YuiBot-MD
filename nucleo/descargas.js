@@ -50,13 +50,15 @@ export async function ytmp3(enlace) {
 export async function ytmp4(enlace) {
   const { nexora, yosoyo } = ajustes.descargas
   let motivo
-  // 1) Nexora (calidad 360 para que pese poco en WhatsApp); 2) YOSOYO como respaldo.
-  try {
-    const r = await pedir(nexora, '/api/descargas/ytmp4', { url: enlace, quality: '360', apikey: nexora.clave }, 1)
-    const url = primero(r.data?.download, r.data?.url, r.data?.mp4, typeof r.data === 'string' ? r.data : '')
-    if (url) return { url, titulo: r.data?.title || '', miniatura: '' }
-    motivo = 'Nexora no devolvió enlace'
-  } catch (error) { motivo = error.message }
+  // 1) Nexora: el parámetro es format=360p (si no sale, 480p); 2) YOSOYO como respaldo.
+  for (const formato of ['360p', '480p']) {
+    try {
+      const r = await pedir(nexora, '/api/descargas/ytmp4', { url: enlace, format: formato, apikey: nexora.clave }, 1)
+      const url = primero(r.data?.download, r.data?.url, r.data?.mp4, typeof r.data === 'string' ? r.data : '')
+      if (url) return { url, titulo: r.data?.title || '', miniatura: '' }
+      motivo = 'Nexora no devolvió enlace'
+    } catch (error) { motivo = error.message }
+  }
   try {
     const r = await pedir(yosoyo, '/api/youtube', { q: enlace, apiKey: yosoyo.clave }, 1)
     const v = r.result?.[0]
