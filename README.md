@@ -31,6 +31,13 @@ Sin yt-dlp el bot usa las APIs de Nexora y YOSOYO, que fallan a ratos. Los video
 2. Define las variables de `.env.example`, con `NUMERO_BOT` obligatorio.
 3. Añade un volumen en `/app/alma` y `/app/data` para conservar la sesión y los datos.
 
+## Stickers
+
+- `.s` (alias `.sticker`): responde a una imagen, GIF o video. Opciones: `.s recorte` (llena el cuadro) o `.s Nombre | Autor`.
+- `.saudio`: sticker con sonido. Responde a un video (usa su audio) o a un audio/nota de voz (sticker con onda animada). Máx. 8 s.
+- Requiere **ffmpeg** (Termux: `pkg install ffmpeg`; el Dockerfile de Railway ya lo instala).
+- Si tu versión de Yui-Bails o de WhatsApp no recibe stickers con sonido, el bot manda el sticker y el audio por separado.
+
 ## Estructura
 
 - `yui.js` arranque
