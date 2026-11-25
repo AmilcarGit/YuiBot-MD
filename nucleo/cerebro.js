@@ -138,7 +138,7 @@ async function atender(sock, m) {
   u.mensajes++
   if (Date.now() - u.ultimoXp > 10000) {
     u.ultimoXp = Date.now()
-    if (ganarXp(u, 3) && u.registrado) {
+    if (ganarXp(u, 6) && u.registrado) {
       await ctx.responder(ok(dice('nivelUp', { nombre: u.nombre, nivel: u.nivel })))
     }
   }

@@ -32,7 +32,7 @@ export function logro(u, id) {
   return true
 }
 
-export const nivelDe = xp => Math.floor(Math.sqrt(Math.max(0, xp) / 20)) + 1
+export const nivelDe = xp => Math.floor(Math.sqrt(Math.max(0, xp) / 10)) + 1
 
 // Lunes de la semana (hora de Perú, como la base de datos) en formato AAAA-MM-DD.
 export function semanaActual(ahora = Date.now()) {

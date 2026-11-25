@@ -51,14 +51,14 @@ export default {
     u.esperaTrabajo = trabajo.espera
     u.trabajosGanado += pago
     u.veces[trabajo.id] = (u.veces[trabajo.id] || 0) + 1
-    ganarXp(u, 25)
+    ganarXp(u, 50)
 
     const nuevoLogro = logro(u, 'primerTrabajo')
     await conBotones(ctx, caja('Trabajo', [
       dice('trabajoPago', { trabajo: trabajo.nombre, monto: formato(pago), nombre }),
       '',
       `${e.dinero} +${formato(pago)} monedas`,
-      `${e.xp} +25 XP`,
+      `${e.xp} +50 XP`,
       nuevoLogro && `${e.logro} Logro: Primer trabajo`
     ]), [{ texto: '🪙 Perfil', cmd: 'perfil' }, { texto: '🛍️ Tienda', cmd: 'tienda' }])
   }

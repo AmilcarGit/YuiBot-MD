@@ -23,7 +23,7 @@ export default {
 
     const premio = 500 + Math.min(u.racha, 7) * 50 + (u.inventario.mochila ? 100 : 0)
     u.monedas += premio
-    ganarXp(u, 50)
+    ganarXp(u, 100)
 
     const e = temaActivo().emojis
     const nuevoLogro = u.racha >= 7 && logro(u, 'racha7')
@@ -32,7 +32,7 @@ export default {
       '',
       `${e.dinero} +${formato(premio)} monedas`,
       `${e.racha} Racha: ${u.racha} ${u.racha === 1 ? 'día' : 'días'}`,
-      `${e.xp} +50 XP`,
+      `${e.xp} +100 XP`,
       nuevoLogro && `${e.logro} Logro: Racha de 7 días`
     ]), [{ texto: '💼 Trabajar', cmd: 'trabajar' }, { texto: '🎰 Gacha', cmd: 'gacha' }, { texto: '🛍️ Tienda', cmd: 'tienda' }])
   }
