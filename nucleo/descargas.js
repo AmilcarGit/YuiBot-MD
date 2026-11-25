@@ -5,7 +5,18 @@ import { execFile } from 'child_process'
 import fs from 'fs'
 import os from 'os'
 import path from 'path'
+import { AsyncLocalStorage } from 'async_hooks'
 import ajustes from '../ajustes.js'
+
+// Presupuesto de tiempo por comando (la web corre en funciones con límite de 60 s): ninguna petición puede pasarse de lo que queda.
+const presupuesto = new AsyncLocalStorage()
+export const conPresupuesto = (ms, fn) => presupuesto.run({ fin: Date.now() + ms }, fn)
+const restante = () => { const p = presupuesto.getStore(); return p ? p.fin - Date.now() : Infinity }
+const plazo = max => {
+  const r = restante()
+  if (r < 1500) throw new Error('Se acabó el tiempo disponible; intenta de nuevo en un momento')
+  return AbortSignal.timeout(Math.min(max, r - 500))
+}
 
 const pausa = ms => new Promise(r => setTimeout(r, ms))
 
@@ -16,14 +27,15 @@ async function pedir(base, ruta, params, intentos = 2) {
   let ultimo
   for (let i = 0; i < intentos; i++) {
     try {
-      const respuesta = await fetch(url, { signal: AbortSignal.timeout(ajustes.descargas.espera) })
+      const respuesta = await fetch(url, { signal: plazo(ajustes.descargas.espera) })
       const datos = await respuesta.json().catch(() => ({}))
       if (!respuesta.ok) throw new Error(datos.message || datos.error || `API ${respuesta.status}`)
       if (datos.status === false) throw new Error(datos.message || 'la API no pudo con esto')
       return datos
     } catch (error) {
       ultimo = error
-      if (i < intentos - 1) await pausa(1200)
+      if (i < intentos - 1 && restante() > 8000) await pausa(1200)
+      else break
     }
   }
   throw ultimo
@@ -36,7 +48,7 @@ async function buscarYuiapi(consulta, limite) {
   const { yuiapi } = ajustes.descargas
   const url = new URL('/api/v1/search/youtube', yuiapi.url)
   url.searchParams.set('q', consulta); url.searchParams.set('limit', String(Math.min(limite, 10)))
-  const respuesta = await fetch(url, { headers: { 'x-api-key': yuiapi.clave }, signal: AbortSignal.timeout(ajustes.descargas.espera) })
+  const respuesta = await fetch(url, { headers: { 'x-api-key': yuiapi.clave }, signal: plazo(ajustes.descargas.espera) })
   const datos = await respuesta.json().catch(() => ({}))
   if (!respuesta.ok || datos.ok === false) throw new Error(datos.error || datos.message || `YuiApi ${respuesta.status}`)
   return (datos.results || [])
@@ -50,7 +62,7 @@ export async function ytaudioYui(enlace) {
   const { yuiapi, maxAudioBytes } = ajustes.descargas
   const url = new URL('/api/v1/download/ytaudio', yuiapi.url)
   url.searchParams.set('url', enlace)
-  const respuesta = await fetch(url, { headers: { 'x-api-key': yuiapi.clave }, signal: AbortSignal.timeout(Math.max(ajustes.descargas.espera, 60000)) })
+  const respuesta = await fetch(url, { headers: { 'x-api-key': yuiapi.clave }, signal: plazo(ajustes.descargas.audioMs || 60000) })
   if (!respuesta.ok) throw new Error(`YuiApi ${respuesta.status}`)
   if (/json|text/.test(respuesta.headers.get('content-type') || '')) throw new Error('YuiApi no devolvió audio')
   const largo = Number(respuesta.headers.get('content-length') || 0)

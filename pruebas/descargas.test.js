@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { buscarYoutube, ytaudioYui, ytmp3, ytmp4, esEnlaceYoutube, tomar, soltar } from '../nucleo/descargas.js'
+import { buscarYoutube, conPresupuesto, ytaudioYui, ytmp3, ytmp4, esEnlaceYoutube, tomar, soltar } from '../nucleo/descargas.js'
 
 const responder = (cuerpo, ok = true) => async url => { responder.urls.push(String(url)); return { ok, status: ok ? 200 : 500, json: async () => cuerpo } }
 responder.urls = []
@@ -141,5 +141,15 @@ test('YuiApi: yts busca primero ahí con x-api-key y ytaudio devuelve un Buffer'
     assert.ok(llamadas[0].u.includes('yuiapi.vercel.app/api/v1/search/youtube')); assert.match(llamadas[0].clave, /^amk_/)
     const b = await ytaudioYui('https://youtu.be/abc')
     assert.equal(b.length, 3)
+  } finally { globalThis.fetch = original }
+})
+
+test('presupuesto de tiempo: no sigue pidiendo cuando se acabó', async () => {
+  const original = globalThis.fetch
+  let llamadas = 0
+  globalThis.fetch = async () => { llamadas++; throw new Error('lento') }
+  try {
+    await assert.rejects(() => conPresupuesto(1000, () => ytmp3('https://youtu.be/a')), /tiempo/)
+    assert.equal(llamadas, 0, 'sin tiempo no se hace ninguna petición')
   } finally { globalThis.fetch = original }
 })
