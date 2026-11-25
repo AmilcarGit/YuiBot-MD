@@ -45,14 +45,16 @@ export async function enviarStickerSonido(sock, jid, webp, ogg, segundos, opcion
   try {
     const yb = await import('yui-bails')
     const { prepareWAMessageMedia, generateWAMessageFromContent, proto } = { ...yb.default, ...yb }
-    if (!prepareWAMessageMedia || !generateWAMessageFromContent || !proto?.Message) throw new Error('sin soporte')
+    const faltan = ['prepareWAMessageMedia', 'generateWAMessageFromContent'].filter(n => typeof { prepareWAMessageMedia, generateWAMessageFromContent }[n] !== 'function')
+    if (faltan.length || !proto?.Message) throw new Error(`sin soporte: la librería no exporta ${[...faltan, !proto?.Message && 'proto'].filter(Boolean).join(', ')}`)
+    if (!('audioStickerMessage' in proto.Message.prototype)) throw new Error('sin soporte: el protocolo de esta Yui-Bails no tiene audioStickerMessage')
     const subir = { upload: sock.waUploadToServer }
     const st = await prepareWAMessageMedia({ sticker: webp }, subir)
     const au = await prepareWAMessageMedia({ audio: ogg, mimetype: 'audio/ogg; codecs=opus', ptt: false, seconds: Math.ceil(segundos) }, subir)
     const contenido = { audioStickerMessage: { message: { stickerMessage: { ...st.stickerMessage, audioMessage: au.audioMessage } } } }
     // Si el protocolo de esta versión no trae el campo, se perdería en silencio: se comprueba antes de enviar.
     const ida = proto.Message.decode(proto.Message.encode(proto.Message.fromObject(contenido)).finish())
-    if (!ida.audioStickerMessage?.message?.stickerMessage?.audioMessage) throw new Error('sin soporte')
+    if (!ida.audioStickerMessage?.message?.stickerMessage?.audioMessage) throw new Error('sin soporte: el protocolo descarta el audio del sticker')
     const msg = generateWAMessageFromContent(jid, contenido, { quoted: opciones.quoted, userJid: sock.user?.id })
     await sock.relayMessage(jid, msg.message, { messageId: msg.key.id })
     return 'con-sonido'
