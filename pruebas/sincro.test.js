@@ -75,7 +75,7 @@ test('lo que ganó otra instalación se suma al bot, el nivel se recalcula y se 
   })
   assert.equal(u.monedas, 800)
   assert.equal(u.xp, 2000)
-  assert.equal(u.nivel, Math.floor(Math.sqrt(2000 / 20)) + 1)
+  assert.equal(u.nivel, Math.floor(Math.sqrt(2000 / 10)) + 1)
   assert.equal(u.inventario.mochila, true)
   assert.deepEqual(u.logros, ['primerTrabajo', 'racha7'])
   assert.equal(u.ultimoDaily, 99)
