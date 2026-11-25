@@ -131,3 +131,29 @@ export function conMetadatos(webp, pack, autor) {
   const cab = Buffer.alloc(8); cab.write('RIFF', 0, 'ascii'); cab.writeUInt32LE(cuerpo.length, 4)
   return Buffer.concat([cab, cuerpo])
 }
+
+/** Sticker (WebP fijo) → imagen PNG. Los stickers animados no se pueden leer con ffmpeg: se avisa con un error claro. */
+export async function aPng(buffer) {
+  return conTemporal(async dir => {
+    const origen = path.join(dir, 'entrada.webp'); const salida = path.join(dir, 'imagen.png')
+    fs.writeFileSync(origen, buffer)
+    try {
+      await ejecutar('ffmpeg', ['-y', '-hide_banner', '-loglevel', 'error', '-i', origen, '-frames:v', '1', salida])
+    } catch {
+      throw new Error('Ese sticker es animado y solo sé convertir stickers fijos a imagen.')
+    }
+    return fs.readFileSync(salida)
+  })
+}
+
+/** Audio o video → MP3 (hasta `maxSeg` segundos). */
+export async function aMp3(buffer, maxSeg = 600) {
+  return conTemporal(async dir => {
+    const origen = path.join(dir, 'entrada'); const salida = path.join(dir, 'audio.mp3')
+    fs.writeFileSync(origen, buffer)
+    await ejecutar('ffmpeg', ['-y', '-hide_banner', '-loglevel', 'error', '-i', origen, '-vn', '-t', String(maxSeg), '-c:a', 'libmp3lame', '-b:a', '128k', salida], 180000)
+    const datos = fs.readFileSync(salida)
+    if (!datos.length) throw new Error('No encontré audio en ese archivo.')
+    return datos
+  })
+}
