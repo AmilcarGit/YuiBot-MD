@@ -1,7 +1,7 @@
 // Código Oficial de YuiBot-MD.by AmilcarGit
 import ajustes from '../../ajustes.js'
 import { listar } from '../../nucleo/cargador.js'
-import { caja, dice, firma, nieve, temaActivo } from '../../estilo/index.js'
+import { caja, dice, firma, fuente, nieve, temaActivo } from '../../estilo/index.js'
 import { conBotones } from '../../nucleo/botones.js'
 
 const titulos = {
@@ -17,6 +17,27 @@ const titulos = {
 
 const orden = Object.keys(titulos)
 const posicion = c => (orden.includes(c) ? orden.indexOf(c) : orden.length)
+
+/** Texto del menú corto (con botones): cabecera, datos y una tarjeta por categoría con 3 comandos de muestra. */
+export function menuCompacto({ tema, nombre, prefijo, total, categorias }) {
+  const t = tema.emojis
+  const linea = '━━━━━━━━━━━━━━━━━━'
+  const filas = categorias.map(c => {
+    const resto = c.nombres.length > 3 ? ` +${c.nombres.length - 3}` : ''
+    return `┃ ${tema.iconos?.[c.clave] || t.item} *${c.titulo}* ‹${c.nombres.length}›\n┃    ${t.item} ${c.nombres.slice(0, 3).join(' · ')}${resto}`
+  })
+  return [
+    `╭${linea}╮`,
+    `┃  ${t.titulo} ${fuente(ajustes.nombre, tema.fuente)} ${t.titulo}`,
+    `┣${linea}┫`,
+    `┃ 👤 ${nombre}`,
+    `┃ ⚙️ Prefijo: *${prefijo}*  ·  📚 ${total} comandos`,
+    `┣${linea}┫`,
+    ...filas,
+    `╰${linea}╯`,
+    '💡 Toca *📜 Comandos* para ver todos'
+  ].join('\n')
+}
 
 export default {
   nombre: 'menu',
@@ -53,12 +74,10 @@ export default {
       }))
     }
 
-    // Con botones el mensaje se acorta (el detalle de cada comando va en el desplegable).
+    // Con botones el mensaje es corto y bonito: el detalle de cada comando va en el desplegable.
     if (ctx.botonesActivos) {
-      const resumen = caja('Categorías', mostradas.map(c =>
-        `${tema.iconos?.[c] || tema.emojis.item} ${titulos[c] || c} › ${porCategoria.get(c).map(h => h.nombre).sort().join(' · ')}`
-      ))
-      return conBotones(ctx, [nieve(), cabecera, resumen, `💡 Toca “Comandos” para elegir uno.`, firma()].join('\n\n'), [desplegable], { media: ajustes.menuMedia })
+      const texto = menuCompacto({ tema, nombre: ctx.usuario.nombre || 'viajero', prefijo: ctx.prefijo, total: visibles.length, categorias: mostradas.map(c => ({ clave: c, titulo: titulos[c] || c, nombres: porCategoria.get(c).map(h => h.nombre).sort() })) })
+      return conBotones(ctx, texto, [desplegable], { media: ajustes.menuMedia })
     }
 
     const bloques = mostradas.map(c => caja(
