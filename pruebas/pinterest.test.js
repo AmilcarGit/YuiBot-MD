@@ -57,6 +57,7 @@ test('.pin envía imágenes y explica los errores', async () => {
   const ctx = { args: ['unico-2'], prefijo: '.', numero: 'n1', responder: t => respuestas.push(t), enviar: c => enviados.push(c) }
   await conFetch([['search/pins/?q=unico-2', HTML_BUSQUEDA]], () => pin.ejecutar({}, {}, ctx))
   assert.equal(enviados.length, 3); assert.ok(enviados.every(e => e.image.url.startsWith('https://i.pinimg.com/736x/')))
+  // con un número al final se piden más; aquí solo hay 3 en la página de prueba
   const ctx2 = { ...ctx, args: ['nada-2'], responder: t => respuestas.push(t) }
   await conFetch([['search/pins/?q=nada-2', '<html></html>']], () => pin.ejecutar({}, {}, ctx2))
   assert.match(respuestas.at(-1), /No pude traer imágenes/)
