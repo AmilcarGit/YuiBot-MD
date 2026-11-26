@@ -10,6 +10,7 @@ const LADO = 512
 const MAX_FIJO = 300 * 1024
 const MAX_ANIMADO = 950 * 1024
 export const SEG_MAX = 8
+export const SEG_SONIDO = 15 // los stickers con sonido pueden durar más; pesan más, así que se baja fps/calidad hasta que quepan
 
 const ejecutar = (cmd, args, timeout = 90000) => new Promise((resolver, rechazar) => {
   execFile(cmd, args, { timeout, maxBuffer: 1 << 22 }, (error, stdout, stderr) => (error ? rechazar(Object.assign(error, { stderr })) : resolver(stdout)))
@@ -38,7 +39,8 @@ export async function aWebp(buffer, { animado = false, modo = 'completo', segund
     fs.writeFileSync(origen, buffer)
     const salida = path.join(dir, 'salida.webp')
     const maximo = animado ? MAX_ANIMADO : MAX_FIJO
-    const pasos = animado ? [[15, 60], [12, 45], [10, 35], [8, 25], [6, 18]] : [[0, 75], [0, 55], [0, 35], [0, 20]]
+    const todos = [[15, 60], [12, 45], [10, 35], [8, 25], [6, 18], [5, 12], [4, 8]]
+    const pasos = animado ? (segundos > 10 ? todos.slice(2) : segundos > 8 ? todos.slice(1) : todos) : [[0, 75], [0, 55], [0, 35], [0, 20]]
     for (const [fps, calidad] of pasos) {
       const base = ['-y', '-hide_banner', '-loglevel', 'error', ...(entrada || ['-i', origen])]
       const cadena = filtro ? `${filtro},format=rgba` : `${animado ? `fps=${fps},` : ''}${ajuste(modo)},format=rgba`
