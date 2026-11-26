@@ -1,4 +1,6 @@
 // Código Oficial de YuiBot-MD.by AmilcarGit
+import { randomBytes } from 'node:crypto'
+import { contieneStickerSonido, parcharProto } from '../../nucleo/protoSticker.js'
 // Utilidades compartidas por .s y .saudio: encontrar el archivo del mensaje (o del que se responde) y mandar el sticker.
 const quitarEnvoltura = c => c?.ephemeralMessage?.message || c?.viewOnceMessage?.message || c?.viewOnceMessageV2?.message
   || c?.viewOnceMessageV2Extension?.message || c?.documentWithCaptionMessage?.message || c
@@ -38,25 +40,31 @@ export const soltarTurno = id => ocupados.delete(id)
 
 /**
  * Sticker con sonido: mensaje de sticker con un audio adjunto (audioStickerMessage de WhatsApp).
- * Si esta versión de Yui-Bails no lo conoce, se manda el sticker y el audio por separado.
- * Devuelve 'con-sonido' o 'separado'.
+ * Si esta versión de Yui-Bails no lo soporta, se agrega el campo en memoria; si aun así falla, se manda
+ * el sticker y el audio por separado. Devuelve 'con-sonido' o 'separado'.
  */
 export async function enviarStickerSonido(sock, jid, webp, ogg, segundos, opciones = {}) {
   try {
     const yb = await import('yui-bails')
-    const { prepareWAMessageMedia, generateWAMessageFromContent, proto } = { ...yb.default, ...yb }
-    const faltan = ['prepareWAMessageMedia', 'generateWAMessageFromContent'].filter(n => typeof { prepareWAMessageMedia, generateWAMessageFromContent }[n] !== 'function')
-    if (faltan.length || !proto?.Message) throw new Error(`sin soporte: la librería no exporta ${[...faltan, !proto?.Message && 'proto'].filter(Boolean).join(', ')}`)
-    if (!('audioStickerMessage' in proto.Message.prototype)) throw new Error('sin soporte: el protocolo de esta Yui-Bails no tiene audioStickerMessage')
+    const { prepareWAMessageMedia, proto } = { ...yb.default, ...yb }
+    if (typeof prepareWAMessageMedia !== 'function' || !proto?.Message) throw new Error('sin soporte: la librería no exporta prepareWAMessageMedia o proto')
+    parcharProto(proto)
     const subir = { upload: sock.waUploadToServer }
     const st = await prepareWAMessageMedia({ sticker: webp }, subir)
     const au = await prepareWAMessageMedia({ audio: ogg, mimetype: 'audio/ogg; codecs=opus', ptt: false, seconds: Math.ceil(segundos) }, subir)
-    const contenido = { audioStickerMessage: { message: { stickerMessage: { ...st.stickerMessage, audioMessage: au.audioMessage } } } }
-    // Si el protocolo de esta versión no trae el campo, se perdería en silencio: se comprueba antes de enviar.
-    const ida = proto.Message.decode(proto.Message.encode(proto.Message.fromObject(contenido)).finish())
-    if (!ida.audioStickerMessage?.message?.stickerMessage?.audioMessage) throw new Error('sin soporte: el protocolo descarta el audio del sticker')
-    const msg = generateWAMessageFromContent(jid, contenido, { quoted: opciones.quoted, userJid: sock.user?.id })
-    await sock.relayMessage(jid, msg.message, { messageId: msg.key.id })
+    const q = opciones.quoted
+    const sticker = {
+      ...st.stickerMessage, mimetype: 'image/webp', width: 512, height: 512, isAnimated: true,
+      audioMessage: { ...au.audioMessage, ptt: false },
+      ...(q?.key && q.message ? { contextInfo: { stanzaId: q.key.id, participant: q.key.participant || q.key.remoteJid, quotedMessage: q.message } } : {})
+    }
+    const mensaje = {
+      messageContextInfo: { messageSecret: randomBytes(32) },
+      audioStickerMessage: { message: { stickerMessage: sticker } }
+    }
+    // Se comprueba lo que de verdad saldría por la red: si el campo se perdiera, se vería sin sonido.
+    if (!contieneStickerSonido(proto.Message.encode(mensaje).finish())) throw new Error('sin soporte: el protocolo descartó el audio del sticker')
+    await sock.relayMessage(jid, mensaje, {})
     return 'con-sonido'
   } catch (error) {
     console.error(`sticker con sonido: ${error.message}`)
