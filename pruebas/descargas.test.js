@@ -34,8 +34,9 @@ test('ytmp4 prueba Nexora y, si no hay enlace, YOSOYO', async () => {
   const usar = (n, y) => { globalThis.fetch = async u => { urls.push(String(u)); return { ok: true, status: 200, json: async () => (String(u).includes('nexora') ? n : y) } } }
   try {
     usar(respuestas.nexora, respuestas.yosoyo)
-    assert.equal((await ytmp4('https://youtu.be/a')).url, 'https://x.test/n.mp4')
-    assert.match(urls.at(-1), /ytmp4\?url=.*&format=360p&apikey=nexora_/)
+    // Los proveedores corren a la vez: gana el primero que responde con enlace.
+    assert.match((await ytmp4('https://youtu.be/a')).url, /^https:\/\/x\.test\/(n|y)\.mp4$/)
+    assert.ok(urls.some(u => /ytmp4\?url=.*&format=360p&apikey=nexora_/.test(u)))
     usar(respuestas.nexoraMal, respuestas.yosoyo)
     assert.equal((await ytmp4('https://youtu.be/a')).url, 'https://x.test/y.mp4')
     usar(respuestas.nexoraMal, respuestas.yosoyoVacio)

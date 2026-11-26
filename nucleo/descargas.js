@@ -133,30 +133,33 @@ export async function ytmp3(enlace) {
 /** Enlace de descarga del video (MP4) y datos básicos. */
 export async function ytmp4(enlace) {
   const { nexora, yosoyo } = ajustes.descargas
-  let motivo
-  // 0) YOSOYO v2: el 360p es el único que trae audio (los demás son solo imagen).
-  try {
-    const videos = (await opcionesV2(enlace, 'mp4')).filter(o => o.type === 'video' && o.extension === 'mp4')
-    const orden = ['360p', '480p', '240p', '720p', '144p']
-    const elegido = orden.map(q => videos.find(o => o.quality === q)).find(Boolean)
-    if (elegido) return { url: elegido.download, titulo: '', miniatura: '', conAudio: elegido.quality === '360p' }
-    motivo = 'YOSOYO no devolvió video'
-  } catch (error) { motivo = error.message }
-  // 1) Nexora: el parámetro es format=360p (si no sale, 480p); 2) YOSOYO (búsqueda) como último respaldo.
-  for (const formato of ['360p', '480p']) {
-    try {
+  // Los proveedores fallan a ratos: se prueban a la vez (gana el primero que responde) y, si todos fallan, se reintenta una vez.
+  const intentos = [
+    async () => {
+      const videos = (await opcionesV2(enlace, 'mp4')).filter(o => o.type === 'video' && o.extension === 'mp4')
+      // El 360p es el único que trae audio (los demás son solo imagen).
+      const elegido = ['360p', '480p', '240p', '720p', '144p'].map(q => videos.find(o => o.quality === q)).find(Boolean)
+      if (!elegido) throw new Error('YOSOYO no devolvió video')
+      return { url: elegido.download, titulo: '', miniatura: '', conAudio: elegido.quality === '360p' }
+    },
+    ...['360p', '480p'].map(formato => async () => {
       const r = await pedir(nexora, '/api/descargas/ytmp4', { url: enlace, format: formato, apikey: nexora.clave }, 1)
       const url = primero(r.data?.download, r.data?.url, r.data?.mp4, typeof r.data === 'string' ? r.data : '')
-      if (url) return { url, titulo: r.data?.title || '', miniatura: '' }
-      motivo = 'Nexora no devolvió enlace'
-    } catch (error) { motivo = error.message }
+      if (!url) throw new Error('Nexora no devolvió enlace')
+      return { url, titulo: r.data?.title || '', miniatura: '' }
+    }),
+    async () => {
+      const r = await pedir(yosoyo, '/api/youtube', { q: enlace, apiKey: yosoyo.clave }, 1)
+      const v = r.result?.[0]
+      const url = primero(v?.downloads?.mp4?.url, v?.download?.mp4, v?.downloads?.mixed?.mp4, v?.downloads?.v2?.download?.mp4)
+      if (!url) throw new Error('sin enlace de video')
+      return { url, titulo: v.title || '', miniatura: v.thumbnailUrl || '' }
+    }
+  ]
+  let motivo
+  for (let ronda = 0; ronda < 2; ronda++) {
+    try { return await Promise.any(intentos.map(f => f())) } catch (error) { motivo = error.errors?.[1]?.message || error.errors?.[0]?.message || error.message }
   }
-  try {
-    const r = await pedir(yosoyo, '/api/youtube', { q: enlace, apiKey: yosoyo.clave }, 1)
-    const v = r.result?.[0]
-    const url = primero(v?.downloads?.mp4?.url, v?.download?.mp4, v?.downloads?.mixed?.mp4, v?.downloads?.v2?.download?.mp4)
-    if (url) return { url, titulo: v.title || '', miniatura: v.thumbnailUrl || '' }
-  } catch { /* se informa el motivo de la primera */ }
   throw new Error(motivo || 'sin enlace de video')
 }
 
