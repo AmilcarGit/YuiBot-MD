@@ -1,5 +1,5 @@
 // Código Oficial de YuiBot-MD.by AmilcarGit
-import { cnvYoutube, esEnlaceYoutube, ytmp4, ytmp4Local, limpiarLocal, soltar, tomar } from '../../nucleo/descargas.js'
+import { cnvYoutube, ytvideoYui, esEnlaceYoutube, ytmp4, ytmp4Local, limpiarLocal, soltar, tomar } from '../../nucleo/descargas.js'
 import fs from 'fs'
 import { motivo } from '../../nucleo/descargas.js'
 import { dice, mal } from '../../estilo/index.js'
@@ -30,13 +30,20 @@ export default {
       }
       let v
       try { v = await ytmp4(enlace) } catch (errorApis) {
-        // Último respaldo: CNV entrega el archivo (en la web no cabe un video en la respuesta, así que solo en WhatsApp).
-        if (ctx.web) throw errorApis
         console.error(`ytmp4 apis: ${errorApis.message}`)
-        const c = await cnvYoutube(enlace, 'mp4', { maxBytes: 60 * 1024 * 1024 })
-        const pie = c.titulo ? `🎬 ${c.titulo}` : '🎬'
-        try { await ctx.enviar({ video: c.buffer, mimetype: 'video/mp4', caption: pie }, { quoted: m }) }
-        catch { await ctx.enviar({ document: c.buffer, mimetype: 'video/mp4', fileName: `${(c.titulo || 'video').slice(0, 60)}.mp4` }, { quoted: m }) }
+        // Respaldo 1: YuiApi entrega el archivo. En la web va dentro de la respuesta (cabe poco: ~3 MB); en WhatsApp hasta 60 MB.
+        const limite = ctx.web ? 3 * 1024 * 1024 : 60 * 1024 * 1024
+        let archivo = null
+        try { archivo = await ytvideoYui(enlace, { maxBytes: limite }) } catch (errorYui) {
+          console.error(`ytmp4 yuiapi: ${errorYui.message}`)
+          if (ctx.web) throw new Error(/pesa demasiado/.test(errorYui.message) ? 'Ese video pesa demasiado para verlo aquí; pídelo desde WhatsApp.' : errorApis.message)
+        }
+        let titulo = ''
+        // Respaldo 2 (solo WhatsApp): CNV.
+        if (!archivo) { const c = await cnvYoutube(enlace, 'mp4', { maxBytes: limite }); archivo = c.buffer; titulo = c.titulo || '' }
+        const pie = titulo ? `🎬 ${titulo}` : '🎬'
+        try { await ctx.enviar({ video: archivo, mimetype: 'video/mp4', caption: pie }, { quoted: m }) }
+        catch { await ctx.enviar({ document: archivo, mimetype: 'video/mp4', fileName: `${(titulo || 'video').slice(0, 60)}.mp4` }, { quoted: m }) }
         return
       }
       const pie = v.titulo ? `🎬 ${v.titulo}` : '🎬'

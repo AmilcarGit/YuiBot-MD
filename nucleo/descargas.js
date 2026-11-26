@@ -73,6 +73,21 @@ export async function ytaudioYui(enlace) {
   return buffer
 }
 
+/** Video MP4 de YuiApi (la API entrega el archivo, no un enlace). Devuelve un Buffer; 360p por defecto, que pesa poco y trae audio. */
+export async function ytvideoYui(enlace, { calidad = '360', maxBytes = 60 * 1024 * 1024 } = {}) {
+  const { yuiapi } = ajustes.descargas
+  const url = new URL('/api/v1/download/ytvideo', yuiapi.url)
+  url.searchParams.set('url', enlace); url.searchParams.set('quality', calidad)
+  const respuesta = await fetch(url, { headers: { 'x-api-key': yuiapi.clave }, signal: plazo(ajustes.descargas.audioMs || 60000) })
+  if (!respuesta.ok) throw new Error(`YuiApi ${respuesta.status}`)
+  if (/json|text/.test(respuesta.headers.get('content-type') || '')) throw new Error('YuiApi no devolvió video')
+  if (Number(respuesta.headers.get('content-length') || 0) > maxBytes) throw new Error('el video pesa demasiado')
+  const buffer = Buffer.from(await respuesta.arrayBuffer())
+  if (!buffer.length) throw new Error('video vacío')
+  if (buffer.length > maxBytes) throw new Error('el video pesa demasiado')
+  return buffer
+}
+
 /** Búsqueda con YOSOYO (sin cuota diaria). Mismo formato de salida que buscarYoutube. */
 async function buscarYosoyo(consulta, limite) {
   const { yosoyo } = ajustes.descargas

@@ -154,3 +154,16 @@ test('presupuesto de tiempo: no sigue pidiendo cuando se acabó', async () => {
     assert.equal(llamadas, 0, 'sin tiempo no se hace ninguna petición')
   } finally { globalThis.fetch = original }
 })
+
+test('ytvideoYui entrega el archivo de YuiApi y respeta el tamaño máximo', async () => {
+  const { ytvideoYui } = await import('../nucleo/descargas.js')
+  const original = globalThis.fetch
+  const cuerpo = new Uint8Array([1, 2, 3, 4])
+  let pedida
+  globalThis.fetch = async (u, o) => { pedida = { u: String(u), o }; return { ok: true, status: 200, headers: { get: k => (k === 'content-type' ? 'video/mp4' : null) }, arrayBuffer: async () => cuerpo.buffer } }
+  try {
+    const b = await ytvideoYui('https://youtu.be/a')
+    assert.equal(b.length, 4); assert.match(pedida.u, /\/api\/v1\/download\/ytvideo\?url=.*&quality=360/); assert.ok(pedida.o.headers['x-api-key'])
+    await assert.rejects(ytvideoYui('https://youtu.be/a', { maxBytes: 2 }), /pesa demasiado/)
+  } finally { globalThis.fetch = original }
+})
