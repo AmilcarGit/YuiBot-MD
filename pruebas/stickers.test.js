@@ -23,3 +23,12 @@ test('crea un sticker webp 512x512 con metadatos', async t => {
   assert.ok(webp.includes(Buffer.from('Pack')))
   assert.ok(webp.length < 300 * 1024)
 })
+
+test('firmaSticker: paquete con el nombre del bot y autor con quién lo pidió', async () => {
+  const { firmaSticker } = await import('../nucleo/stickers.js')
+  const f = firmaSticker({ bot: 'YuiBot-MD', solicitante: 'Anali', tipo: 'sonido', segundos: 17.6, ahora: new Date('2026-11-26T12:00:00Z') })
+  assert.equal(f.pack, '🎶 YuiBot-MD 🎶')
+  assert.equal(f.autor, '👤 Anali · 📅 26/11/26 · ⏱ 18s')
+  const propio = firmaSticker({ bot: 'YuiBot-MD', solicitante: 'Anali', pack: 'Mi pack', autor: 'Yo' })
+  assert.equal(propio.pack, '✨ Mi pack ✨'); assert.equal(propio.autor, 'Yo')
+})

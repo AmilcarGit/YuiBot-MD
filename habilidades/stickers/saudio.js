@@ -1,7 +1,7 @@
 // Código Oficial de YuiBot-MD.by AmilcarGit
 import ajustes from '../../ajustes.js'
 import { mal, ok } from '../../estilo/index.js'
-import { aOpus, aWebp, conMetadatos, duracion, hayFfmpeg, ondaDeAudio, SEG_SONIDO } from '../../nucleo/stickers.js'
+import { aOpus, aWebp, conMetadatos, firmaSticker, duracion, hayFfmpeg, ondaDeAudio, SEG_SONIDO } from '../../nucleo/stickers.js'
 import { buscarMedio, descargar, enviarStickerSonido, soltarTurno, tomarTurno } from './_comun.js'
 
 export default {
@@ -27,8 +27,8 @@ export default {
         esVideo ? aWebp(buffer, { animado: true, segundos: largo }) : ondaDeAudio(buffer, largo),
         aOpus(buffer, largo)
       ])
-      const pack = ctx.args.join(' ').trim() || ajustes.nombre
-      const webp = conMetadatos(animacion, pack, ctx.usuario?.nombre || 'Yui')
+      const f = firmaSticker({ bot: ajustes.nombre, solicitante: ctx.usuario?.nombre, tipo: 'sonido', segundos: largo, pack: ctx.args.join(' ').trim() })
+      const webp = conMetadatos(animacion, f.pack, f.autor, f.emojis)
       const como = await enviarStickerSonido(sock, ctx.jid, webp, audio, largo, { quoted: m })
       if (como === 'separado') await ctx.responder(ok('Mandé el sticker y su audio por separado: esta versión de WhatsApp o del bot aún no recibe stickers con sonido.'))
     } catch (error) {

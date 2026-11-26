@@ -1,7 +1,7 @@
 // Código Oficial de YuiBot-MD.by AmilcarGit
 import ajustes from '../../ajustes.js'
 import { mal } from '../../estilo/index.js'
-import { aWebp, conMetadatos, duracion, hayFfmpeg, SEG_MAX } from '../../nucleo/stickers.js'
+import { aWebp, conMetadatos, firmaSticker, duracion, hayFfmpeg, SEG_MAX } from '../../nucleo/stickers.js'
 import { buscarMedio, descargar, soltarTurno, tomarTurno } from './_comun.js'
 
 const MAX_MB = 12
@@ -30,7 +30,8 @@ export default {
       const buffer = await descargar(sock, medio)
       const largo = esVideo ? await duracion(buffer) : null
       const webp = await aWebp(buffer, { animado: esVideo, modo: recorte ? 'recorte' : 'completo', segundos: Math.min(SEG_MAX, largo || SEG_MAX) })
-      const listo = conMetadatos(webp, pack || ajustes.nombre, autor || ctx.usuario?.nombre || 'Yui')
+      const f = firmaSticker({ bot: ajustes.nombre, solicitante: ctx.usuario?.nombre, tipo: esVideo ? 'animado' : 'sticker', segundos: esVideo ? Math.min(SEG_MAX, largo || SEG_MAX) : null, pack, autor })
+      const listo = conMetadatos(webp, f.pack, f.autor, f.emojis)
       await ctx.enviar({ sticker: listo }, { quoted: m })
     } catch (error) {
       console.error(`sticker: ${error.message}`)

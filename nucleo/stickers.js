@@ -87,12 +87,13 @@ export function ondaDeAudio(buffer, segundos = SEG_MAX) {
 }
 
 // ── Metadatos (nombre del paquete y autor) dentro del WebP ───────────────────
-function exif(pack, autor) {
+const cortar = (t, n) => Array.from(String(t)).slice(0, n).join('')
+function exif(pack, autor, emojis = ['🌸']) {
   const json = Buffer.from(JSON.stringify({
     'sticker-pack-id': crypto.randomBytes(16).toString('hex'),
-    'sticker-pack-name': String(pack).slice(0, 40),
-    'sticker-pack-publisher': String(autor).slice(0, 40),
-    emojis: ['🌸']
+    'sticker-pack-name': cortar(pack, 48),
+    'sticker-pack-publisher': cortar(autor, 64),
+    emojis
   }), 'utf8')
   const cabecera = Buffer.from([0x49, 0x49, 0x2a, 0x00, 0x08, 0x00, 0x00, 0x00, 0x01, 0x00, 0x41, 0x57, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x16, 0x00, 0x00, 0x00])
   cabecera.writeUInt32LE(json.length, 14)
@@ -113,7 +114,7 @@ function dimensiones(webp) {
 }
 
 /** Agrega el nombre del paquete y el autor al sticker (así WhatsApp los muestra). */
-export function conMetadatos(webp, pack, autor) {
+export function conMetadatos(webp, pack, autor, emojis) {
   if (webp.toString('ascii', 0, 4) !== 'RIFF' || webp.toString('ascii', 8, 12) !== 'WEBP') throw new Error('No es un WebP')
   const trozos = []
   let pos = 12
@@ -129,7 +130,7 @@ export function conMetadatos(webp, pack, autor) {
     trozos.unshift({ tipo: 'VP8X', datos: vp8x })
   }
   trozos[0].datos = Buffer.from(trozos[0].datos); trozos[0].datos[0] |= 0x08
-  const cuerpo = Buffer.concat([Buffer.from('WEBP'), ...trozos.map(t => chunk(t.tipo, t.datos)), chunk('EXIF', exif(pack, autor))])
+  const cuerpo = Buffer.concat([Buffer.from('WEBP'), ...trozos.map(t => chunk(t.tipo, t.datos)), chunk('EXIF', exif(pack, autor, emojis?.length ? emojis : undefined))])
   const cab = Buffer.alloc(8); cab.write('RIFF', 0, 'ascii'); cab.writeUInt32LE(cuerpo.length, 4)
   return Buffer.concat([cab, cuerpo])
 }
@@ -158,4 +159,17 @@ export async function aMp3(buffer, maxSeg = 600) {
     if (!datos.length) throw new Error('No encontré audio en ese archivo.')
     return datos
   })
+}
+
+/**
+ * Firma profesional del sticker: el paquete lleva el nombre del bot con adornos y el autor dice quién lo pidió, cuándo y qué es.
+ * Si la persona escribió su propio nombre de paquete o autor (.s Nombre | Autor), se respeta.
+ */
+export function firmaSticker({ bot, solicitante, tipo = 'sticker', segundos = null, pack = '', autor = '', zona = 'America/Lima', ahora = new Date() }) {
+  const adorno = { sticker: ['✨', '🌸'], animado: ['🎞️', '🌸'], sonido: ['🎶', '🔊'] }[tipo] || ['✨', '🌸']
+  const fecha = new Intl.DateTimeFormat('es', { day: '2-digit', month: '2-digit', year: '2-digit', timeZone: zona }).format(ahora)
+  const etiqueta = { sticker: 'Sticker', animado: 'Animado', sonido: 'Con sonido' }[tipo] || 'Sticker'
+  const nombrePack = pack ? `${adorno[0]} ${pack} ${adorno[0]}` : `${adorno[0]} ${bot} ${adorno[0]}`
+  const detalle = [`👤 ${solicitante || 'Usuario'}`, `📅 ${fecha}`, segundos ? `⏱ ${Math.round(segundos)}s` : `🏷 ${etiqueta}`]
+  return { pack: nombrePack, autor: autor || detalle.join(' · '), emojis: adorno }
 }
