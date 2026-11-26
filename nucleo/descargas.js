@@ -128,6 +128,20 @@ async function opcionesV2(enlace, formato) {
   return (r.result?.results || []).filter(o => /^https?:\/\//.test(o.download || ''))
 }
 
+export const esEnlaceFacebook = t => /^https?:\/\/((www|m|web|mbasic|fb)\.)?(facebook\.com|fb\.watch|fb\.com)\//i.test(String(t || '').trim())
+
+/** Video de Facebook con YOSOYO (/api/facebook): devuelve enlaces HD y SD directos, y el título. */
+export async function facebookVideo(enlace) {
+  const { yosoyo } = ajustes.descargas
+  const r = await pedir(yosoyo, '/api/facebook', { url: enlace, apiKey: yosoyo.clave }, 2)
+  const res = r.result || {}
+  const hd = primero(res.media?.video_hd, ...Object.values(res.links || {}))
+  const sd = primero(res.media?.video_sd, res.media?.video_hd, res.url)
+  if (!hd && !sd) throw new Error('Facebook no me dio el video: ¿es público y es un video o reel?')
+  const titulo = [res.title, res.info?.title].find(t => t && !/^sin t[ií]tulo$/i.test(t)) || ''
+  return { hd: hd || sd, sd: sd || hd, titulo: String(titulo).slice(0, 120) }
+}
+
 /** Enlace de descarga del audio de un video de YouTube: Nexora (MP3) y, si falla, YOSOYO v2 (M4A). */
 export async function ytmp3(enlace) {
   const { nexora } = ajustes.descargas
