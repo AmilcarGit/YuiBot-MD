@@ -7,6 +7,7 @@ import os from 'os'
 import path from 'path'
 import { AsyncLocalStorage } from 'async_hooks'
 import ajustes from '../ajustes.js'
+import { cnvConvert, CNV_SERVERS, CNV_USER_AGENT } from './cnv.js'
 
 // Presupuesto de tiempo por comando (la web corre en funciones con límite de 60 s): ninguna petición puede pasarse de lo que queda.
 const presupuesto = new AsyncLocalStorage()
@@ -157,6 +158,33 @@ export async function ytmp4(enlace) {
     if (url) return { url, titulo: v.title || '', miniatura: v.thumbnailUrl || '' }
   } catch { /* se informa el motivo de la primera */ }
   throw new Error(motivo || 'sin enlace de video')
+}
+
+// ── CNV (cnv.cx): convierte YouTube a MP3/MP4 y entrega el archivo; se descarga aquí porque pide Origin/Referer ──
+const conPlazo = (promesa, senal) => Promise.race([promesa, new Promise((_, no) => senal.addEventListener('abort', () => no(new Error('cnv: se acabó el tiempo')), { once: true }))])
+
+async function bajarCnv(info, maxBytes, senal) {
+  const servidor = CNV_SERVERS.find(x => x.name === info.provider) || CNV_SERVERS[0]
+  const r = await fetch(info.url, { headers: { Accept: '*/*', Origin: servidor.origin, Referer: servidor.referer, 'User-Agent': CNV_USER_AGENT }, redirect: 'follow', signal: senal })
+  if (!r.ok) throw new Error(`cnv: la descarga respondió ${r.status}`)
+  if (Number(r.headers.get('content-length') || 0) > maxBytes) throw new Error('cnv: el archivo es demasiado grande')
+  const buffer = Buffer.from(await conPlazo(r.arrayBuffer(), senal))
+  if (!buffer.length) throw new Error('cnv: archivo vacío')
+  if (buffer.length > maxBytes) throw new Error('cnv: el archivo es demasiado grande')
+  return buffer
+}
+
+/** Descarga un video de YouTube como archivo ('mp3' o 'mp4') usando cnv.cx. Devuelve { buffer, titulo, mimetype }. */
+export async function cnvYoutube(enlace, formato, { maxBytes = 16 * 1024 * 1024 } = {}) {
+  const senal = plazo(formato === 'mp3' ? 30000 : 45000)
+  const carga = formato === 'mp3'
+    ? { link: enlace, format: 'mp3', audioBitrate: '128', filenameStyle: 'basic' }
+    : { link: enlace, format: 'mp4', videoQuality: '480', filenameStyle: 'basic', vCodec: 'h264' }
+  const info = await conPlazo(cnvConvert(carga), senal)
+  if (!/^https?:\/\//.test(info?.url || '')) throw new Error('cnv: sin enlace de descarga')
+  const buffer = await bajarCnv(info, maxBytes, senal)
+  const mimetype = formato === 'mp4' ? 'video/mp4' : buffer.subarray(4, 8).toString() === 'ftyp' ? 'audio/mp4' : 'audio/mpeg'
+  return { buffer, mimetype, titulo: String(info.filename || '').replace(/\.[a-z0-9]{2,4}$/i, '').slice(0, 100) }
 }
 
 export const esEnlaceYoutube = t => /^(https?:\/\/)?(www\.|m\.|music\.)?(youtube\.com|youtu\.be)\//i.test(t || '')

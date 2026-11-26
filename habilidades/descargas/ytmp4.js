@@ -1,5 +1,5 @@
 // Código Oficial de YuiBot-MD.by AmilcarGit
-import { esEnlaceYoutube, ytmp4, ytmp4Local, limpiarLocal, soltar, tomar } from '../../nucleo/descargas.js'
+import { cnvYoutube, esEnlaceYoutube, ytmp4, ytmp4Local, limpiarLocal, soltar, tomar } from '../../nucleo/descargas.js'
 import fs from 'fs'
 import { motivo } from '../../nucleo/descargas.js'
 import { dice, mal } from '../../estilo/index.js'
@@ -28,7 +28,17 @@ export default {
         } finally { limpiarLocal(local) }
         return
       }
-      const v = await ytmp4(enlace)
+      let v
+      try { v = await ytmp4(enlace) } catch (errorApis) {
+        // Último respaldo: CNV entrega el archivo (en la web no cabe un video en la respuesta, así que solo en WhatsApp).
+        if (ctx.web) throw errorApis
+        console.error(`ytmp4 apis: ${errorApis.message}`)
+        const c = await cnvYoutube(enlace, 'mp4', { maxBytes: 60 * 1024 * 1024 })
+        const pie = c.titulo ? `🎬 ${c.titulo}` : '🎬'
+        try { await ctx.enviar({ video: c.buffer, mimetype: 'video/mp4', caption: pie }, { quoted: m }) }
+        catch { await ctx.enviar({ document: c.buffer, mimetype: 'video/mp4', fileName: `${(c.titulo || 'video').slice(0, 60)}.mp4` }, { quoted: m }) }
+        return
+      }
       const pie = v.titulo ? `🎬 ${v.titulo}` : '🎬'
       try {
         await ctx.enviar({ video: { url: v.url }, mimetype: 'video/mp4', caption: pie }, { quoted: m })
