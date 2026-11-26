@@ -57,19 +57,36 @@ async function telefonoReal(sock, m, candidatos, meta) {
   return undefined
 }
 
+// Ids de los mensajes que el propio bot envió, para no contestarse a sí mismo cuando se aceptan mensajes del número vinculado.
+const enviadosPorBot = new Set()
+function recordarEnvios(sock) {
+  if (sock.__yuiEnvios) return
+  sock.__yuiEnvios = true
+  const original = sock.sendMessage.bind(sock)
+  sock.sendMessage = async (...args) => {
+    const r = await original(...args)
+    if (r?.key?.id) { enviadosPorBot.add(r.key.id); if (enviadosPorBot.size > 1000) enviadosPorBot.delete(enviadosPorBot.values().next().value) }
+    return r
+  }
+}
+
 export async function procesar(sock, { messages, type }) {
+  recordarEnvios(sock)
   if (type !== 'notify') return
   await Promise.all(messages.map(m => atender(sock, m).catch(error => console.error(error))))
 }
 
 async function atender(sock, m) {
-  if (!m.message || m.key.fromMe) return
+  if (!m.message) return
+  // El número vinculado también puede usar el bot: lo que escribe desde su teléfono con el prefijo es un comando suyo (y es dueño).
+  const propio = Boolean(m.key.fromMe)
+  if (propio && (enviadosPorBot.has(m.key.id) || !ajustes.prefijos.some(p => String(extraerTexto(m) || '').trimStart().startsWith(p)))) return
 
   const jid = m.key.remoteJid
   if (!jid || jid === 'status@broadcast' || jid.endsWith('@newsletter')) return
 
   const grupo = jid.endsWith('@g.us')
-  const origen = grupo ? m.key.participant : jid
+  const origen = propio ? String(sock.user?.id || '').replace(/:\d+(?=@)/, '') : grupo ? m.key.participant : jid
   if (!origen) return
 
   const candidatos = [origen, m.key.participantAlt, m.key.remoteJidAlt].filter(Boolean)
@@ -80,7 +97,7 @@ async function atender(sock, m) {
   // Si antes se guardó con el id oculto, el perfil se pasa al teléfono.
   for (const j of candidatos) if (j.endsWith('@lid')) moverUsuario(soloNumero(j), numero)
 
-  const esDueno = ajustes.dueno.some(d => identidades.has(d))
+  const esDueno = propio || ajustes.dueno.some(d => identidades.has(d))
   const esAdmin = grupo ? esAdminDe(meta, identidades) : false
 
   const texto = extraerTexto(m)
