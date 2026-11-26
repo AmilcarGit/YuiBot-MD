@@ -24,11 +24,22 @@ test('crea un sticker webp 512x512 con metadatos', async t => {
   assert.ok(webp.length < 300 * 1024)
 })
 
-test('firmaSticker: paquete con el nombre del bot y autor con quién lo pidió', async () => {
-  const { firmaSticker } = await import('../nucleo/stickers.js')
-  const f = firmaSticker({ bot: 'YuiBot-MD', solicitante: 'Anali', tipo: 'sonido', segundos: 17.6, ahora: new Date('2026-11-26T12:00:00Z') })
-  assert.equal(f.pack, '🎶 YuiBot-MD 🎶')
-  assert.equal(f.autor, '👤 Anali · 📅 26/11/26 · ⏱ 18s')
-  const propio = firmaSticker({ bot: 'YuiBot-MD', solicitante: 'Anali', pack: 'Mi pack', autor: 'Yo' })
+test('firmaSticker: paquete de varias líneas con bot, solicitante, lugar y creador', async () => {
+  const { firmaSticker, negritaCursiva } = await import('../nucleo/stickers.js')
+  assert.equal(negritaCursiva('Yui-1'), '𝒀𝒖𝒊-1')
+  const f = firmaSticker({ bot: 'Yui', solicitante: 'Anali', lugar: 'Mi grupo', tipo: 'sonido', segundos: 17.6, ahora: new Date('2026-11-26T12:00:00Z') })
+  assert.equal(f.pack.split('\n').length, 6)
+  assert.match(f.pack, /Pedido por: Anali/); assert.match(f.pack, /Creado en: Mi grupo/); assert.match(f.pack, /26\/11\/26 · 🔊 Con sonido · ⏱ 18s/)
+  assert.equal(f.autor, '👑 AmilcarGit ✓')
+  const propio = firmaSticker({ bot: 'Yui', solicitante: 'Anali', pack: 'Mi pack', autor: 'Yo' })
   assert.equal(propio.pack, '✨ Mi pack ✨'); assert.equal(propio.autor, 'Yo')
+})
+
+test('resolverCanal: id, números o enlace', async () => {
+  const { resolverCanal } = await import('../habilidades/stickers/_comun.js')
+  assert.equal(await resolverCanal({}, '120363123456789012@newsletter'), '120363123456789012@newsletter')
+  assert.equal(await resolverCanal({}, '120363123456789012'), '120363123456789012@newsletter')
+  const sock = { newsletterMetadata: async (tipo, codigo) => ({ id: tipo === 'invite' && codigo === 'AbC-1' ? '1203@newsletter' : null }) }
+  assert.equal(await resolverCanal(sock, 'https://whatsapp.com/channel/AbC-1'), '1203@newsletter')
+  await assert.rejects(resolverCanal({}, 'hola'), /enlace del canal/)
 })

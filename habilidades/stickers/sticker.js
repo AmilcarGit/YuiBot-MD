@@ -1,8 +1,8 @@
 // Código Oficial de YuiBot-MD.by AmilcarGit
 import ajustes from '../../ajustes.js'
-import { mal } from '../../estilo/index.js'
+import { mal, ok } from '../../estilo/index.js'
 import { aWebp, conMetadatos, firmaSticker, duracion, hayFfmpeg, SEG_MAX } from '../../nucleo/stickers.js'
-import { buscarMedio, descargar, soltarTurno, tomarTurno } from './_comun.js'
+import { buscarMedio, descargar, lugarDe, resolverCanal, soltarTurno, tomarTurno } from './_comun.js'
 
 const MAX_MB = 12
 
@@ -15,13 +15,16 @@ export default {
     if (!(await hayFfmpeg())) return ctx.responder(mal('Falta ffmpeg en el servidor del bot para crear stickers.'))
     const medio = buscarMedio(m, ctx.jid)
     if (!medio || medio.tipo === 'audioMessage') {
-      return ctx.responder(mal(`Responde a una imagen, GIF o video con ${ctx.prefijo}s (o mándalo con ese texto).\nOpciones: ${ctx.prefijo}s recorte · ${ctx.prefijo}s Nombre | Autor`))
+      return ctx.responder(mal(`Responde a una imagen, GIF o video con ${ctx.prefijo}s (o mándalo con ese texto).\nOpciones: ${ctx.prefijo}s recorte · ${ctx.prefijo}s Nombre | Autor · ${ctx.prefijo}s canal enlace (solo dueño)`))
     }
     if (!tomarTurno(ctx.numero)) return ctx.responder(mal('Una a la vez, ¿sí? Termino el sticker anterior y sigo contigo.'))
     try {
       const texto = ctx.args.join(' ')
       const recorte = /\b(recorte|crop|llenar)\b/i.test(texto)
-      const [pack, autor] = texto.replace(/\b(recorte|crop|llenar)\b/gi, '').split('|').map(x => x.trim())
+      // .s canal <enlace o id>: el dueño manda el sticker a un canal de WhatsApp (el bot debe poder publicar en él).
+      const destinoCanal = texto.match(/\bcanal\s+(\S+)/i)?.[1]
+      if (destinoCanal && !ctx.esDueno) return ctx.responder(mal('Enviar stickers a un canal es solo para el dueño del bot.'))
+      const [pack, autor] = texto.replace(/\b(recorte|crop|llenar)\b/gi, '').replace(/\bcanal\s+\S+/i, '').split('|').map(x => x.trim())
       const mime = String(medio.nodo.mimetype || '')
       const esVideo = medio.tipo === 'videoMessage' || /^video\//.test(mime) || /gif/.test(mime) || medio.nodo.isAnimated === true
       if (Number(medio.nodo.fileLength) > MAX_MB * 1024 * 1024) return ctx.responder(mal(`Ese archivo pesa demasiado (máximo ${MAX_MB} MB).`))
@@ -30,8 +33,13 @@ export default {
       const buffer = await descargar(sock, medio)
       const largo = esVideo ? await duracion(buffer) : null
       const webp = await aWebp(buffer, { animado: esVideo, modo: recorte ? 'recorte' : 'completo', segundos: Math.min(SEG_MAX, largo || SEG_MAX) })
-      const f = firmaSticker({ bot: ajustes.nombre, solicitante: ctx.usuario?.nombre, tipo: esVideo ? 'animado' : 'sticker', segundos: esVideo ? Math.min(SEG_MAX, largo || SEG_MAX) : null, pack, autor })
+      const f = firmaSticker({ bot: ajustes.nombre, solicitante: ctx.usuario?.nombre, lugar: await lugarDe(sock, ctx), tipo: esVideo ? 'animado' : 'sticker', segundos: esVideo ? Math.min(SEG_MAX, largo || SEG_MAX) : null, pack, autor })
       const listo = conMetadatos(webp, f.pack, f.autor, f.emojis)
+      if (destinoCanal) {
+        const canal = await resolverCanal(sock, destinoCanal)
+        await sock.sendMessage(canal, { sticker: listo })
+        return ctx.responder(ok(`Sticker enviado al canal ${canal} 📣`))
+      }
       await ctx.enviar({ sticker: listo }, { quoted: m })
     } catch (error) {
       console.error(`sticker: ${error.message}`)

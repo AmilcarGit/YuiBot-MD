@@ -91,7 +91,7 @@ const cortar = (t, n) => Array.from(String(t)).slice(0, n).join('')
 function exif(pack, autor, emojis = ['🌸']) {
   const json = Buffer.from(JSON.stringify({
     'sticker-pack-id': crypto.randomBytes(16).toString('hex'),
-    'sticker-pack-name': cortar(pack, 48),
+    'sticker-pack-name': cortar(pack, 160),
     'sticker-pack-publisher': cortar(autor, 64),
     emojis
   }), 'utf8')
@@ -161,15 +161,33 @@ export async function aMp3(buffer, maxSeg = 600) {
   })
 }
 
+/** Letras en negrita cursiva (𝒀𝒖𝒊𝑩𝒐𝒕) para los títulos; lo demás queda igual. */
+export const negritaCursiva = t => Array.from(String(t)).map(c => {
+  const n = c.codePointAt(0)
+  if (n >= 65 && n <= 90) return String.fromCodePoint(0x1d468 + n - 65)
+  if (n >= 97 && n <= 122) return String.fromCodePoint(0x1d482 + n - 97)
+  return c
+}).join('')
+
 /**
- * Firma profesional del sticker: el paquete lleva el nombre del bot con adornos y el autor dice quién lo pidió, cuándo y qué es.
- * Si la persona escribió su propio nombre de paquete o autor (.s Nombre | Autor), se respeta.
+ * Firma profesional del sticker. El paquete (varias líneas) lleva el bot, quién lo pidió, dónde y cuándo;
+ * el autor lleva al creador del bot. Si la persona escribió su propio paquete o autor (.s Nombre | Autor), se respeta.
  */
-export function firmaSticker({ bot, solicitante, tipo = 'sticker', segundos = null, pack = '', autor = '', zona = 'America/Lima', ahora = new Date() }) {
+export function firmaSticker({ bot, creador = 'AmilcarGit', solicitante, lugar = '', tipo = 'sticker', segundos = null, pack = '', autor = '', zona = 'America/Lima', ahora = new Date() }) {
   const adorno = { sticker: ['✨', '🌸'], animado: ['🎞️', '🌸'], sonido: ['🎶', '🔊'] }[tipo] || ['✨', '🌸']
-  const fecha = new Intl.DateTimeFormat('es', { day: '2-digit', month: '2-digit', year: '2-digit', timeZone: zona }).format(ahora)
   const etiqueta = { sticker: 'Sticker', animado: 'Animado', sonido: 'Con sonido' }[tipo] || 'Sticker'
-  const nombrePack = pack ? `${adorno[0]} ${pack} ${adorno[0]}` : `${adorno[0]} ${bot} ${adorno[0]}`
-  const detalle = [`👤 ${solicitante || 'Usuario'}`, `📅 ${fecha}`, segundos ? `⏱ ${Math.round(segundos)}s` : `🏷 ${etiqueta}`]
-  return { pack: nombrePack, autor: autor || detalle.join(' · '), emojis: adorno }
+  const fecha = new Intl.DateTimeFormat('es', { day: '2-digit', month: '2-digit', year: '2-digit', timeZone: zona }).format(ahora)
+  const lineas = [
+    '╭─୨🌸୧─╮',
+    `${adorno[0]} ${negritaCursiva(bot)} ✓`,
+    `👤 Pedido por: ${solicitante || 'Usuario'}`,
+    lugar ? `📍 Creado en: ${lugar}` : null,
+    `📅 ${fecha} · ${adorno[1]} ${etiqueta}${segundos ? ` · ⏱ ${Math.round(segundos)}s` : ''}`,
+    '╰─୨💖୧─╯'
+  ].filter(Boolean)
+  return {
+    pack: pack ? `${adorno[0]} ${pack} ${adorno[0]}` : lineas.join('\n'),
+    autor: autor || `👑 ${creador} ✓`,
+    emojis: adorno
+  }
 }

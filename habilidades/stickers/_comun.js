@@ -73,3 +73,22 @@ export async function enviarStickerSonido(sock, jid, webp, ogg, segundos, opcion
     return 'separado'
   }
 }
+
+/** Dónde se creó el sticker: el nombre del grupo o "chat privado" (sin romper si WhatsApp no responde). */
+export async function lugarDe(sock, ctx) {
+  if (!ctx.grupo) return 'chat privado'
+  try { return String((await sock.groupMetadata(ctx.jid))?.subject || 'un grupo').slice(0, 30) } catch { return 'un grupo' }
+}
+
+/** Acepta el id del canal (123…@newsletter o solo números) o su enlace (whatsapp.com/channel/…) y devuelve el JID del canal. */
+export async function resolverCanal(sock, texto) {
+  const t = String(texto).trim()
+  if (/^\d{10,}@newsletter$/.test(t)) return t
+  if (/^\d{10,}$/.test(t)) return `${t}@newsletter`
+  const codigo = t.match(/whatsapp\.com\/channel\/([\w-]+)/i)?.[1]
+  if (!codigo) throw new Error('Usa el enlace del canal (whatsapp.com/channel/…) o su id terminado en @newsletter.')
+  if (typeof sock.newsletterMetadata !== 'function') throw new Error('Esta versión de Yui-Bails no maneja canales.')
+  const info = await sock.newsletterMetadata('invite', codigo)
+  if (!info?.id) throw new Error('No encontré ese canal.')
+  return info.id
+}
