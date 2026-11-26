@@ -12,8 +12,16 @@ const MAX_ANIMADO = 950 * 1024
 export const SEG_MAX = 8
 export const SEG_SONIDO = 15 // los stickers con sonido pueden durar más; pesan más, así que se baja fps/calidad hasta que quepan
 
+/** Última línea útil de lo que dijo ffmpeg (en vez del comando completo, que no le sirve a nadie). */
+const motivoFfmpeg = stderr => {
+  const t = String(stderr || '')
+  if (/image data not found|Invalid data found/i.test(t)) return 'No pude leer ese archivo (¿es un sticker animado o un archivo dañado?).'
+  const l = t.split('\n').map(x => x.trim()).filter(x => x && !/^\[.*\]\s*$/.test(x)).at(-1)
+  return l ? `ffmpeg: ${l.slice(0, 160)}` : ''
+}
+
 const ejecutar = (cmd, args, timeout = 90000) => new Promise((resolver, rechazar) => {
-  execFile(cmd, args, { timeout, maxBuffer: 1 << 22 }, (error, stdout, stderr) => (error ? rechazar(Object.assign(error, { stderr })) : resolver(stdout)))
+  execFile(cmd, args, { timeout, maxBuffer: 1 << 22 }, (error, stdout, stderr) => (error ? rechazar(Object.assign(error, { stderr, message: motivoFfmpeg(stderr) || error.message })) : resolver(stdout)))
 })
 
 let ffmpegOk
@@ -191,3 +199,6 @@ export function firmaSticker({ bot, creador = 'AmilcarGit', solicitante, lugar =
     emojis: adorno
   }
 }
+
+/** ¿Es un WebP? (los stickers ya vienen listos: solo hace falta cambiarles la firma, sin recodificar) */
+export const esWebp = b => b.length > 12 && b.toString('ascii', 0, 4) === 'RIFF' && b.toString('ascii', 8, 12) === 'WEBP'

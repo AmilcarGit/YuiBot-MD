@@ -43,3 +43,14 @@ test('resolverCanal: id, números o enlace', async () => {
   assert.equal(await resolverCanal(sock, 'https://whatsapp.com/channel/AbC-1'), '1203@newsletter')
   await assert.rejects(resolverCanal({}, 'hola'), /enlace del canal/)
 })
+
+test('un sticker animado se conserva y solo cambia su firma; los errores de ffmpeg se explican', async () => {
+  const { esWebp, conMetadatos, aWebp } = await import('../nucleo/stickers.js')
+  const { execFileSync } = await import('node:child_process'); const fs = await import('node:fs')
+  execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-f', 'lavfi', '-i', 'testsrc2=s=200x200:r=10', '-t', '2', '-c:v', 'libwebp', '-loop', '0', '/tmp/yui-anim.webp'])
+  const animado = fs.readFileSync('/tmp/yui-anim.webp')
+  assert.ok(esWebp(animado))
+  const firmado = conMetadatos(animado, 'Pack', 'Autor', ['🌸'])
+  assert.ok(esWebp(firmado)); assert.ok(firmado.includes('ANIM')); assert.ok(firmado.includes('sticker-pack-name'))
+  await assert.rejects(aWebp(animado, { animado: true }), /sticker animado|archivo dañado/)
+})

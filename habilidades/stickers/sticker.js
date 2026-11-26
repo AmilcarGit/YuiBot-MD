@@ -1,7 +1,7 @@
 // Código Oficial de YuiBot-MD.by AmilcarGit
 import ajustes from '../../ajustes.js'
 import { mal, ok } from '../../estilo/index.js'
-import { aWebp, conMetadatos, firmaSticker, duracion, hayFfmpeg, SEG_MAX } from '../../nucleo/stickers.js'
+import { aWebp, conMetadatos, esWebp, firmaSticker, duracion, hayFfmpeg, SEG_MAX } from '../../nucleo/stickers.js'
 import { buscarMedio, descargar, lugarDe, resolverCanal, soltarTurno, tomarTurno } from './_comun.js'
 
 const MAX_MB = 12
@@ -31,9 +31,11 @@ export default {
       if (esVideo && Number(medio.nodo.seconds) > 30) return ctx.responder(mal('Ese video es muy largo. Usa uno de hasta 30 segundos; yo tomo los primeros ' + SEG_MAX + '.'))
       await ctx.responder('🌸 Preparando tu sticker…')
       const buffer = await descargar(sock, medio)
-      const largo = esVideo ? await duracion(buffer) : null
-      const webp = await aWebp(buffer, { animado: esVideo, modo: recorte ? 'recorte' : 'completo', segundos: Math.min(SEG_MAX, largo || SEG_MAX) })
-      const f = firmaSticker({ bot: ajustes.nombre, solicitante: ctx.usuario?.nombre, lugar: await lugarDe(sock, ctx), tipo: esVideo ? 'animado' : 'sticker', segundos: esVideo ? Math.min(SEG_MAX, largo || SEG_MAX) : null, pack, autor })
+      // Si respondieron a un sticker, ya es WebP (ffmpeg no lee los animados): se conserva y solo se cambia la firma.
+      const yaSticker = (medio.tipo === 'stickerMessage' || /webp/.test(mime)) && esWebp(buffer)
+      const largo = esVideo && !yaSticker ? await duracion(buffer) : null
+      const webp = yaSticker ? buffer : await aWebp(buffer, { animado: esVideo, modo: recorte ? 'recorte' : 'completo', segundos: Math.min(SEG_MAX, largo || SEG_MAX) })
+      const f = firmaSticker({ bot: ajustes.nombre, solicitante: ctx.usuario?.nombre, lugar: await lugarDe(sock, ctx), tipo: esVideo ? 'animado' : 'sticker', segundos: esVideo && !yaSticker ? Math.min(SEG_MAX, largo || SEG_MAX) : null, pack, autor })
       const listo = conMetadatos(webp, f.pack, f.autor, f.emojis)
       if (destinoCanal) {
         const canal = await resolverCanal(sock, destinoCanal)
