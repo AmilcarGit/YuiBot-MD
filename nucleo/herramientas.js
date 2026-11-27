@@ -68,12 +68,36 @@ export const IDIOMAS = {
 const NOMBRES = { espanol: 'es', español: 'es', castellano: 'es', ingles: 'en', inglés: 'en', english: 'en', portugues: 'pt', portugués: 'pt', frances: 'fr', francés: 'fr', aleman: 'de', alemán: 'de', italiano: 'it', japones: 'ja', japonés: 'ja', coreano: 'ko', chino: 'zh', ruso: 'ru', arabe: 'ar', árabe: 'ar', turco: 'tr', latin: 'la', latín: 'la' }
 export const codigoIdioma = t => { const x = String(t || '').toLowerCase(); return IDIOMAS[x] ? x : NOMBRES[x] || null }
 
+const DELIRIUS = (process.env.DELIRIUS_URL || 'https://api.delirius.online').replace(/\/$/, '')
+
+/** Traduce con la API de Delirius (gratis, sin clave) y, si falla, con Google. Devuelve { traduccion, origen }. */
 export async function traducir(texto, destino = 'es') {
-  const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${encodeURIComponent(destino)}&dt=t&q=${encodeURIComponent(texto.slice(0, 1500))}`
-  const d = await pedir(url)
-  const traduccion = (d?.[0] || []).map(x => x?.[0] || '').join('')
-  if (!traduccion) throw new Error('El traductor no devolvió nada')
-  return { traduccion, origen: d?.[2] || '' }
+  const corto = texto.slice(0, 1500)
+  let motivo
+  try {
+    const d = await pedir(`${DELIRIUS}/tools/translate?text=${encodeURIComponent(corto)}&language=${encodeURIComponent(destino)}`)
+    const t = typeof d?.data === 'string' ? d.data : d?.data?.text || d?.data?.translation
+    if (d?.status !== false && t) return { traduccion: String(t), origen: '' }
+    motivo = 'Delirius no devolvió traducción'
+  } catch (error) { motivo = `Delirius: ${error.message}` }
+  try {
+    const d = await pedir(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${encodeURIComponent(destino)}&dt=t&q=${encodeURIComponent(corto)}`)
+    const traduccion = (d?.[0] || []).map(x => x?.[0] || '').join('')
+    if (traduccion) return { traduccion, origen: d?.[2] || '' }
+    motivo += ' · Google sin resultado'
+  } catch (error) { motivo += ` · Google: ${error.message}` }
+  throw new Error(motivo)
+}
+
+// El último texto que cada persona tradujo: así los botones de idioma no tienen que llevar el texto dentro.
+const recientes = new Map()
+export function recordarTexto(clave, texto) {
+  recientes.set(String(clave), { texto, hasta: Date.now() + 3600e3 })
+  if (recientes.size > 500) recientes.delete(recientes.keys().next().value)
+}
+export function textoGuardado(clave) {
+  const r = recientes.get(String(clave))
+  return r && r.hasta > Date.now() ? r.texto : ''
 }
 
 // ── Wikipedia ───────────────────────────────────────────────────────────────────────
