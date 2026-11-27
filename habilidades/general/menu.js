@@ -69,10 +69,12 @@ export default {
     const mostradas = unica ? [elegida] : claves
     const desplegable = {
       texto: '📜 Comandos',
-      secciones: mostradas.map(c => ({
-        titulo: titulos[c] || c,
-        filas: porCategoria.get(c).sort((a, b) => a.nombre.localeCompare(b.nombre)).map(h => ({ titulo: `${ctx.prefijo}${h.nombre}`, descripcion: h.ayuda, cmd: h.nombre }))
-      }))
+      // WhatsApp admite 10 filas por sección: las categorías largas se parten en partes.
+      secciones: mostradas.flatMap(c => {
+        const filas = porCategoria.get(c).sort((a, b) => a.nombre.localeCompare(b.nombre)).map(h => ({ titulo: `${ctx.prefijo}${h.nombre}`, descripcion: h.ayuda, cmd: h.nombre }))
+        const partes = Math.ceil(filas.length / 10)
+        return Array.from({ length: partes }, (_, i) => ({ titulo: `${titulos[c] || c}${partes > 1 ? ` ${i + 1}/${partes}` : ''}`, filas: filas.slice(i * 10, i * 10 + 10) }))
+      })
     }
 
     // Con botones el mensaje es corto y bonito: el detalle de cada comando va en el desplegable.
