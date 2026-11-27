@@ -21,6 +21,16 @@ const titulos = {
 const orden = Object.keys(titulos)
 const posicion = c => (orden.includes(c) ? orden.indexOf(c) : orden.length)
 
+// Icono de cada comando en el desplegable; los que no están usan el de su categoría.
+export const ICONOS = {
+  clima: '🌤️', dueno: '👑', menu: '📜', ping: '🏓', terminos: '📋', tomp3: '🎶', daily: '🎁', dar: '💝', gacha: '🎰', inventario: '🎒', perfil: '🪪', registrar: '📝', tienda: '🛒', top: '🏆', trabajar: '⚒️',
+  adivina: '🔮', dado: '🎲', moneda: '🪙', ppt: '✊', ruleta: '🎡', play: '🎵', yts: '🔎', ytmp3: '🎧', ytmp4: '🎬', pin: '📌', pinvid: '📹', facebook: '📘', tiktok: '🎵', instagram: '📸', twitter: '🐦', threads: '🧵', spotify: '🟢', soundcloud: '🟠',
+  acortar: '🔗', calc: '🧮', cambio: '💱', hora: '🕒', qr: '📱', traducir: '🌐', wiki: '📚', tts: '🎙️', ssweb: '🖼️', reaccion: '🤗', sticker: '🎀', saudio: '🔊', toimg: '🖼️',
+  sorteo: '🎟️', todos: '📣', hidetag: '👻', kick: '🚪', promote: '⬆️', demote: '⬇️', antienlaces: '🔗', antifalsos: '🛡️', bienvenida: '👋', serbot: '🤖', subbots: '🤖', datos: '📊', reiniciar: '♻️', tema: '🎨', web: '🌍'
+}
+/** Resumen corto para el desplegable: lo que va antes de los dos puntos (sin el ejemplo de uso). */
+export const resumen = ayuda => String(ayuda || '').split(/:\s/)[0].replace(/\s+\.\w+.*$/, '').trim()
+
 /** Barra de progreso hacia el siguiente nivel (nivel = √(xp/10) + 1, igual que en nucleo/juego.js). */
 function progreso(xp, nivel, largo = 8) {
   const desde = 10 * (nivel - 1) ** 2; const hasta = 10 * nivel ** 2
@@ -102,9 +112,10 @@ export default {
       texto: '📜 Comandos',
       // WhatsApp admite 10 filas por sección: las categorías largas se parten en partes.
       secciones: mostradas.flatMap(c => {
-        const filas = porCategoria.get(c).sort((a, b) => a.nombre.localeCompare(b.nombre)).map(h => ({ titulo: `${ctx.prefijo}${h.nombre}`, descripcion: h.ayuda, cmd: h.nombre }))
+        const filas = porCategoria.get(c).sort((a, b) => a.nombre.localeCompare(b.nombre))
+          .map(h => ({ titulo: `${ICONOS[h.nombre] || tema.iconos?.[c] || tema.emojis.item} ${ctx.prefijo}${h.nombre}`, descripcion: resumen(h.ayuda), cmd: h.nombre }))
         const partes = Math.ceil(filas.length / 10)
-        return Array.from({ length: partes }, (_, i) => ({ titulo: `${titulos[c] || c}${partes > 1 ? ` ${i + 1}/${partes}` : ''}`, filas: filas.slice(i * 10, i * 10 + 10) }))
+        return Array.from({ length: partes }, (_, i) => ({ titulo: `${tema.iconos?.[c] || tema.emojis.item} ${titulos[c] || c}${partes > 1 ? ` ${i + 1}/${partes}` : ` · ${filas.length}`}`, filas: filas.slice(i * 10, i * 10 + 10) }))
       })
     }
 
