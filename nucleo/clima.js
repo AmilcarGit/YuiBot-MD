@@ -35,7 +35,7 @@ export async function buscarCiudad(nombre) {
   if (!lista.length) return null
   const pais = resto.join(' ').toLowerCase()
   const elegida = (pais && lista.find(r => [r.country, r.country_code, r.admin1].some(x => x && x.toLowerCase().includes(pais)))) || lista[0]
-  return { nombre: elegida.name, region: elegida.admin1 || '', pais: elegida.country || '', lat: elegida.latitude, lon: elegida.longitude }
+  return { nombre: elegida.name, region: elegida.admin1 || '', pais: elegida.country || '', zona: elegida.timezone || '', lat: elegida.latitude, lon: elegida.longitude }
 }
 
 /** Tiempo actual y pronóstico de 3 días para unas coordenadas. */

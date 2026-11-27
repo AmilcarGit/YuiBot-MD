@@ -29,7 +29,7 @@ export const temas = {
       dinero: '🪙', xp: '⭐', nivel: '🎀', racha: '🔥', regalo: '🎁',
       trabajo: '⚒️', juego: '🎲', persona: '🌷', logro: '🏆'
     },
-    iconos: { general: '🌸', economia: '💰', juegos: '🎮', descargas: '📥', stickers: '🎀', grupo: '👥', subbots: '🤖', dueno: '👑' },
+    iconos: { general: '🌸', economia: '💰', juegos: '🎮', descargas: '📥', stickers: '🎀', grupo: '👥', subbots: '🤖', dueno: '👑', herramientas: '🧰' },
     marco: { cabeza: ['╭━━〔 ', ' 〕━━⬣'], lado: '┃ ', pie: '╰━━━━━━━━━━━━━━⬣' },
     nieve: '🌸 ・ ✧ ・ 🌸 ・ ✧ ・ 🌸',
     adornos: ['🌸', '✨', '💖', '🌙', '⭐'],
@@ -45,7 +45,7 @@ export const temas = {
       dinero: '🪙', xp: '⭐', nivel: '🎅', racha: '🕯️', regalo: '🎁',
       trabajo: '🛷', juego: '⛄', persona: '🦌', logro: '🏆'
     },
-    iconos: { general: '🎄', economia: '🎁', juegos: '⛄', descargas: '📦', stickers: '🎁', grupo: '🔔', subbots: '🦌', dueno: '🎅' },
+    iconos: { general: '🎄', economia: '🎁', juegos: '⛄', descargas: '📦', stickers: '🎁', grupo: '🔔', subbots: '🦌', dueno: '🎅', herramientas: '🧰' },
     marco: { cabeza: ['╭❄️━〔 ', ' 〕━❄️⬣'], lado: '┃ ', pie: '╰━🎄━❄️━🎄━❄️━🎄━⬣' },
     nieve: '❄️ ・ 🎄 ・ ⭐ ・ 🎄 ・ ❄️',
     adornos: ['🎄', '❄️', '⭐', '🎁', '🔔', '☃️', '🦌', '🍪'],

@@ -9,6 +9,7 @@ const titulos = {
   economia: 'Economía',
   juegos: 'Juegos',
   descargas: 'Descargas',
+  herramientas: 'Herramientas',
   stickers: 'Stickers',
   grupo: 'Grupo',
   subbots: 'Sub-bots',
