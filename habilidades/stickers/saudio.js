@@ -8,15 +8,17 @@ export default {
   nombre: 'saudio',
   alias: ['stickeraudio', 'stickersonido', 'ssonido', 'sa'],
   categoria: 'stickers',
-  ayuda: 'Sticker con sonido: responde a un video (usa su audio) o a una nota de voz/audio',
+  ayuda: 'Sticker con sonido, cuadrado y recortado solo: responde a un video o a una nota de voz (con "completo" no recorta)',
   async ejecutar(sock, m, ctx) {
     if (!(await hayFfmpeg())) return ctx.responder(mal('Falta ffmpeg en el servidor del bot para crear stickers.'))
     const medio = buscarMedio(m, ctx.jid)
     const esAudio = medio?.tipo === 'audioMessage' || /^audio\//.test(medio?.nodo?.mimetype || '')
     const esVideo = medio?.tipo === 'videoMessage' || /^video\//.test(medio?.nodo?.mimetype || '')
     if (!esAudio && !esVideo) {
-      return ctx.responder(mal(`Responde a un video o a un audio con ${ctx.prefijo}saudio.\n• Video: el sticker se mueve y suena con su audio.\n• Audio o nota de voz: el sticker es una onda que baila con el sonido.\nDuran hasta ${SEG_SONIDO} segundos.`))
+      return ctx.responder(mal(`Responde a un video o a un audio con ${ctx.prefijo}saudio.\n• Video: el sticker se mueve y suena con su audio.\n• Audio o nota de voz: el sticker es una onda que baila con el sonido.\nDuran hasta ${SEG_SONIDO} segundos y se recortan en cuadrado (usa ${ctx.prefijo}saudio completo para no recortar).`))
     }
+    const completo = /^(completo|entero|full)$/i.test(ctx.args[0] || '')
+    const nombrePack = (completo ? ctx.args.slice(1) : ctx.args).join(' ').trim()
     if (!tomarTurno(ctx.numero)) return ctx.responder(mal('Una a la vez, ¿sí? Termino el sticker anterior y sigo contigo.'))
     try {
       if (Number(medio.nodo.fileLength) > 15 * 1024 * 1024) return ctx.responder(mal('Ese archivo pesa demasiado (máximo 15 MB).'))
@@ -24,10 +26,11 @@ export default {
       const buffer = await descargar(sock, medio)
       const largo = Math.min(SEG_SONIDO, (await duracion(buffer)) || SEG_SONIDO)
       const [animacion, audio] = await Promise.all([
-        esVideo ? aWebp(buffer, { animado: true, segundos: largo }) : ondaDeAudio(buffer, largo),
+        // Cuadrado desde el centro (llena todo el sticker); con "completo" se ve el video entero con bordes.
+        esVideo ? aWebp(buffer, { animado: true, segundos: largo, modo: completo ? 'completo' : 'recorte' }) : ondaDeAudio(buffer, largo),
         aOpus(buffer, largo)
       ])
-      const f = firmaSticker({ bot: ajustes.nombre, solicitante: ctx.usuario?.nombre, lugar: await lugarDe(sock, ctx), tipo: 'sonido', segundos: largo, pack: ctx.args.join(' ').trim() })
+      const f = firmaSticker({ bot: ajustes.nombre, solicitante: ctx.usuario?.nombre, lugar: await lugarDe(sock, ctx), tipo: 'sonido', segundos: largo, pack: nombrePack })
       const webp = conMetadatos(animacion, f.pack, f.autor, f.emojis)
       const como = await enviarStickerSonido(sock, ctx.jid, webp, audio, largo, { quoted: m })
       if (como === 'separado') await ctx.responder(ok('Mandé el sticker y su audio por separado: esta versión de WhatsApp o del bot aún no recibe stickers con sonido.'))

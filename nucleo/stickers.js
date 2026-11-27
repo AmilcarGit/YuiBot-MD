@@ -36,7 +36,7 @@ async function conTemporal(fn) {
 }
 
 /** Ajuste a 512×512: "completo" deja bordes transparentes; "recorte" llena el cuadro. */
-const ajuste = modo => (modo === 'recorte'
+export const ajuste = modo => (modo === 'recorte'
   ? `scale=${LADO}:${LADO}:force_original_aspect_ratio=increase:flags=lanczos,crop=${LADO}:${LADO}`
   : `scale=${LADO}:${LADO}:force_original_aspect_ratio=decrease:flags=lanczos,pad=${LADO}:${LADO}:(ow-iw)/2:(oh-ih)/2:color=0x00000000`)
 
