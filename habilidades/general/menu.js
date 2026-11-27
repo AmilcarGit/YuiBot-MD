@@ -3,6 +3,8 @@ import ajustes from '../../ajustes.js'
 import { listar } from '../../nucleo/cargador.js'
 import { caja, dice, firma, fuente, nieve, temaActivo } from '../../estilo/index.js'
 import { conBotones } from '../../nucleo/botones.js'
+import { formato } from '../../nucleo/utiles.js'
+import { ZONA } from '../../estilo/temas.js'
 
 const titulos = {
   general: 'General',
@@ -19,25 +21,40 @@ const titulos = {
 const orden = Object.keys(titulos)
 const posicion = c => (orden.includes(c) ? orden.indexOf(c) : orden.length)
 
-/** Texto del menú corto (con botones): cabecera, datos y una tarjeta por categoría con 3 comandos de muestra. */
-export function menuCompacto({ tema, nombre, prefijo, total, categorias }) {
+/** Barra de progreso hacia el siguiente nivel (nivel = √(xp/10) + 1, igual que en nucleo/juego.js). */
+function progreso(xp, nivel, largo = 8) {
+  const desde = 10 * (nivel - 1) ** 2; const hasta = 10 * nivel ** 2
+  const p = Math.min(1, Math.max(0, (xp - desde) / (hasta - desde || 1)))
+  const llenos = Math.round(p * largo)
+  return { barra: '▰'.repeat(llenos) + '▱'.repeat(largo - llenos), porcentaje: Math.round(p * 100) }
+}
+
+/** Menú corto (con botones): una tarjeta con los datos de quien lo pidió; los comandos van en el desplegable. */
+export function menuCompacto({ tema, nombre, prefijo, total, categorias, usuario = {}, ahora = new Date(), zona = ZONA }) {
   const t = tema.emojis
   const linea = '━━━━━━━━━━━━━━━━━━'
-  const filas = categorias.map(c => {
-    const resto = c.nombres.length > 3 ? ` +${c.nombres.length - 3}` : ''
-    return `┃ ${tema.iconos?.[c.clave] || t.item} *${c.titulo}* ‹${c.nombres.length}›\n┃    ${t.item} ${c.nombres.slice(0, 3).join(' · ')}${resto}`
-  })
+  const n = Number.isFinite(usuario.nivel) ? usuario.nivel : null
+  const xp = Number.isFinite(usuario.xp) ? usuario.xp : 0
+  const { barra, porcentaje } = n ? progreso(xp, n) : {}
+  const fecha = new Intl.DateTimeFormat('es', { weekday: 'short', day: 'numeric', month: 'short', timeZone: zona }).format(ahora).replace(/\./g, '')
+  const hora = new Intl.DateTimeFormat('es', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: zona }).format(ahora)
+  const chips = categorias.map(c => `${tema.iconos?.[c.clave] || t.item}${c.nombres.length}`)
+  const lineasChips = []
+  for (let i = 0; i < chips.length; i += 5) lineasChips.push(`┃ ${chips.slice(i, i + 5).join('  ')}`)
   return [
     `╭${linea}╮`,
     `┃  ${t.titulo} ${fuente(ajustes.nombre, tema.fuente)} ${t.titulo}`,
     `┣${linea}┫`,
-    `┃ 👤 ${nombre}`,
-    `┃ ⚙️ Prefijo: *${prefijo}*  ·  📚 ${total} comandos`,
+    `┃ ${t.persona} *${nombre}*`,
+    n && `┃ ${t.nivel} Nivel *${n}*  ${barra} ${porcentaje}%`,
+    Number.isFinite(usuario.monedas) && `┃ ${t.dinero} ${formato(usuario.monedas)}${usuario.racha ? `  ·  ${t.racha} Racha ${usuario.racha}` : ''}${xp ? `  ·  ${t.xp} ${formato(xp)}` : ''}`,
     `┣${linea}┫`,
-    ...filas,
+    `┃ 📅 ${fecha}  ·  🕒 ${hora}`,
+    `┃ ⚙️ Prefijo *${prefijo}*  ·  📚 ${total} comandos`,
+    ...lineasChips,
     `╰${linea}╯`,
-    '💡 Toca *📜 Comandos* para ver todos'
-  ].join('\n')
+    '👇 Toca *📜 Comandos* y elige'
+  ].filter(Boolean).join('\n')
 }
 
 export default {
@@ -79,7 +96,7 @@ export default {
 
     // Con botones el mensaje es corto y bonito: el detalle de cada comando va en el desplegable.
     if (ctx.botonesActivos) {
-      const texto = menuCompacto({ tema, nombre: ctx.usuario.nombre || 'viajero', prefijo: ctx.prefijo, total: visibles.length, categorias: mostradas.map(c => ({ clave: c, titulo: titulos[c] || c, nombres: porCategoria.get(c).map(h => h.nombre).sort() })) })
+      const texto = menuCompacto({ tema, nombre: ctx.usuario.nombre || 'viajero', prefijo: ctx.prefijo, total: visibles.length, usuario: ctx.usuario, categorias: mostradas.map(c => ({ clave: c, titulo: titulos[c] || c, nombres: porCategoria.get(c).map(h => h.nombre).sort() })) })
       return conBotones(ctx, texto, [desplegable], { media: ajustes.menuMedia })
     }
 
