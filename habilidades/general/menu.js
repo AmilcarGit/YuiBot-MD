@@ -29,32 +29,46 @@ function progreso(xp, nivel, largo = 8) {
   return { barra: '▰'.repeat(llenos) + '▱'.repeat(largo - llenos), porcentaje: Math.round(p * 100) }
 }
 
+const RANGOS = [[1, '🌱 Novato'], [3, '📘 Aprendiz'], [6, '🗡️ Aventurero'], [10, '🛡️ Veterano'], [15, '🔮 Maestro'], [25, '👑 Leyenda']]
+const rangoDe = nivel => RANGOS.filter(([desde]) => nivel >= desde).at(-1)[1]
+const CONSEJOS = ['{p}tts hola, soy Yui 🎙️', '{p}abrazo @amigo 🤗', '{p}spotify bad bunny 🎧', '{p}s para crear stickers 🎀', '{p}tiktok enlace 🎵', '{p}ssweb google.com 📸', '{p}traducir en hola 🌐', '{p}gacha para invocar 🎰']
+
 /** Menú corto (con botones): una tarjeta con los datos de quien lo pidió; los comandos van en el desplegable. */
 export function menuCompacto({ tema, nombre, prefijo, total, categorias, usuario = {}, ahora = new Date(), zona = ZONA }) {
   const t = tema.emojis
-  const linea = '━━━━━━━━━━━━━━━━━━'
   const n = Number.isFinite(usuario.nivel) ? usuario.nivel : null
   const xp = Number.isFinite(usuario.xp) ? usuario.xp : 0
   const { barra, porcentaje } = n ? progreso(xp, n) : {}
-  const fecha = new Intl.DateTimeFormat('es', { weekday: 'short', day: 'numeric', month: 'short', timeZone: zona }).format(ahora).replace(/\./g, '')
+  const fecha = new Intl.DateTimeFormat('es', { weekday: 'long', day: 'numeric', month: 'long', timeZone: zona }).format(ahora)
   const hora = new Intl.DateTimeFormat('es', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: zona }).format(ahora)
-  const chips = categorias.map(c => `${tema.iconos?.[c.clave] || t.item}${c.nombres.length}`)
+  const h = Number(new Intl.DateTimeFormat('en-GB', { hour: '2-digit', hour12: false, timeZone: zona }).format(ahora)) % 24
+  const saludo = h < 6 ? '🌙 Buenas madrugadas' : h < 12 ? '🌅 Buenos días' : h < 19 ? '☀️ Buenas tardes' : '🌙 Buenas noches'
+  const rotulo = txt => `${fuente(txt, 'mini')}`
+  const chips = categorias.map(c => `${tema.iconos?.[c.clave] || t.item} ${c.titulo} ${c.nombres.length}`)
   const lineasChips = []
-  for (let i = 0; i < chips.length; i += 5) lineasChips.push(`┃ ${chips.slice(i, i + 5).join('  ')}`)
+  for (let i = 0; i < chips.length; i += 2) lineasChips.push(`│ ${chips.slice(i, i + 2).join('  ·  ')}`)
+  const consejo = CONSEJOS[Math.floor(ahora.getTime() / 3600e3) % CONSEJOS.length].replace('{p}', prefijo)
   return [
-    `╭${linea}╮`,
-    `┃  ${t.titulo} ${fuente(ajustes.nombre, tema.fuente)} ${t.titulo}`,
-    `┣${linea}┫`,
-    `┃ ${t.persona} *${nombre}*`,
-    n && `┃ ${t.nivel} Nivel *${n}*  ${barra} ${porcentaje}%`,
-    Number.isFinite(usuario.monedas) && `┃ ${t.dinero} ${formato(usuario.monedas)}${usuario.racha ? `  ·  ${t.racha} Racha ${usuario.racha}` : ''}${xp ? `  ·  ${t.xp} ${formato(xp)}` : ''}`,
-    `┣${linea}┫`,
-    `┃ 📅 ${fecha}  ·  🕒 ${hora}`,
-    `┃ ⚙️ Prefijo *${prefijo}*  ·  📚 ${total} comandos`,
+    `┏━━━━━ ${t.titulo} ━━━━━┓`,
+    `   ${fuente(ajustes.nombre, tema.fuente)}`,
+    `┗━━━━━ ${t.item} ━━━━━┛`,
+    `${saludo}, *${nombre}* ${t.persona}`,
+    '',
+    `╭─ ${t.nivel} ${rotulo('perfil')} ─────────`,
+    n && `│ ${rangoDe(n)}  ·  Nivel *${n}*`,
+    n && `│ ${barra} ${porcentaje}%`,
+    Number.isFinite(usuario.monedas) && `│ ${t.dinero} ${formato(usuario.monedas)}${usuario.racha ? `   ${t.racha} Racha ${usuario.racha}` : ''}${xp ? `   ${t.xp} ${formato(xp)} XP` : ''}`,
+    '╰──────────────',
+    `╭─ 📅 ${rotulo('hoy')} ─────────────`,
+    `│ ${fecha.charAt(0).toUpperCase()}${fecha.slice(1)}`,
+    `│ 🕒 ${hora}  ·  ⚙️ Prefijo *${prefijo}*`,
+    '╰──────────────',
+    `╭─ 📚 ${rotulo(`${total} comandos`)} ──────`,
     ...lineasChips,
-    `╰${linea}╯`,
+    '╰──────────────',
+    `${t.item} Prueba: *${consejo}*`,
     '👇 Toca *📜 Comandos* y elige'
-  ].filter(Boolean).join('\n')
+  ].filter(x => x !== null && x !== false && x !== undefined).join('\n')
 }
 
 export default {
