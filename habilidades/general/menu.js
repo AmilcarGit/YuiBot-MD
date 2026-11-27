@@ -39,6 +39,7 @@ function progreso(xp, nivel, largo = 8) {
   return { barra: '▰'.repeat(llenos) + '▱'.repeat(largo - llenos), porcentaje: Math.round(p * 100) }
 }
 
+export const ENLACES = { chaty: 'https://chaty-weld.vercel.app', datos: 'https://yuibot-datos.vercel.app/yui' }
 const RANGOS = [[1, '🌱 Novato'], [3, '📘 Aprendiz'], [6, '🗡️ Aventurero'], [10, '🛡️ Veterano'], [15, '🔮 Maestro'], [25, '👑 Leyenda']]
 const rangoDe = nivel => RANGOS.filter(([desde]) => nivel >= desde).at(-1)[1]
 const CONSEJOS = ['{p}tts hola, soy Yui 🎙️', '{p}abrazo @amigo 🤗', '{p}spotify bad bunny 🎧', '{p}s para crear stickers 🎀', '{p}tiktok enlace 🎵', '{p}ssweb google.com 📸', '{p}traducir en hola 🌐', '{p}gacha para invocar 🎰']
@@ -54,9 +55,6 @@ export function menuCompacto({ tema, nombre, prefijo, total, categorias, usuario
   const h = Number(new Intl.DateTimeFormat('en-GB', { hour: '2-digit', hour12: false, timeZone: zona }).format(ahora)) % 24
   const saludo = h < 6 ? '🌙 Buenas madrugadas' : h < 12 ? '🌅 Buenos días' : h < 19 ? '☀️ Buenas tardes' : '🌙 Buenas noches'
   const rotulo = txt => `${fuente(txt, 'mini')}`
-  const chips = categorias.map(c => `${tema.iconos?.[c.clave] || t.item} ${c.titulo} ${c.nombres.length}`)
-  const lineasChips = []
-  for (let i = 0; i < chips.length; i += 2) lineasChips.push(`│ ${chips.slice(i, i + 2).join('  ·  ')}`)
   const consejo = CONSEJOS[Math.floor(ahora.getTime() / 3600e3) % CONSEJOS.length].replace('{p}', prefijo)
   return [
     `┏━━━━━ ${t.titulo} ━━━━━┓`,
@@ -71,10 +69,13 @@ export function menuCompacto({ tema, nombre, prefijo, total, categorias, usuario
     '╰──────────────',
     `╭─ 📅 ${rotulo('hoy')} ─────────────`,
     `│ ${fecha.charAt(0).toUpperCase()}${fecha.slice(1)}`,
-    `│ 🕒 ${hora}  ·  ⚙️ Prefijo *${prefijo}*`,
+    `│ 🕒 ${hora}  ·  ⚙️ Prefijo *${prefijo}*  ·  📚 ${total}`,
     '╰──────────────',
-    `╭─ 📚 ${rotulo(`${total} comandos`)} ──────`,
-    ...lineasChips,
+    `╭─ 🌐 ${rotulo('enlaces')} ───────────`,
+    `│ 💬 *Chaty* · charla como en WhatsApp (pronto Yui estará ahí)`,
+    `│ ${ENLACES.chaty}`,
+    `│ 📊 *Base de datos de Yui*`,
+    `│ ${ENLACES.datos}`,
     '╰──────────────',
     `${t.item} Prueba: *${consejo}*`,
     '👇 Toca *📜 Comandos* y elige'
