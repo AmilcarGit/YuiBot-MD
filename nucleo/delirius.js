@@ -178,3 +178,18 @@ export async function soundcloudDl(enlace) {
   if (!audio) throw new Error('SoundCloud no dejó bajar esa canción')
   return { titulo: d.data?.title || '', artista: d.data?.author || '', imagen: d.data?.image || '', url: audio }
 }
+
+// ── Paquetes de stickers (Sticker.ly) ───────────────────────────────────────────────
+export const esEnlaceStickerly = t => /^https?:\/\/sticker\.ly\/s\/[A-Za-z0-9]+/i.test(String(t || '').trim())
+export async function buscarStickerly(consulta, limite = 10) {
+  const d = await delirius('/search/stickerly', { query: consulta })
+  return (Array.isArray(d.data) ? d.data : []).filter(x => x.url && !x.isPaid).slice(0, limite)
+    .map(x => ({ nombre: String(x.name || '').trim(), autor: String(x.author || ''), cantidad: Number(x.sticker_count) || 0, animado: !!x.isAnimated, url: x.url, imagen: x.preview }))
+}
+export async function packStickerly(enlace) {
+  const d = await delirius('/download/stickerly', { url: enlace }, { ms: 40000 })
+  const info = d.data || {}
+  const stickers = (Array.isArray(info.stickers) ? info.stickers : []).filter(u => /^https?:\/\//.test(u))
+  if (!stickers.length) throw new Error('Ese paquete no trae stickers')
+  return { nombre: String(info.name || 'Paquete').trim(), autor: String(info.author || info.username || ''), animado: !!info.isAnimated, imagen: info.preview || stickers[0], stickers }
+}

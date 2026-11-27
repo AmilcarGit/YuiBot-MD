@@ -25,7 +25,7 @@ const posicion = c => (orden.includes(c) ? orden.indexOf(c) : orden.length)
 export const ICONOS = {
   clima: '🌤️', dueno: '👑', menu: '📜', ping: '🏓', terminos: '📋', tomp3: '🎶', daily: '🎁', dar: '💝', gacha: '🎰', inventario: '🎒', perfil: '🪪', registrar: '📝', tienda: '🛒', top: '🏆', trabajar: '⚒️',
   adivina: '🔮', dado: '🎲', moneda: '🪙', ppt: '✊', ruleta: '🎡', play: '🎵', yts: '🔎', ytmp3: '🎧', ytmp4: '🎬', pin: '📌', pinvid: '📹', facebook: '📘', tiktok: '🎵', instagram: '📸', twitter: '🐦', threads: '🧵', spotify: '🟢', soundcloud: '🟠',
-  acortar: '🔗', calc: '🧮', cambio: '💱', hora: '🕒', qr: '📱', traducir: '🌐', wiki: '📚', tts: '🎙️', ssweb: '🖼️', reaccion: '🤗', sticker: '🎀', saudio: '🔊', toimg: '🖼️',
+  acortar: '🔗', calc: '🧮', cambio: '💱', hora: '🕒', qr: '📱', traducir: '🌐', wiki: '📚', tts: '🎙️', ssweb: '🖼️', reaccion: '🤗', sticker: '🎀', stickerly: '🧩', saudio: '🔊', toimg: '🖼️',
   sorteo: '🎟️', todos: '📣', hidetag: '👻', kick: '🚪', promote: '⬆️', demote: '⬇️', antienlaces: '🔗', antifalsos: '🛡️', bienvenida: '👋', serbot: '🤖', subbots: '🤖', datos: '📊', reiniciar: '♻️', tema: '🎨', web: '🌍', modoadmin: '🔒'
 }
 /** Resumen corto para el desplegable: lo que va antes de los dos puntos (sin el ejemplo de uso). */
