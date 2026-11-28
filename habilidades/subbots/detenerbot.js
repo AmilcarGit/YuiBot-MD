@@ -1,6 +1,7 @@
 // Código Oficial de YuiBot-MD.by AmilcarGit
 import { caja, mal } from '../../estilo/index.js'
 import { conBotones } from '../../nucleo/botones.js'
+import { animar, cuadrosCarga } from '../../nucleo/animar.js'
 import { detenerSubbot, infoSubbot } from '../../nucleo/subbots.js'
 
 export default {
@@ -18,7 +19,9 @@ export default {
       ])
     }
     try {
+      const animacion = animar(ctx, cuadrosCarga('Apagando tu sub-bot…', { pasos: 3 }))
       await detenerSubbot(ctx.numero)
+      await animacion
       await ctx.responder('🛑 Listo, tu sub-bot se apagó y su sesión se borró. Cuando quieras, vuelve con *' + ctx.prefijo + 'serbot* (•ᴗ•)')
     } catch (error) {
       await ctx.responder(mal(`No pude detenerlo: ${String(error.message).slice(0, 100)}`))

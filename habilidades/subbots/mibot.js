@@ -1,6 +1,7 @@
 // Código Oficial de YuiBot-MD.by AmilcarGit
 import { caja } from '../../estilo/index.js'
 import { conBotones } from '../../nucleo/botones.js'
+import { animar, cuadrosCarga } from '../../nucleo/animar.js'
 import { cupos, infoSubbot, tiempoActivo } from '../../nucleo/subbots.js'
 
 export default {
@@ -10,6 +11,7 @@ export default {
   ayuda: 'Estado de tu sub-bot: si está conectado y desde cuándo',
   soloPrivado: true,
   async ejecutar(sock, m, ctx) {
+    await animar(ctx, cuadrosCarga('Buscando tu sub-bot…', { pasos: 3, final: '📡 ¡Señal encontrada!' }))
     const i = infoSubbot(ctx.numero)
     if (!i.existe) {
       return conBotones(ctx, caja('Tu sub-bot', ['🤖 Todavía no tienes un sub-bot.', `🎟️ Cupos libres: ${cupos().libres}`, '', 'Pídelo y vincúlalo con un código.']), [{ texto: '🤖 Crear sub-bot', cmd: 'serbot' }])
