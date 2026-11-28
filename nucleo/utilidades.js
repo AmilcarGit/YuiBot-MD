@@ -13,21 +13,43 @@ const pedirTexto = async (url, ms = 30000) => {
 export const MAX_PREGUNTA = 600
 export const PERSONALIDAD = 'Eres Yui, una asistente anime amable, alegre y curiosa que vive en WhatsApp. Responde siempre en el idioma del usuario (por defecto español), de forma clara y breve (máximo 6 líneas), con algún emoji ocasional. Si no sabes algo, dilo con honestidad. No inventes datos.'
 
+// Pollinations falla (404) con "/", "%", "#" o saltos de línea en la ruta: se limpian antes de pedir.
+const limpiarRuta = t => String(t).replace(/[\\/%#?\r\n]+/g, ' ').replace(/\s+/g, ' ').trim()
+const valida = t => { const x = String(t || '').trim(); return x && !/^\s*[{[]/.test(x) ? x.slice(0, 1800) : '' }
+
+async function pollinationsPost(mensajes) {
+  const r = await fetch('https://text.pollinations.ai/openai', {
+    method: 'POST', signal: AbortSignal.timeout(35000),
+    headers: { 'Content-Type': 'application/json', 'User-Agent': UA },
+    body: JSON.stringify({ model: 'openai', messages: mensajes })
+  })
+  if (!r.ok) throw new Error(`HTTP ${r.status}`)
+  const d = await r.json()
+  return d?.choices?.[0]?.message?.content || ''
+}
+
 export async function preguntarIA(pregunta, { sistema = PERSONALIDAD, historial = [] } = {}) {
+  const texto = String(pregunta).slice(0, MAX_PREGUNTA)
   const previo = historial.length ? historial.map(h => `${h.de === 'yui' ? 'Yui' : 'Usuario'}: ${h.texto}`).join('\n') + '\n' : ''
-  const q = (previo ? `Conversación reciente:\n${previo}\nMensaje nuevo del usuario: ` : '') + String(pregunta).slice(0, MAX_PREGUNTA)
+  const q = (previo ? `Conversación reciente:\n${previo}\nMensaje nuevo del usuario: ` : '') + texto
+  const mensajes = [{ role: 'system', content: sistema }, ...historial.map(h => ({ role: h.de === 'yui' ? 'assistant' : 'user', content: h.texto })), { role: 'user', content: texto }]
+  const intentos = [
+    ['Pollinations POST', () => pollinationsPost(mensajes)],
+    ['Pollinations', () => pedirTexto(`https://text.pollinations.ai/${encodeURIComponent(limpiarRuta(q))}?model=openai&system=${encodeURIComponent(limpiarRuta(sistema))}`, 40000)],
+    ...(previo ? [['Pollinations (sin historial)', () => pedirTexto(`https://text.pollinations.ai/${encodeURIComponent(limpiarRuta(texto))}?model=openai&system=${encodeURIComponent(limpiarRuta(sistema))}`, 40000)]] : []),
+    ['Delirius', async () => {
+      const d = await delirius('/ia/chatgpt', { q: `${sistema}\n\n${q}` }, { ms: 30000 })
+      return typeof d.data === 'string' ? d.data : d.data?.response || d.data?.message || d.data?.text || d.data?.result || d.result || ''
+    }]
+  ]
   const errores = []
-  try {
-    const t = (await pedirTexto(`https://text.pollinations.ai/${encodeURIComponent(q)}?model=openai&system=${encodeURIComponent(sistema)}`, 45000)).trim()
-    if (t && !/^\s*[{[]/.test(t)) return t.slice(0, 1800)
-    errores.push('respuesta vacía')
-  } catch (error) { errores.push(`Pollinations: ${error.message}`) }
-  try {
-    const d = await delirius('/ia/chatgpt', { q: `${sistema}\n\n${q}` }, { ms: 40000 })
-    const t = typeof d.data === 'string' ? d.data : d.data?.response || d.data?.message || d.data?.text || d.data?.result || d.result || ''
-    if (String(t).trim()) return String(t).trim().slice(0, 1800)
-    errores.push('Delirius: respuesta vacía')
-  } catch (error) { errores.push(`Delirius: ${error.message}`) }
+  for (const [nombre, intento] of intentos) {
+    try {
+      const t = valida(await intento())
+      if (t) return t
+      errores.push(`${nombre}: respuesta vacía`)
+    } catch (error) { errores.push(`${nombre}: ${error.message}`) }
+  }
   throw new Error(errores.join(' · '))
 }
 

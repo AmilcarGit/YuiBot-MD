@@ -78,8 +78,17 @@ export async function procesar(sock, { messages, type }) {
   await Promise.all(messages.map(m => atender(sock, m).catch(error => console.error(error))))
 }
 
+// Ids de mensajes ya atendidos: WhatsApp a veces entrega el mismo mensaje varias veces (reconexiones) y no debe responderse dos veces.
+const atendidos = new Set()
+
 async function atender(sock, m) {
   if (!m.message) return
+  if (m.key?.id) {
+    const clave = `${m.key.remoteJid}:${m.key.id}`
+    if (atendidos.has(clave)) return
+    atendidos.add(clave)
+    if (atendidos.size > 2000) atendidos.delete(atendidos.values().next().value)
+  }
   // El número vinculado también puede usar el bot: lo que escribe desde su teléfono con el prefijo es un comando suyo (y es dueño).
   const propio = Boolean(m.key.fromMe)
   if (propio && (enviadosPorBot.has(m.key.id) || !prefijosDe(sock).some(p => String(extraerTexto(m) || '').trimStart().startsWith(p)))) return
