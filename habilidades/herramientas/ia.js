@@ -1,6 +1,7 @@
 // Código Oficial de YuiBot-MD.by AmilcarGit
 import { mal } from '../../estilo/index.js'
 import { MAX_PREGUNTA, preguntarIA } from '../../nucleo/utilidades.js'
+import { SISTEMA_IA } from '../../nucleo/charla.js'
 import { extraerTexto } from '../../nucleo/utiles.js'
 
 const ultimo = new Map()
@@ -26,7 +27,7 @@ export default {
     ultimo.set(ctx.numero, Date.now())
     try {
       await ctx.responder(`✨ ${pregunta.length > 60 ? 'Pensando…' : 'Déjame pensar…'}`).catch(() => {})
-      const r = await preguntarIA(pregunta)
+      const r = await preguntarIA(pregunta, { sistema: SISTEMA_IA })
       await ctx.responder(`🎀 ${r}`)
     } catch (error) {
       console.error(`ia: ${error.message}`)

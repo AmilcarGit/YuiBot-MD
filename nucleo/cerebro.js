@@ -8,6 +8,7 @@ import { encolar } from './cola.js'
 import { aBotonesWa, textoAlterno } from './botones.js'
 import { vigilar } from './guardia.js'
 import { nombreDe, prefijosDe } from './subbots.js'
+import { charlaLibre } from './charla.js'
 import { ganarXp } from './juego.js'
 import { extraerTexto, soloNumero } from './utiles.js'
 import { dice, mal, ok } from '../estilo/index.js'
@@ -165,7 +166,14 @@ async function atender(sock, m) {
   if (await vigilar(ctx)) return
 
   const prefijo = prefijosDe(sock).find(p => texto.startsWith(p))
-  if (!prefijo) return
+  if (!prefijo) {
+    // Chat privado sin comando: responde la IA (tras aceptar sus términos y reglas).
+    if (!grupo && !propio && texto.trim()) {
+      ctx.prefijo = prefijosDe(sock)[0] || '.'
+      await charlaLibre(ctx).catch(error => console.error(`charla: ${error.message}`))
+    }
+    return
+  }
 
   const [nombre, ...args] = texto.slice(prefijo.length).trim().split(/\s+/)
   const habilidad = habilidades.get((nombre || '').toLowerCase())

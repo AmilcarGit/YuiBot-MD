@@ -13,16 +13,17 @@ const pedirTexto = async (url, ms = 30000) => {
 export const MAX_PREGUNTA = 600
 export const PERSONALIDAD = 'Eres Yui, una asistente anime amable, alegre y curiosa que vive en WhatsApp. Responde siempre en el idioma del usuario (por defecto español), de forma clara y breve (máximo 6 líneas), con algún emoji ocasional. Si no sabes algo, dilo con honestidad. No inventes datos.'
 
-export async function preguntarIA(pregunta) {
-  const q = String(pregunta).slice(0, MAX_PREGUNTA)
+export async function preguntarIA(pregunta, { sistema = PERSONALIDAD, historial = [] } = {}) {
+  const previo = historial.length ? historial.map(h => `${h.de === 'yui' ? 'Yui' : 'Usuario'}: ${h.texto}`).join('\n') + '\n' : ''
+  const q = (previo ? `Conversación reciente:\n${previo}\nMensaje nuevo del usuario: ` : '') + String(pregunta).slice(0, MAX_PREGUNTA)
   const errores = []
   try {
-    const t = (await pedirTexto(`https://text.pollinations.ai/${encodeURIComponent(q)}?model=openai&system=${encodeURIComponent(PERSONALIDAD)}`, 45000)).trim()
+    const t = (await pedirTexto(`https://text.pollinations.ai/${encodeURIComponent(q)}?model=openai&system=${encodeURIComponent(sistema)}`, 45000)).trim()
     if (t && !/^\s*[{[]/.test(t)) return t.slice(0, 1800)
     errores.push('respuesta vacía')
   } catch (error) { errores.push(`Pollinations: ${error.message}`) }
   try {
-    const d = await delirius('/ia/chatgpt', { q: `${PERSONALIDAD}\n\nUsuario: ${q}` }, { ms: 40000 })
+    const d = await delirius('/ia/chatgpt', { q: `${sistema}\n\n${q}` }, { ms: 40000 })
     const t = typeof d.data === 'string' ? d.data : d.data?.response || d.data?.message || d.data?.text || d.data?.result || d.result || ''
     if (String(t).trim()) return String(t).trim().slice(0, 1800)
     errores.push('Delirius: respuesta vacía')

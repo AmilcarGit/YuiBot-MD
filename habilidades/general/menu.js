@@ -23,7 +23,7 @@ const posicion = c => (orden.includes(c) ? orden.indexOf(c) : orden.length)
 
 // Icono de cada comando en el desplegable; los que no están usan el de su categoría.
 export const ICONOS = {
-  clima: '🌤️', dueno: '👑', menu: '📜', ping: '🏓', terminos: '📋', tomp3: '🎶', daily: '🎁', dar: '💝', gacha: '🎰', inventario: '🎒', perfil: '🪪', registrar: '📝', tienda: '🛒', top: '🏆', trabajar: '⚒️',
+  clima: '🌤️', dueno: '👑', menu: '📜', ping: '🏓', terminos: '📋', iareglas: '📜', iaacepto: '✅', iaoff: '🔕', iaborrar: '🧹', tomp3: '🎶', daily: '🎁', dar: '💝', gacha: '🎰', inventario: '🎒', perfil: '🪪', registrar: '📝', tienda: '🛒', top: '🏆', trabajar: '⚒️',
   adivina: '🔮', dado: '🎲', moneda: '🪙', ppt: '✊', ruleta: '🎡', play: '🎵', yts: '🔎', ytmp3: '🎧', ytmp4: '🎬', pin: '📌', pinvid: '📹', facebook: '📘', tiktok: '🎵', instagram: '📸', twitter: '🐦', threads: '🧵', spotify: '🟢', soundcloud: '🟠',
   acortar: '🔗', calc: '🧮', cambio: '💱', hora: '🕒', qr: '📱', traducir: '🌐', wiki: '📚', tts: '🎙️', ssweb: '🖼️', reaccion: '🤗', sticker: '🎀', stickerly: '🧩', saudio: '🔊', toimg: '🖼️',
   sorteo: '🎟️', todos: '📣', hidetag: '👻', kick: '🚪', promote: '⬆️', demote: '⬇️', antienlaces: '🔗', antifalsos: '🛡️', bienvenida: '👋', serbot: '🤖', mibot: '📡', detenerbot: '🛑', cupos: '🎟️', quitarbot: '🗑️', prefijo: '⚙️', letra: '🎼', anime: '🎌', brat: '💚', attp: '🌈', ship: '💘', verdadoreto: '🔮', nombrebot: '🏷️', subbots: '🤖', datos: '📊', reiniciar: '♻️', tema: '🎨', web: '🌍', ia: '🤖', noticias: '📰', apk: '📲', mediafire: '📁', modoadmin: '🔒'
