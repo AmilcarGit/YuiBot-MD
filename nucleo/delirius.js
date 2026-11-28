@@ -193,3 +193,34 @@ export async function packStickerly(enlace) {
   if (!stickers.length) throw new Error('Ese paquete no trae stickers')
   return { nombre: String(info.name || 'Paquete').trim(), autor: String(info.author || info.username || ''), animado: !!info.isAnimated, imagen: info.preview || stickers[0], stickers }
 }
+
+// ── Letras y anime ──────────────────────────────────────────────────────────────────
+export async function buscarLetra(consulta) {
+  const d = (await delirius('/search/lyrics', { query: consulta }, { ms: 40000 })).data || {}
+  const letra = String(d.lyrics || '').trim()
+  if (!letra) throw new Error('No encontré la letra')
+  return { titulo: String(d.title || consulta), artista: String(d.artists || ''), album: String(d.album || ''), duracion: String(d.duration || ''), letra }
+}
+
+const lista = v => (Array.isArray(v) ? v.filter(x => typeof x === 'string') : [])
+export async function infoAnime(nombre) {
+  const d = (await delirius('/anime/animeinfo', { query: nombre }, { ms: 45000 })).data || {}
+  if (!d.title) throw new Error('No encontré ese anime')
+  return {
+    titulo: String(d.title), japones: String(d.japaneseTitle || ''), tipo: String(d.type || ''), estado: String(d.status || ''), episodios: String(d.episodes || ''),
+    emision: String(d.aired || ''), duracion: String(d.duration || ''), puntaje: String(d.score || ''), ranking: String(d.ranked || ''), popularidad: String(d.popularity || ''),
+    generos: lista(d.genres), estudios: lista(d.studios), sinopsis: String(d.synopsis || '').replace(/\s+/g, ' ').trim(), imagen: /^https?:\/\//.test(d.picture || '') ? d.picture : '', enlace: String(d.url || '')
+  }
+}
+
+// ── Imágenes hechas por la API (brat, attp) ─────────────────────────────────────────
+/** Pide una imagen/video generado: devuelve { buffer, tipo }. */
+export async function lienzo(ruta, params = {}, maxBytes = 4 * 1024 * 1024) {
+  const q = new URLSearchParams(params)
+  const r = await fetch(`${BASE()}${ruta}?${q}`, { signal: AbortSignal.timeout(40000), headers: { 'User-Agent': 'YuiBot-MD/1.0' } })
+  const tipo = r.headers.get('content-type') || ''
+  if (!r.ok || !/^(image|video)\//.test(tipo)) throw new Error(`La API no devolvió una imagen (HTTP ${r.status})`)
+  const buffer = Buffer.from(await r.arrayBuffer())
+  if (!buffer.length || buffer.length > maxBytes) throw new Error('La imagen llegó vacía o muy pesada')
+  return { buffer, tipo }
+}
