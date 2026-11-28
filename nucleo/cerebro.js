@@ -7,6 +7,7 @@ import { usuario, chat, moverUsuario, todosUsuarios } from './memoria.js'
 import { encolar } from './cola.js'
 import { aBotonesWa, textoAlterno } from './botones.js'
 import { vigilar } from './guardia.js'
+import { nombreDe, prefijosDe } from './subbots.js'
 import { ganarXp } from './juego.js'
 import { extraerTexto, soloNumero } from './utiles.js'
 import { dice, mal, ok } from '../estilo/index.js'
@@ -80,7 +81,7 @@ async function atender(sock, m) {
   if (!m.message) return
   // El número vinculado también puede usar el bot: lo que escribe desde su teléfono con el prefijo es un comando suyo (y es dueño).
   const propio = Boolean(m.key.fromMe)
-  if (propio && (enviadosPorBot.has(m.key.id) || !ajustes.prefijos.some(p => String(extraerTexto(m) || '').trimStart().startsWith(p)))) return
+  if (propio && (enviadosPorBot.has(m.key.id) || !prefijosDe(sock).some(p => String(extraerTexto(m) || '').trimStart().startsWith(p)))) return
 
   const jid = m.key.remoteJid
   if (!jid || jid === 'status@broadcast' || jid.endsWith('@newsletter')) return
@@ -116,6 +117,7 @@ async function atender(sock, m) {
     usuario: u,
     chat: c,
     prefijo: '',
+    nombreBot: nombreDe(sock),
     args: [],
     responder: contenido => encolar(jid, () => sock.sendMessage(jid, { text: contenido }, { quoted: m })),
     enviar: (contenido, opciones) => encolar(jid, () => sock.sendMessage(jid, contenido, opciones)),
@@ -138,12 +140,12 @@ async function atender(sock, m) {
           const adjunto = adjuntoDe(media)
           if (adjunto) {
             try {
-              return await sock.sendMessage(jid, { ...adjunto, caption: contenido, footer: pie || ajustes.nombre, buttonsFormat: ajustes.botonesFormato, buttons: aBotonesWa(lista, ctx.prefijo) }, { quoted: m })
+              return await sock.sendMessage(jid, { ...adjunto, caption: contenido, footer: pie || ctx.nombreBot, buttonsFormat: ajustes.botonesFormato, buttons: aBotonesWa(lista, ctx.prefijo) }, { quoted: m })
             } catch (error) {
               console.error(`Botones con medio: ${error.message}`)
             }
           }
-          return await sock.sendMessage(jid, { text: contenido, footer: pie || ajustes.nombre, buttonsFormat: ajustes.botonesFormato, buttons: aBotonesWa(lista, ctx.prefijo) }, { quoted: m })
+          return await sock.sendMessage(jid, { text: contenido, footer: pie || ctx.nombreBot, buttonsFormat: ajustes.botonesFormato, buttons: aBotonesWa(lista, ctx.prefijo) }, { quoted: m })
         } catch (error) {
           console.error(`Botones: ${error.message}`)
         }
@@ -162,7 +164,7 @@ async function atender(sock, m) {
 
   if (await vigilar(ctx)) return
 
-  const prefijo = ajustes.prefijos.find(p => texto.startsWith(p))
+  const prefijo = prefijosDe(sock).find(p => texto.startsWith(p))
   if (!prefijo) return
 
   const [nombre, ...args] = texto.slice(prefijo.length).trim().split(/\s+/)

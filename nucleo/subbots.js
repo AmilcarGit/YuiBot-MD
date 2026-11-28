@@ -7,6 +7,32 @@ const activos = new Map()
 const desde = new Map() // número → momento en que conectó
 const enlace = () => import('./enlace.js') // carga perezosa: así este módulo se puede probar sin WhatsApp
 
+const configs = new Map() // número → { prefijo?, nombre? }
+const archivoConfig = numero => path.join(ajustes.sesionSubbots, numero, 'yui.json')
+const numeroDe = sock => String(sock?.user?.id || '').replace(/:\d+(?=@)/, '').replace(/@.*/, '')
+
+/** Ajustes propios de un sub-bot (prefijo y nombre), guardados junto a su sesión. */
+export function configSubbot(numero) {
+  if (!configs.has(numero)) {
+    let c = {}
+    try { c = JSON.parse(fs.readFileSync(archivoConfig(numero), 'utf8')) } catch {}
+    configs.set(numero, c && typeof c === 'object' ? c : {})
+  }
+  return configs.get(numero)
+}
+export function guardarConfigSubbot(numero, parcial) {
+  const c = { ...configSubbot(numero), ...parcial }
+  for (const k of Object.keys(c)) if (c[k] === undefined || c[k] === null) delete c[k]
+  configs.set(numero, c)
+  fs.mkdirSync(path.join(ajustes.sesionSubbots, numero), { recursive: true })
+  fs.writeFileSync(archivoConfig(numero), JSON.stringify(c))
+  return c
+}
+export const esSubbot = sock => activos.has(numeroDe(sock))
+/** Prefijos que entiende este bot: un sub-bot con prefijo propio usa solo ese; el resto, los de ajustes. */
+export const prefijosDe = sock => { const n = numeroDe(sock); const p = activos.has(n) ? configSubbot(n).prefijo : null; return p ? [p] : ajustes.prefijos }
+export const nombreDe = sock => { const n = numeroDe(sock); return (activos.has(n) && configSubbot(n).nombre) || ajustes.nombre }
+
 export const NUMERO_VALIDO = /^\d{6,15}$/
 
 export const listarSubbots = () => [...activos].filter(([, sock]) => sock).map(([numero]) => numero)
@@ -81,8 +107,8 @@ export async function detenerSubbot(numero) {
   try { await sock?.logout() } catch {}
   try { sock?.end?.(undefined) } catch {}
   fs.rmSync(carpeta, { recursive: true, force: true })
-  activos.delete(numero); desde.delete(numero)
+  activos.delete(numero); desde.delete(numero); configs.delete(numero)
   return true
 }
 
-export const _interno = { activos, desde } // solo para pruebas
+export const _interno = { activos, desde, configs } // solo para pruebas

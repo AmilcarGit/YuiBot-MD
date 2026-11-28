@@ -26,7 +26,7 @@ export const ICONOS = {
   clima: '🌤️', dueno: '👑', menu: '📜', ping: '🏓', terminos: '📋', tomp3: '🎶', daily: '🎁', dar: '💝', gacha: '🎰', inventario: '🎒', perfil: '🪪', registrar: '📝', tienda: '🛒', top: '🏆', trabajar: '⚒️',
   adivina: '🔮', dado: '🎲', moneda: '🪙', ppt: '✊', ruleta: '🎡', play: '🎵', yts: '🔎', ytmp3: '🎧', ytmp4: '🎬', pin: '📌', pinvid: '📹', facebook: '📘', tiktok: '🎵', instagram: '📸', twitter: '🐦', threads: '🧵', spotify: '🟢', soundcloud: '🟠',
   acortar: '🔗', calc: '🧮', cambio: '💱', hora: '🕒', qr: '📱', traducir: '🌐', wiki: '📚', tts: '🎙️', ssweb: '🖼️', reaccion: '🤗', sticker: '🎀', stickerly: '🧩', saudio: '🔊', toimg: '🖼️',
-  sorteo: '🎟️', todos: '📣', hidetag: '👻', kick: '🚪', promote: '⬆️', demote: '⬇️', antienlaces: '🔗', antifalsos: '🛡️', bienvenida: '👋', serbot: '🤖', mibot: '📡', detenerbot: '🛑', cupos: '🎟️', quitarbot: '🗑️', subbots: '🤖', datos: '📊', reiniciar: '♻️', tema: '🎨', web: '🌍', ia: '🤖', noticias: '📰', apk: '📲', mediafire: '📁', modoadmin: '🔒'
+  sorteo: '🎟️', todos: '📣', hidetag: '👻', kick: '🚪', promote: '⬆️', demote: '⬇️', antienlaces: '🔗', antifalsos: '🛡️', bienvenida: '👋', serbot: '🤖', mibot: '📡', detenerbot: '🛑', cupos: '🎟️', quitarbot: '🗑️', prefijo: '⚙️', nombrebot: '🏷️', subbots: '🤖', datos: '📊', reiniciar: '♻️', tema: '🎨', web: '🌍', ia: '🤖', noticias: '📰', apk: '📲', mediafire: '📁', modoadmin: '🔒'
 }
 /** Resumen corto para el desplegable: lo que va antes de los dos puntos (sin el ejemplo de uso). */
 export const resumen = ayuda => String(ayuda || '').split(/:\s/)[0].replace(/\s+\.\w+.*$/, '').trim()
@@ -45,7 +45,7 @@ const rangoDe = nivel => RANGOS.filter(([desde]) => nivel >= desde).at(-1)[1]
 const CONSEJOS = ['{p}tts hola, soy Yui 🎙️', '{p}abrazo @amigo 🤗', '{p}spotify bad bunny 🎧', '{p}s para crear stickers 🎀', '{p}tiktok enlace 🎵', '{p}ssweb google.com 📸', '{p}traducir en hola 🌐', '{p}gacha para invocar 🎰']
 
 /** Menú corto (con botones): una tarjeta con los datos de quien lo pidió; los comandos van en el desplegable. */
-export function menuCompacto({ tema, nombre, prefijo, total, categorias, usuario = {}, ahora = new Date(), zona = ZONA }) {
+export function menuCompacto({ tema, nombre, nombreBot = ajustes.nombre, prefijo, total, categorias, usuario = {}, ahora = new Date(), zona = ZONA }) {
   const t = tema.emojis
   const n = Number.isFinite(usuario.nivel) ? usuario.nivel : null
   const xp = Number.isFinite(usuario.xp) ? usuario.xp : 0
@@ -58,7 +58,7 @@ export function menuCompacto({ tema, nombre, prefijo, total, categorias, usuario
   const consejo = CONSEJOS[Math.floor(ahora.getTime() / 3600e3) % CONSEJOS.length].replace('{p}', prefijo)
   return [
     `┏━━━━━ ${t.titulo} ━━━━━┓`,
-    `   ${fuente(ajustes.nombre, tema.fuente)}`,
+    `   ${fuente(nombreBot, tema.fuente)}`,
     `┗━━━━━ ${t.item} ━━━━━┛`,
     `${saludo}, *${nombre}* ${t.persona}`,
     '',
@@ -100,7 +100,7 @@ export default {
     const unica = elegida && porCategoria.has(elegida)
     const claves = [...porCategoria.keys()].sort((a, b) => posicion(a) - posicion(b))
 
-    const cabecera = caja(ajustes.nombre, [
+    const cabecera = caja(ctx.nombreBot || ajustes.nombre, [
       dice('saludo', { nombre: ctx.usuario.nombre || 'viajero' }),
       '',
       `${tema.emojis.item} Prefijo: ${ctx.prefijo}`,
@@ -122,7 +122,7 @@ export default {
 
     // Con botones el mensaje es corto y bonito: el detalle de cada comando va en el desplegable.
     if (ctx.botonesActivos) {
-      const texto = menuCompacto({ tema, nombre: ctx.usuario.nombre || 'viajero', prefijo: ctx.prefijo, total: visibles.length, usuario: ctx.usuario, categorias: mostradas.map(c => ({ clave: c, titulo: titulos[c] || c, nombres: porCategoria.get(c).map(h => h.nombre).sort() })) })
+      const texto = menuCompacto({ tema, nombre: ctx.usuario.nombre || 'viajero', prefijo: ctx.prefijo, total: visibles.length, nombreBot: ctx.nombreBot, usuario: ctx.usuario, categorias: mostradas.map(c => ({ clave: c, titulo: titulos[c] || c, nombres: porCategoria.get(c).map(h => h.nombre).sort() })) })
       return conBotones(ctx, texto, [desplegable], { media: ajustes.menuMedia })
     }
 
