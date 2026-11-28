@@ -1,5 +1,5 @@
 // Código Oficial de YuiBot-MD.by AmilcarGit
-import { listarSubbots } from '../../nucleo/subbots.js'
+import { infoSubbot, listarSubbots, tiempoActivo } from '../../nucleo/subbots.js'
 import { aviso, caja, dice, temaActivo } from '../../estilo/index.js'
 
 export default {
@@ -12,6 +12,6 @@ export default {
     const lista = listarSubbots()
     if (!lista.length) return ctx.responder(aviso(dice('subbotsVacio')))
     const e = temaActivo().emojis
-    await ctx.responder(caja(`Sub-bots (${lista.length})`, lista.map(n => `${e.item} ${n}`)))
+    await ctx.responder(caja(`Sub-bots (${lista.length})`, lista.map(n => `${e.item} ${n} · ${tiempoActivo(infoSubbot(n).desde || Date.now())}`)))
   }
 }
